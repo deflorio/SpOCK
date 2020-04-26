@@ -1,0 +1,13 @@
+#input/AttitudeEphemerides/*.csv
+#input/OrbitEphemerides/*.csv
+#output/AttitudeEphemerides/*.csv
+#output/Dynamics/*.csv
+#output/Eclipses/*.csv
+#output/GS_Contacts/*.csv
+#output/OrbitEphemerides/*.csv
+#output/Sensors/*.csv
+#output/TG_Contacts/*.csv
+bin/*
+objs/
+doc/UserGuide/doxydoc/html/
+doc/UserGuide/doxydoc/latex/

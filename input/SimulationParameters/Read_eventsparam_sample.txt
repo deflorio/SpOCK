@@ -1,0 +1,84 @@
+
+######################
+COMPUTATION PARAMETERS
+######################
+
+simstep: 10
+duration: 259200
+
+FOV_cross: 40
+FOV_along: 20
+
+SC_start: 1
+SC_end: 1
+PL_start: 1
+PL_end: 1
+
+TGs_on: 1
+GSs_on: 1
+TGs_grid_on: 1
+Eclipse_on: 1
+
+
+######################
+TARGETS
+######################
+
+TG_grid_limits(0): -90
+TG_grid_limits(1): 90
+TG_grid_limits(2): -90
+TG_grid_limits(3): 90
+gridstep: 45
+
+TG name: New York
+lon: -74
+lat: 40.71
+alt: 0
+
+TG name: Milano
+lon: 9.19
+lat: 45.46
+alt: 0
+
+TG name: Beijing
+lon: 116.41
+lat: 40
+alt: 0
+
+
+######################
+GROUND STATIONS
+######################
+
+GS name: WHM
+lon: 11.14
+lat: 47.84
+alt: 0
+minelev: 0
+
+GS name: MGS
+lon: -193.48
+lat: -77.89
+alt: 0
+minelev: 0
+
+######################
+INPUT FILES PATHS
+######################
+
+Orbit Orbit_ephemeris_path: /home/deflorio/SpOCK/output/OrbitEphemerides
+Orbit_ephemeris_rootname: P00_S01_RO_3days_10s_20190409_100115_GGM02C.csv
+Data path: /home/deflorio/SpOCK/data
+Planet ephemeris: de430.bsp
+EOP: earth_000101_200613_200322.bpc
+PCK: pck00010.tpc
+Leap second: naif0012.tls
+
+######################
+OUTPUT FILES PATHS
+######################
+
+TG_filename: /home/deflorio/SpOCK/output/TG_Contacts/All_Contacts_RO.csv
+GS_filename: /home/deflorio/SpOCK/output/GS_Contacts/All_GScontacts_RO.csv
+Eclipse_filename: /home/deflorio/SpOCK/output/Eclipses/AllEclipse_times.csv
+

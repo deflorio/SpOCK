@@ -1,0 +1,78 @@
+   ----------------------------------------------------------------------------------------------------------------------------------
+    FORMAT(I4,I3,I3,I5,I3,8I3,I4,8I4,I4,F4.1,I2,I4,F6.1,I2,5F6.1)
+    ----------------------------------------------------------------------------------------------------------------------------------
+    Column
+    0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111111111111111111111111111
+    0000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990000000000111111111122222222223
+    1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+    ----------------------------------------------------------------------------------------------------------------------------------
+                                                                                                  Adj     Adj   Adj   Obs   Obs   Obs 
+    yyyy mm dd BSRN ND Kp Kp Kp Kp Kp Kp Kp Kp Sum Ap  Ap  Ap  Ap  Ap  Ap  Ap  Ap  Avg Cp C9 ISN F10.7 Q Ctr81 Lst81 F10.7 Ctr81 Lst81
+    ----------------------------------------------------------------------------------------------------------------------------------
+    yyyy mm dd nnnn nn nn nn nn nn nn nn nn nn nnn nnn nnn nnn nnn nnn nnn nnn nnn nnn n.n n nnn nnn.n n nnn.n nnn.n nnn.n nnn.n nnn.n
+    ----------------------------------------------------------------------------------------------------------------------------------
+    2000 01 01 2272  7 53 47 40 33 43 30 43 37 327  56  39  27  18  32  15  32  22  30 1.3 6  48 125.6 0 160.5 175.0 129.9 165.6 179.0
+    ----------------------------------------------------------------------------------------------------------------------------------
+
+    Columns	Description
+    [0] 001-004	Year
+    [0] 006-007	Month (01-12)
+    [0] 009-010	Day
+    [1] 012-015	Bartels Solar Rotation Number. A sequence of 27-day
+    intervals counted continuously from 1832 Feb 8.
+    [2] 017-018	Number of Day within the Bartels 27-day cycle (01-27).
+    [3] 020-021	Planetary 3-hour Range Index (/K_p /) for 0000-0300 UT.
+    [4] 023-024	Planetary 3-hour Range Index (/K_p /) for 0300-0600 UT.
+    [5] 026-027	Planetary 3-hour Range Index (/K_p /) for 0600-0900 UT.
+    [6] 029-030	Planetary 3-hour Range Index (/K_p /) for 0900-1200 UT.
+    [7] 032-033	Planetary 3-hour Range Index (/K_p /) for 1200-1500 UT.
+    [8] 035-036	Planetary 3-hour Range Index (/K_p /) for 1500-1800 UT.
+    [9] 038-039	Planetary 3-hour Range Index (/K_p /) for 1800-2100 UT.
+    [10] 041-042	Planetary 3-hour Range Index (/K_p /) for 2100-0000 UT.
+    [11] 044-046	Sum of the 8 /K_p / indices for the day expressed to the
+    nearest third of a unit.
+    [12] 048-050	Planetary Equivalent Amplitude (/A_p /) for 0000-0300 UT.
+    [13] 052-054	Planetary Equivalent Amplitude (/A_p /) for 0300-0600 UT.
+    [14] 056-058	Planetary Equivalent Amplitude (/A_p /) for 0600-0900 UT.
+    [15] 060-062	Planetary Equivalent Amplitude (/A_p /) for 0900-1200 UT.
+    [16] 064-066	Planetary Equivalent Amplitude (/A_p /) for 1200-1500 UT.
+    [17] 068-070	Planetary Equivalent Amplitude (/A_p /) for 1500-1800 UT.
+    [18] 072-074	Planetary Equivalent Amplitude (/A_p /) for 1800-2100 UT.
+    [19] 076-078	Planetary Equivalent Amplitude (/A_p /) for 2100-0000 UT.
+    [20] 080-082	Arithmetic average of the 8 /A_p / indices for the day.
+    [21] 084-086	/C_p / or Planetary Daily Character Figure. A qualitative
+    estimate of overall level of magnetic activity for the day
+    determined from the sum of the 8 /A_p / indices. /C_p / ranges, in
+    steps of one-tenth, from 0 (quiet) to 2.5 (highly disturbed).
+    [22] 088-088	/C_9 /. A conversion of the 0-to-2.5 range of the /C_p /
+    index to one digit between 0 and 9.
+    [23] 090-092	International Sunspot Number. Records contain the Zurich
+    number through 1980 Dec 31 and the International Brussels number
+    thereafter.
+    [24] 094-098	10.7-cm Solar Radio Flux (/F10.7/) Adjusted to 1 AU.
+    Measured at Ottawa at 1700 UT daily from 1947 Feb 14 until 1991 May
+    31 and measured at Penticton at 2000 UT from 1991 Jun 01 on.
+    Expressed in units of 10^-22 W/m^2 /Hz.
+    [25] 100-100	Flux Qualifier.
+    0 indicates flux required no adjustment;
+    1 indicates flux required adjustment for burst in progress at time
+    of measurement;
+    2 indicates a flux approximated by either interpolation or
+    extrapolation;
+    3 indicates no observation; and
+    4 indicates CSSI interpolation of missing data.
+    [26] 102-106	Centered 81-day arithmetic average of /F10.7/ (adjusted).
+    [27] 108-112	Last 81-day arithmetic average of /F10.7/ (adjusted).
+    [28] 114-118	Observed (unadjusted) value of /F10.7/.
+    [29] 120-124	Centered 81-day arithmetic average of /F10.7/ (observed).
+    [30] 126-130	Last 81-day arithmetic average of /F10.7/ (observed).
+
+
+CelesTrak Dr. T.S. Kelso <http://celestrak.com/webmaster.php>
+[TS.Kelso@celestrak.com] <mailto:TS.Kelso@celestrak.com>
+Follow CelesTrak on Twitter @TSKelso <https://twitter.com/TSKelso>
+Last updated: 2020 Jan 02 07:22:33 UTC
+Accessed 114,911 times
+Current system time: 2020 Feb 02 20:43:27 UTC
+CelesTrak's Simple Privacy Policy AGI <https://agi.com/>
+

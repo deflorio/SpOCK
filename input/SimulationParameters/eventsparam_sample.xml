@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="eventsparam_style.xsl"?>
+<!--==========================================================================
+
+    Copyright 2020 Sergio De Florio
+    All rigths reserved
+
+    This file is part of SpOCK
+ 
+    SpOCK is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation version 3
+ 
+    SpOCK is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with SpOCK. If not, see <https://www.gnu.org/licenses/>.
+
+
+==========================================================================-->
+<eventsparam name="Events computation"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="simparam_schema.xsd">
+
+    <!-- ################################################ -->
+    <!-- #################### HEADER #################### -->
+    <!-- ################################################ -->
+    <fileheader>
+        <author>Sergio De Florio</author>
+        <email>sergio.deflorio@yahoo.com</email>
+        <organization></organization>
+        <filecreationdate>2020-04-25</filecreationdate>
+        <!--<version> $Revision: 1.0 $ </version>-->
+        <description>Sample events computation</description>
+        <limitation>None</limitation>
+    </fileheader>
+    
+    <!-- ################################################# -->
+    <!-- ############ COMPUTATION PARAMETERS ############# -->
+    <!-- ################################################# -->
+    
+    <CompParameters>
+      
+      <durstep> <!-- The time format is that of the XML schema duration type -->
+          <simstep>PT10S</simstep> <!--Note: SIM_STEP must have the same value of the step of the loaded orbit ephemerides. SIM_DURATION must have a value <= of the difference between the last and first time of the loaded ephemerides-->
+          <simduration>P3D</simduration>
+      </durstep>
+	  
+	  <Payload>
+		<FOV_cross unit="deg">40.0</FOV_cross>
+		<FOV_along unit="deg">20.0</FOV_along>
+	  </Payload>
+	
+	  <Spacecraft>  <!--The orbit ephemerides considered for a costellation has always to have the prefix S#-P#_ in their name.
+                    In case all values SC_* and PL_* are 1, the ephemeris with name Orbit_ephemeris_rootname (without prefixes)
+                    in the InputFiles tag will be used-->
+		<SC_start>1</SC_start>    <!--Spacecraft number to start with-->
+		<SC_end>1</SC_end>        <!--Spacecraft number to end with-->       
+		<PL_start>1</PL_start>    <!--Orbital plane number to start with-->
+        <PL_end>1</PL_end>        <!--Orbital plane number to end with-->
+	  </Spacecraft>
+	  
+	  <Compoptions>
+        <TGs_on>true</TGs_on>     <!--Compute contacts of payload with targets-->
+        <GSs_on>true</GSs_on>    	<!--Compute contacts of spacecraft with ground stations-->
+        <TGs_grid_on>true</TGs_grid_on>   <!--Use targets grid for computation of contacts of payload with targets-->
+        <Eclipse_on>true</Eclipse_on>     <!--Compute umbra/penumbra start and end times-->
+      </Compoptions>
+        
+    </CompParameters>
+    
+    <!-- ################################## -->
+    <!-- ############ TARGETS ############# -->
+    <!-- ################################## -->
+    
+    <TGs>
+	
+        <TGs_grid> <!--Targets grid features: longitude and latitude allowed ranges are respectively [0,360] and [-90,90]. If the value of tag <TGs_grid_on> is false, the <TGs_list> and not the targets grid will be considered for the computation-->
+              
+          <minlon unit="deg">-90.0</minlon>
+          <maxlon unit="deg">90.0</maxlon>
+          <minlat unit="deg">-90.0</minlat>
+          <maxlat unit="deg">90.0</maxlat>
+            
+          <gridstep unit="deg">45.0</gridstep>
+                
+        </TGs_grid>
+        
+        <TGs_list> <!--Targets list: if the value of tag <TGs_grid_on> is true, this list will not be considered in the computation-->
+              
+          <TG name="New York">
+            <lon unit="deg">-74.0</lon>   <!--Longitude-->
+            <lat unit="deg">40.71</lat>   <!--Latitude-->
+            <alt unit="m">0.0</alt>     <!--Altitude-->
+          </TG>
+          
+          <TG name="Milano">
+            <lon unit="deg">9.19</lon>
+            <lat unit="deg">45.46</lat>
+            <alt unit="m">0.0</alt>
+          </TG>
+          
+          <TG name="Beijing">
+            <lon unit="deg">116.41</lon>
+            <lat unit="deg">40.0</lat>
+            <alt unit="m">0.0</alt>
+          </TG>
+                
+        </TGs_list>
+    
+    </TGs>
+    
+    <!-- ########################################## -->
+    <!-- ############ GROUND STATIONS ############# -->
+    <!-- ########################################## -->
+	
+	<GSs> <!--Ground stations list-->
+          
+	  <GS name="WHM">
+		<lon unit="deg">11.14</lon>   <!--Longitude-->
+		<lat unit="deg">47.84</lat>   <!--Latitude-->
+        <alt unit="m">0.0</alt>     <!--Altitude-->
+        <minelev unit="deg">0.0</minelev> <!--Minimum spacecraft elevation on GS to have acquisition of signal-->
+	  </GS>
+	  
+	  <GS name="MGS">
+		<lon unit="deg">-193.48</lon>
+		<lat unit="deg">-77.89</lat>
+        <alt unit="m">0.0</alt>
+        <minelev unit="deg">0.0</minelev>
+	  </GS>
+            
+    </GSs>
+	
+	<!-- ####################################################### -->
+    <!-- ################## EVENTS INPUT FILES ################# -->
+    <!-- ####################################################### -->
+
+    <EventsInputFiles> <!--Relatives paths with respect to the location of the executable-->
+
+        <Orbit_ephemeris_path>/your_path/SpOCK/output/OrbitEphemerides</Orbit_ephemeris_path>
+        <Orbit_ephemeris_rootname>P00_S01_RO_3days_10s_20190409_100115_GGM02C.csv</Orbit_ephemeris_rootname> <!-- If a constellation is considered, this is the orbit ephemeris name without the prefix S#-P#_, otherwise this is the complete name of the spacecraft ephemeris (see tag <Spacecraft>)-->
+        <Data_path>/your_path/SpOCK/data</Data_path>
+        <Planet_ephemeris>de430.bsp</Planet_ephemeris>
+        <EOP_parameters>earth_000101_200613_200322.bpc</EOP_parameters>
+        <PCK_data>pck00010.tpc</PCK_data>
+        <Leap_second>naif0012.tls</Leap_second>
+        
+    </EventsInputFiles>
+    
+    <!-- ####################################################### -->
+    <!-- ################## EVENTS OUTPUT FILES ################ -->
+    <!-- ####################################################### -->
+    
+    <EventsOutputFiles>
+      
+        <TG_contacts>/your_path/SpOCK/output/TG_Contacts/All_Contacts_RO.csv</TG_contacts>  <!--Contacts between payload footprint and targets-->
+        <GS_contacts>/your_path/SpOCK/output/GS_Contacts/All_GScontacts_RO.csv</GS_contacts> <!--Ground station contacts-->
+        <Eclipse_times>/your_path/SpOCK/output/Eclipses/AllEclipse_times.csv</Eclipse_times> <!--Eclipse times-->
+        
+    </EventsOutputFiles>
+    
+</eventsparam>

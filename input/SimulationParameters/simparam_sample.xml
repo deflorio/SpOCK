@@ -1,0 +1,1099 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="simparam_style.xsl"?>
+<!--==========================================================================
+
+    Copyright 2020 Sergio De Florio
+    All rigths reserved
+
+    This file is part of SpOCK
+ 
+    SpOCK is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation version 3
+ 
+    SpOCK is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with SpOCK. If not, see <https://www.gnu.org/licenses/>.
+
+
+==========================================================================-->
+<simparam name="Simulation 1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="simparam_schema.xsd">
+
+    <!-- ################################################ -->
+    <!-- #################### HEADER ################### -->
+    <!-- ################################################ -->
+    <fileheader>
+        <author>Sergio De Florio</author>
+        <email>sergio.deflorio@yahoo.com</email>
+        <organization></organization>
+        <filecreationdate>2020-04-25</filecreationdate>
+        <!--<version> $Revision: 1.0 $ </version>-->
+        <description>Sample simulation</description>
+        <limitation>None</limitation>
+    </fileheader>
+    
+    <!-- ################################################ -->
+    <!-- ################### S/C FACES ################## -->
+    <!-- ################################################ -->
+
+    <SC_Faces> <!-- The order of the faces has to be FaceXplus, FaceXminus, FaceYplus, FaceYminus, FaceZplus and FaceZminus -->
+      
+        <Face name="FaceXplus">
+            <Area unit="m2">2.85</Area> <!--If solar array +Y deployed 45 deg: 0.03*2 + 0.03*cos(PI/4.0) = 0.0812-->
+            <Material>Solar Array</Material>
+            <cP_position unit="m">
+                <x>0.4</x>
+                <y>0.0</y> <!--If solar array +Y deployed 45 deg: -0.0275-->
+                <z>0.0</z>
+            </cP_position>
+            <cA_position unit="m">
+                <x>40.0</x>
+                <y>0.0</y> <!--If solar array +Y deployed 45 deg: -0.0275-->
+                <z>0.0</z>
+            </cA_position>
+        </Face>
+        
+        <Face name="FaceXminus">
+            <Area unit="m2">0.64</Area> <!--If solar array +Y deployed 45 deg: 0.03*2 + 0.03*cos(PI/4.0) = 0.0812-->
+            <Material>MLI</Material>
+            <cP_position unit="m">
+                <x>-0.4</x>
+                <y>0.0</y> <!--If solar array +Y deployed 45 deg: -0.0275-->
+                <z>0.0</z>
+            </cP_position>
+            <cA_position unit="m">
+                <x>-0.05</x>
+                <y>0.0</y> <!--If solar array +Y deployed 45 deg: -0.0275-->
+                <z>0.0</z>
+            </cA_position>
+        </Face>
+        
+        <Face name="FaceYplus">
+            <Area unit="m2">0.64</Area> <!--If solar array +Y deployed 45 deg: 0.03*cos(PI/4.0) = 0.0212-->
+            <Material>MLI</Material> <!--If solar array +Y deployed 45 deg: Solar Array-->
+            <cP_position unit="m">
+                <x>0.0</x>
+                <y>0.4</y> <!--If solar array +Y deployed 45 deg: 0.075-->
+                <z>0.0</z>
+            </cP_position>
+            <cA_position unit="m">
+                <x>0.0</x>
+                <y>0.4</y> <!--If solar array +Y deployed 45 deg: 0.075-->
+                <z>0.0</z>
+            </cA_position>
+        </Face>
+        
+        <Face name="FaceYminus">
+            <Area unit="m2">0.64</Area>
+            <Material>MLI</Material>
+            <cP_position unit="m">
+                <x>0.0</x>
+                <y>-0.4</y>
+                <z>0.0</z>
+            </cP_position>
+            <cA_position unit="m">
+                <x>0.0</x>
+                <y>-0.4</y>
+                <z>0.0</z>
+            </cA_position>
+        </Face>
+        
+        <Face name="FaceZplus">
+            <Area unit="m2">0.64</Area>
+            <Material>MLI</Material>
+            <cP_position unit="m">
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.4</z>
+            </cP_position>
+            <cA_position unit="m">
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.4</z>
+            </cA_position>
+        </Face>
+        
+        <Face name="FaceZminus">
+            <Area unit="m2">0.64</Area>
+            <Material>MLI</Material>
+            <cP_position unit="m">
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>-0.4</z>
+            </cP_position>
+            <cA_position unit="m">
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>-0.4</z>
+            </cA_position>
+        </Face>
+        
+    </SC_Faces>
+
+    <SC_properties>
+      
+        <InertiaMatrix unit="kg*m2"> <!--Absolute values of inrtia matrix elements-->
+            <Ixx>25.0</Ixx>
+            <Iyy>24.0</Iyy>
+            <Izz>20.0</Izz>
+            <Ixy>0.0</Ixy>
+            <Ixz>0.0</Ixz>
+            <Iyz>0.0</Iyz>
+        </InertiaMatrix>
+        
+        <CoG>
+            <SC_mass unit="kg">150.0</SC_mass>
+            <CoG_pos unit="m">
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </CoG_pos>
+        </CoG>
+      
+        <Coefficients>
+            <Cd>2.5</Cd> <!--It is recommended to use Cd = 1.0 if <Drag_Model> is 'Panels'-->
+            <Cr>1.4</Cr> <!--It is recommended to use Cr = 1.0 if <SRP_Model> is 'Panels'-->    
+        </Coefficients>
+        
+        <Areas>
+            <Area_D>0.64</Area_D>
+            <Area_R>2.5</Area_R>
+        </Areas>
+        
+        <SC_dipole name="Spacecraft magnetic dipole" unit="Am^2">
+            <x>1.0e-1</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </SC_dipole>
+        
+    </SC_properties>
+    
+    <!-- ################################################ -->
+    <!-- ################## INPUT FILES ################# -->
+    <!-- ################################################ -->
+
+    <InputFiles>
+      
+        <Orbit_ephemeris>/your_path/SpOCK/output/OrbitEphemerides/P00_S01_RO_3days_10s_20190409_100115_GGM02C.csv</Orbit_ephemeris>
+        <Attitude_ephemeris>/your_path/SpOCK/output/AttitudeEphemerides/Attitude.csv</Attitude_ephemeris>
+        <Data_path>/your_path/SpOCK/data</Data_path>
+        <Planet_ephemeris>de430.bsp</Planet_ephemeris>
+        <EOP_parameters>earth_000101_200613_200322.bpc</EOP_parameters>
+        <PCK_data>pck00010.tpc</PCK_data>
+        <Leap_second>naif0012.tls</Leap_second>
+        <Gravity_model>GGM02C</Gravity_model> <!--EIGEN-6S GGM02C-->
+        <Atmospheric_model>JB2008</Atmospheric_model> <!--JB2008 NRLMSISE-00-->
+        <Magnetic_model>IGRF13</Magnetic_model> <!--IGRF13 WMM2020-->
+        
+    </InputFiles>
+
+    <!-- ################################################ -->
+    <!-- ################## OUTPUT FILES ################# -->
+    <!-- ################################################ -->
+    
+    <OutputFiles>
+      
+        <Orbit_ephemeris>/your_path/SpOCK/output/OrbitEphemerides/P00_S01_3days_10s_20190409_100115_GGM02C_allpert.csv</Orbit_ephemeris>  <!--Orbit ephemeris generated by orbit propagator-->
+        <Attitude_ephemeris>/your_path/SpOCK/output/AttitudeEphemerides/Attitude.csv</Attitude_ephemeris>           <!--Attitude ephemeris generated by attitude propagator-->
+        <Sensor_output>/your_path/SpOCK/output/Sensors/SensorsOutput.csv</Sensor_output>         <!--Attitude sensors readings generated by attitude propagator-->
+        <Torques>/your_path/SpOCK/output/Dynamics/Torques.csv</Torques>                           <!--Environmental and actuators torques during attitude propagation-->
+        <Accelerations>/your_path/SpOCK/output/Dynamics/Accelerations.csv</Accelerations>         <!--Environmental and actuators accelerations during orbit propagation-->
+        
+    </OutputFiles>
+    
+    <!-- ################################################ -->
+    <!-- ############ SIMULATION PARAMETERS ############# -->
+    <!-- ################################################ -->
+    
+    <SimParameters>
+      
+      <durstep> <!-- The time format is that of the XML schema duration type -->
+          <simstep>PT10S</simstep> <!--Note: for attitude propagation SIM_STEP must have the same value of the step of the loaded orbit ephemerides. SIM_DURATION must have a value <= of the difference between the last and first time of the loaded ephemerides-->
+          <simduration>P3D</simduration><!--P3D-->
+      </durstep>
+      
+      <ORB_initstate> <!-- Initial time and orbit initial state. The initial time is UTC date and time in XML schema format (e.g. 2010-09-21T22:30:00). The orbit state is given in ECI -->
+      
+          <Initime>2019-04-09T10:01:15</Initime>
+          <Position unit="m">
+            <x>3270760.1038</x>
+            <y>-4080913.2450</y>
+            <z>4474331.2207</z>
+          </Position>
+          <Velocity unit="m/s">
+            <vx>-4364.58760710</vx>
+            <vy>2760.60503304</vy>
+            <vz>5691.75100125</vz>
+          </Velocity>
+          
+      </ORB_initstate>
+      
+      <ATT_initstate> <!-- phi, theta and psi represent an Euler rotation 321. The reference system is inertial or RTN depending on the value of initstate_in_RTN in simoptions. The angualar velocities om_x, om_y, om_z are given with respect to the body-fixed reference system axes.
+      If RTN is the chosen reference frame (<initstate_in_RTN tag> = true), (phi,theta,psi) = (0,0,0) means that x_SC = R, y_SC = T and z_SC = N. If ECI is the chosen reference frame, (phi,theta,psi) = (0,0,0) means that x_SC = x_ECI, y_SC = y_ECI and z_SC = z_ECI-->
+          <phi unit="deg">0.0</phi>      <!-- 0[deg] -->
+          <theta unit="deg">45.0</theta> <!-- 0[deg] -->
+          <psi unit="deg">0.0</psi>      <!-- 90[deg] -->
+          <om_x unit="deg/s">0.0</om_x>    <!-- [deg/s] -->
+          <om_y unit="deg/s">0.0</om_y>    <!-- [deg/s] --> <!-- n = 0.062324 [deg/s] -->
+          <om_z unit="deg/s">0.0</om_z>    <!-- [deg/s] -->
+          
+      </ATT_initstate>
+      
+      <simoptions> <!--Environment and state options for attitude and orbit propagation-->
+          <initstate_in_RTN>true</initstate_in_RTN> <!--Attitude initial state given in tag ATT_initstate is in RTN frame. If this flag is false,
+														the attitude initial state will be considered given in inertial frame by the attitude propagator-->
+          <realtime>false</realtime>      <!--Enable real time option for hardware-in-the-loop simulations-->
+          <realtime_wait unit="s">1.0</realtime_wait>      <!--Step execution waiting time for hardware-in-the-loop simulations -->
+          <ggrad_on>true</ggrad_on>    <!--Gravity gradient (attitude)-->
+          <mag_on>true</mag_on>        <!--Magnetic field (attitude)-->
+          <srp_on>true</srp_on>        <!--Solar radiation pressure (orbit and attitude)-->
+          <drag_on>true</drag_on>      <!-- Atmospheric drag (orbit and attitude) -->
+          <nMAX>70</nMAX>                 <!--Maximum order and degree of gravitational field model used for the orbit propagation-->
+          <sunmoon_on>true</sunmoon_on>  <!--Third body perturbation (orbit)-->
+          <Drag_Model>RefArea</Drag_Model> <!--RefArea Panels-->
+          <SRP_Model>RefArea</SRP_Model>
+          <AttitudeType>RTN_fixed</AttitudeType> <!--Only for orbit propagation. Attitude type during orbit propagation.
+		  The options are:
+		  - Fixed: the S/C keeps the attitude given in tag ATT_initstate fixed with respect to the inertial frame. This attitude can be given in inertial or RTN frame
+			by using the initstate_in_RTN flag 
+		  - RTN_fixed: the S/C keeps the attitude given in tag ATT_initstate fixed with respect to the RTN orbital frame.
+			The attitude given in tag ATT_initstate is considered given in RTN frame (in this case tag initstate_in_RTN is not used)
+		  - Ephemeris: the attitude is read from an attitude ephemeris file with step equal to the chosen propagation step. The ephemeris file name is given in tag Attitude_ephemeris -->
+          <attctrl_on>false</attctrl_on>        <!--Enable attitude control-->
+          <AttCtrlType>AttCtrl1</AttCtrlType>      <!--Attitude control type-->
+          <orbctrl_on>false</orbctrl_on>        <!--Enable attitude control-->
+          <OrbCtrlType>OrbCtrl2</OrbCtrlType>      <!--Attitude control type-->
+      </simoptions>
+        
+    </SimParameters>
+    
+    <!-- ################################################ -->
+    <!-- #################### SENSORS ################### -->
+    <!-- ################################################ -->
+    
+    <!-- Sun camera -->
+    <SensorsActuators name="Sun Camera">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <opslimit name="Camera FOV" unit="rad">2.01</opslimit> <!-- 115.0*DEG2RAD Camera FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy> <!-- Accuracy mean [rad] -->
+        <accuracy name="std" unit="rad">0.0017</accuracy> <!--  0.1*DEG2RAD Accuracy standard deviation [rad] -->
+        
+        <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+        <SC2SYS_matrix> <!-- Transformation matrix from SC body-fixed frame subsystem frame -->
+          
+            <m11>0.0</m11>
+            <m12>1.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Earth camera -->
+    <SensorsActuators name="Earth Camera">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <opslimit name="Camera FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD Camera FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy> <!-- Accuracy mean [rad] -->
+        <accuracy name="std" unit="rad">0.0044</accuracy> <!--  0.25*DEG2RAD Accuracy standard deviation [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>0.0</m11>
+            <m12>0.0</m12>
+            <m13>1.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>-1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Coarse sun sensor X -->
+    <SensorsActuators name="CSS+X"> <!-- Coarse sun sensor name has to contain the string CSS -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Nominal current at zero Sun incidence" unit="mA">100.0</constparam>
+        <constparam name="Sensor signal noise" unit="mA">5.0</constparam>
+        
+        <opslimit name="CSS FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD CSS FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy>
+        <accuracy name="std" unit="rad">0.0873</accuracy> <!-- 5.0*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>0.0</m11>
+            <m12>1.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Coarse sun sensor -X -->
+    <SensorsActuators name="CSS-X"> <!-- Coarse sun sensor name has to contain the string CSS -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Nominal current at zero Sun incidence" unit="mA">100.0</constparam>
+        <constparam name="Sensor signal noise" unit="mA">5.0</constparam>
+        
+        <opslimit name="CSS FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD CSS FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy>
+        <accuracy name="std" unit="rad">0.0873</accuracy> <!-- 5.0*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>0.0</m11>
+            <m12>0.0</m12>
+            <m13>1.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>-1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Coarse sun sensor +Y -->
+    <SensorsActuators name="CSS+Y"> <!-- Coarse sun sensor name has to contain the string CSS -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Nominal current at zero Sun incidence" unit="mA">100.0</constparam>
+        <constparam name="Sensor signal noise" unit="mA">5.0</constparam>
+        
+        <opslimit name="CSS FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD CSS FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy>
+        <accuracy name="std" unit="rad">0.0873</accuracy> <!-- 5.0*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>0.0</m11>
+            <m12>0.0</m12>
+            <m13>1.0</m13>
+            
+            <m21>1.0</m21>
+            <m22>0.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>1.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Coarse sun sensor -Y -->
+    <SensorsActuators name="CSS-Y"> <!-- Coarse sun sensor name has to contain the string CSS -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Nominal current at zero Sun incidence" unit="mA">100.0</constparam>
+        <constparam name="Sensor signal noise" unit="mA">5.0</constparam>
+        
+        <opslimit name="CSS FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD CSS FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy>
+        <accuracy name="std" unit="rad">0.0873</accuracy> <!-- 5.0*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>-1.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Coarse sun sensor +Z -->
+    <SensorsActuators name="CSS+Z"> <!-- Coarse sun sensor name has to contain the string CSS -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Nominal current at zero Sun incidence" unit="mA">100.0</constparam>
+        <constparam name="Sensor signal noise" unit="mA">5.0</constparam>
+        
+        <opslimit name="CSS FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD CSS FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy>
+        <accuracy name="std" unit="rad">0.0873</accuracy> <!-- 5.0*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Coarse sun sensor -Z -->
+    <SensorsActuators name="CSS-Z"> <!-- Coarse sun sensor name has to contain the string CSS -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Nominal current at zero Sun incidence" unit="mA">100.0</constparam>
+        <constparam name="Sensor signal noise" unit="mA">5.0</constparam>
+        
+        <opslimit name="CSS FOV" unit="rad">2.1</opslimit> <!-- 120.0*DEG2RAD CSS FOV [rad] -->
+        
+        <accuracy name="mean" unit="rad">0.0</accuracy>
+        <accuracy name="std" unit="rad">0.0873</accuracy> <!-- 5.0*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the sensor Z-axis is the considered the main sensor axis i.e. the one representing the axis of the conical field of view -->
+          
+            <m11>-1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>-1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Magnetometer (deployed) -->
+    <SensorsActuators name="Magnetometer">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <accuracy name="mean" unit="Nanotesla">0.0</accuracy>
+        <accuracy name="std" unit="Nanotesla">10.0</accuracy> <!--Resolution-->
+        
+        <SC2SYS_matrix>
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Magnetometer (stowed) -->
+    <SensorsActuators name="Magnetometer">
+      
+        <subsystem_on>false</subsystem_on>
+        
+        <accuracy name="mean" unit="Nanotesla">0.0</accuracy>
+        <accuracy name="std" unit="Nanotesla">10.0</accuracy>
+        
+        <SC2SYS_matrix>
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>-1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>-1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Rate sensor -->
+    <SensorsActuators name="Rate Sensor">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <accuracy name="mean" unit="rad/s">0.0</accuracy>       
+        <accuracy name="std" unit="rad/s">3.4907e-04</accuracy> <!-- 0.02*DEG2RAD Accuracy standard deviation (bias instability) [rad] -->
+        
+        <SC2SYS_matrix>
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- ######################################################### -->
+    <!-- ################### ATTITUDE ACTUATORS ################## -->
+    <!-- ######################################################### -->
+    
+    <!-- Magnetotorquer -->
+    <SensorsActuators name="Magnetorquer">
+      
+      <subsystem_on>true</subsystem_on>
+      
+      <constparam name="Conversion factor" unit="A*m^2/ms">0.02</constparam> <!-- 20/1000: Conversion factor from ontime to dipole produced by a magnetic torquer ( m = ontime2dipole*ontime ) [A*m^2/ms] -->
+      
+      <accuracy name="mean" unit="A*m^2">0.0</accuracy> 
+      <accuracy name="std" unit="A*m^2">0.1</accuracy>
+      
+      <SC2SYS_matrix>
+        
+          <m11>1.0</m11>
+          <m12>0.0</m12>
+          <m13>0.0</m13>
+          
+          <m21>0.0</m21>
+          <m22>1.0</m22>
+          <m23>0.0</m23>
+          
+          <m31>0.0</m31>
+          <m32>0.0</m32>
+          <m33>1.0</m33>
+          
+      </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Reaction wheel +X -->
+    <SensorsActuators name="Wheel+X"> <!-- Reaction/Momentum wheel name has to contain the string Wheel -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Wheel moment of inertia" unit="kg*m^2">1.592e-3</constparam> <!-- Moment of inertia of the wheel [kg*m^2]. Angular momentum: 1 Nms at 6000 RPM -->
+        
+        <auxparam name="Init speed" unit="RPM">0.0</auxparam>
+        
+        <accuracy name="mean speed" unit="RPM">0.0</accuracy> <!-- Accuracy (mean and standard deviation) of wheels speed measurements -->
+        <accuracy name="std speed" unit="RPM">1.0</accuracy>
+        
+        <accuracy name="mean torque" unit="Nm">0.0</accuracy> <!-- Accuracy (mean and standard deviation) of torque generated by wheels -->
+        <accuracy name="std torque" unit="Nm">1.0e-4</accuracy>
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the wheel Z-axis is considered the rotation axis -->
+          
+            <m11>0.0</m11>
+            <m12>1.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+        
+    </SensorsActuators>
+    
+    <!-- Reaction/Momentum wheel +Y -->
+    <SensorsActuators name="Wheel+Y"> <!-- Reaction/Momentum wheel name has to contain the string Wheel -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Wheel moment of inertia" unit="kg*m^2">1.592e-3</constparam> <!-- Moment of inertia of the wheel [kg*m^2]. Angular momentum: 1 Nms at 6000 RPM -->
+        
+        <auxparam name="Init speed" unit="RPM">0.0</auxparam>
+        
+        <accuracy name="mean speed" unit="RPM">0.0</accuracy> <!-- Accuracy (mean and standard deviation) of wheels speed measurements -->
+        <accuracy name="std speed" unit="RPM">1.0</accuracy>
+        
+        <accuracy name="mean torque" unit="Nm">0.0</accuracy> <!-- Accuracy (mean and standard deviation) of torque generated by wheels -->
+        <accuracy name="std torque" unit="Nm">1.0e-4</accuracy>
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the wheel Z-axis is considered the rotation axis -->
+          
+            <m11>0.0</m11>
+            <m12>0.0</m12>
+            <m13>1.0</m13>
+            
+            <m21>1.0</m21>
+            <m22>0.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>1.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+        
+    </SensorsActuators>
+    
+    <!-- Reaction wheel +Z -->
+    <SensorsActuators name="Wheel+Z"> <!-- Reaction/Momentum wheel name has to contain the string Wheel -->
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Wheel moment of inertia" unit="kg*m^2">1.592e-3</constparam> <!-- Moment of inertia of the wheel [kg*m^2]. Angular momentum: 1 Nms at 6000 RPM -->
+        
+        <auxparam name="Init speed" unit="RPM">0.0</auxparam>
+        
+        <accuracy name="mean speed" unit="RPM">0.0</accuracy> <!-- Accuracy (mean and standard deviation) of wheels speed measurements -->
+        <accuracy name="std speed" unit="RPM">1.0</accuracy>
+        
+        <accuracy name="mean torque" unit="Nm">0.0</accuracy> <!-- Accuracy (mean and standard deviation) of torque generated by wheels -->
+        <accuracy name="std torque" unit="Nm">1.0e-4</accuracy>
+        
+        <SC2SYS_matrix> <!-- NOTE: in the simulation software the wheel Z-axis is considered the rotation axis -->
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>1.0</m33>
+            
+        </SC2SYS_matrix>
+        
+    </SensorsActuators>
+    
+    <!-- ################################################ -->
+    <!-- ################# SOLAR PANELS ################# -->
+    <!-- ################################################ -->
+    
+    <!-- Solar panel +X lateral 1 -->
+    <SensorsActuators name="Solar panel +X lateral 1">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Surface" unit="m^2">0.96</constparam>
+        <constparam name="Voltage" unit="V">12.0</constparam>
+        
+        <auxparam name="Solar cells efficiency" unit="-">0.3</auxparam>
+        
+        <opslimit name="FOV for Sun" unit="rad">2.9671</opslimit> <!-- 170.0*DEG2RAD -->
+        
+        <SC2SYS_matrix> <!-- The Z axis of the solar panel has to be perpendicular to its surface and pointing in the direction outside the spacecraft -->
+          
+            <m11>0.0</m11>
+            <m12>1.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+        
+        
+    </SensorsActuators>
+    
+    <!-- Solar panel +X lateral 2 -->
+    <SensorsActuators name="Solar panel +X lateral2">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Surface" unit="m^2">0.96</constparam>
+        <constparam name="Voltage" unit="V">12.0</constparam>
+        
+        <auxparam name="Solar cells efficiency" unit="-">0.3</auxparam>
+        
+        <opslimit name="FOV for Sun" unit="rad">2.9671</opslimit> <!-- 170.0*DEG2RAD -->
+        
+        <SC2SYS_matrix> <!-- The Z axis of the solar panel has to be perpendicular to its surface and pointing in the direction outside the spacecraft -->
+          
+            <m11>0.0</m11>
+            <m12>1.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+        
+    </SensorsActuators>
+    
+    <!-- Solar panel not used -->
+    <SensorsActuators name="Solar panel">
+      
+        <subsystem_on>false</subsystem_on>
+        
+        <constparam name="Surface" unit="m^2">0.96</constparam>
+        <constparam name="Voltage" unit="V">12.0</constparam>
+        
+        <auxparam name="Solar cells efficiency" unit="-">0.3</auxparam>
+        
+        <opslimit name="FOV for Sun" unit="rad">2.9671</opslimit> <!-- 170.0*DEG2RAD -->
+        
+        <SC2SYS_matrix> <!-- The Z axis of the solar panel has to be perpendicular to its surface and pointing in the direction outside the spacecraft -->
+          
+            <m11>0.0</m11>
+            <m12>1.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>0.0</m22>
+            <m23>1.0</m23>
+            
+            <m31>1.0</m31>
+            <m32>0.0</m32>
+            <m33>0.0</m33>
+            
+        </SC2SYS_matrix>
+        
+    </SensorsActuators>
+    
+    <!-- ################################################# -->
+    <!-- ################### PROPULSION ################## -->
+    <!-- ################################################# -->
+    
+    <!-- Propulsion system  1 Hydrazine -->
+    <SensorsActuators name="Prop1">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Thrust" unit="N">1.0</constparam>
+        <constparam name="Thrust resolution" unit="N">0.01</constparam>
+        
+        <opslimit name="Maximum available thrust" unit="Ns">18000.0</opslimit>
+        
+        <accuracy name="Propulsor dv accuracy mean" unit="%">0.0</accuracy> <!--Performance error |dv_REAL - dv_CMD|/dv_CMD-->
+        <accuracy name="Propulsor dv accuracy std" unit="%">0.05</accuracy> 
+        
+        <accuracy name="Attitude control accuracy mean" unit="rad">0.0</accuracy>
+        <accuracy name="Attitude control accuracy std" unit="rad">0.0035</accuracy> <!-- 0.0035 = 0.2*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix>
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- Propulsion system  2 HPGP -->
+    <SensorsActuators name="Prop2">
+      
+        <subsystem_on>true</subsystem_on>
+        
+        <constparam name="Thrust" unit="N">0.2</constparam>
+        <constparam name="Thrust resolution" unit="N">5e-3</constparam>
+        
+        <opslimit name="Maximum available thrust" unit="Ns">7500.0</opslimit>
+        
+        <accuracy name="Propulsor dv accuracy mean" unit="%">0.0</accuracy> <!--Performance error |dv_REAL - dv_CMD|/dv_CMD-->
+        <accuracy name="Propulsor dv accuracy std" unit="%">0.05</accuracy> 
+        
+        <accuracy name="Attitude control accuracy mean" unit="rad">0.0</accuracy>
+        <accuracy name="Attitude control accuracy std" unit="rad">0.0035</accuracy> <!-- 0.0035 = 0.2*DEG2RAD [rad] -->
+        
+        <SC2SYS_matrix>
+          
+            <m11>1.0</m11>
+            <m12>0.0</m12>
+            <m13>0.0</m13>
+            
+            <m21>0.0</m21>
+            <m22>1.0</m22>
+            <m23>0.0</m23>
+            
+            <m31>0.0</m31>
+            <m32>0.0</m32>
+            <m33>1.0</m33>
+            
+        </SC2SYS_matrix>
+    
+    </SensorsActuators>
+    
+    <!-- ########################################################## -->
+    <!-- ######### COMMANDED ATTITUDE AND ORBIT MANEUVERS ######### -->
+    <!-- ########################################################## -->
+
+    <Maneuvers>
+        
+        <!-- ######### Attitude maneuvers ######### -->
+      
+        <Man name="WheelsManeuver">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>43200.0</init_time>       <!-- Seconds from simulation start -->
+            <!--<duration>2542.0</duration>-->
+            <ManVec unit="RPM">                 <!-- Maneuver vector: wheels rotation speed [RPM] or ontimes for torquers and thrusters -->
+                <x>2000.0</x>					<!-- NOTE: in order to make one wheel not maneuvering, putits speed commanded value here equal to the <auxparam> "Init speed" in the <SensorsActuators> wheel definition -->
+                <y>3000.0</y>
+                <z>2000.0</z>
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="MagnetoManeuver">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>21600.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="ms">                   <!-- Maneuver vector: wheels rotation speed [RPM] or ontimes for torquers and thrusters -->
+                <x>3000.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="MagnetoManeuver">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>43200.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="ms">                   <!-- Maneuver vector: wheels rotation speed [RPM] or ontimes for torquers and thrusters -->
+                <x>0.0</x>
+                <y>3000.0</y>
+                <z>0.0</z>
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="MagnetoManeuver">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>64800.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="ms">                   <!-- Maneuver vector: wheels rotation speed [RPM] or ontimes for torquers and thrusters -->
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>3000.0</z>
+            </ManVec>
+            
+        </Man>
+            
+        <Man name="ThrustersManeuver">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>0.0</init_time>          <!-- Seconds from simulation start -->
+            <ManVec unit="ms">               <!-- Maneuver vector: wheels rotation speed [RPM] or ontimes for torquers and thrusters -->
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </ManVec>
+            
+        </Man>
+        
+        <!-- ######### Orbit maneuvers ######### -->
+        
+        <!-- Eigth types of possible maneuvers:
+        
+             - ImpulsiveManeuverProp1_RTN is an impulsive maneuver vector given in the orbital frame RTN frame
+               centered in the spacecraft centre of mass (R pointing from the center of the Earth to the
+               spacecraft center of mass, N in the direction of the orbit angular momentum and T = NxR to
+               close the right-handed coordinates system). Prop1 refers by which propulsion system it has to be executed
+               depending on how many propulsion systems have been implemented in the main file
+             - ImpulsiveManeuverProp1_Body is an impulsive maneuver vector given in the spacecraft body-fixed
+               frame. In this case the attitude of the spacecraft (see <simoptions>) is taken into account
+               for the inclusion of the maneuver in the propagation
+             - ContinuousManeuverProp1_RTN is a continuous maneuver vector given in RTN frame. The propulsion
+               system characteristics given in <SensorsActuators name="Prop1"> are taken into account for the inclusion
+               of the maneuver in the propagation
+             - ContinuousManeuverProp1_Body is a continuous maneuver vector given in the spacecraft body-fixed frame
+             
+             Each maneuver name can contain either the propulsion system name Prop1 or Prop2
+              -->
+        
+        
+        <Man name="ContinuousManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>86400.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>0.0</x> <!--R-->
+                <y>0.5</y> <!--T-->
+                <z>0.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ImpulsiveManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>56160.0</init_time>   <!--56160.0-->    <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>0.0</x> <!--R-->
+                <y>0.5</y> <!--T-->
+                <z>0.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ContinuousManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>43200.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>0.0</x> <!--R-->
+                <y>0.5</y> <!--T-->
+                <z>0.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ImpulsiveManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>1000.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>1.0</x> <!--R-->
+                <y>1.0</y> <!--T-->
+                <z>1.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ImpulsiveManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>2000.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>1.0</x> <!--R-->
+                <y>1.0</y> <!--T-->
+                <z>1.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ImpulsiveManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>3000.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>1.0</x> <!--R-->
+                <y>1.0</y> <!--T-->
+                <z>1.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ImpulsiveManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>4000.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>1.0</x> <!--R-->
+                <y>1.0</y> <!--T-->
+                <z>1.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ImpulsiveManeuverProp1_RTN">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>86400.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>0.0</x> <!--R-->
+                <y>0.5</y> <!--T-->
+                <z>0.0</z> <!--N-->
+            </ManVec>
+            
+        </Man>
+        
+        <Man name="ContinuousManeuverProp2_Body">
+          
+            <maneuver_on>false</maneuver_on>    <!-- Activate maneuver -->
+            <init_time>3600.0</init_time>       <!-- Seconds from simulation start -->
+            <ManVec unit="m/s">                   <!-- Maneuver vector: dv [m/s] -->
+                <x>0.5</x>
+                <y>1.0</y>
+                <z>0.3</z>
+            </ManVec>
+            
+        </Man>
+        
+    </Maneuvers>
+    
+</simparam>

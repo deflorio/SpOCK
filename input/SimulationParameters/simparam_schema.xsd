@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--==========================================================================
+
+    Copyright 2020 Sergio De Florio
+    All rigths reserved
+
+    This file is part of SpOCK
+ 
+    SpOCK is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation version 3
+ 
+    SpOCK is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU General Public License for more details.
+ 
+    You should have received a copy of the GNU General Public License
+    along with SpOCK. If not, see <https://www.gnu.org/licenses/>.
+
+==========================================================================-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  
+  <xs:annotation>
+    <xs:documentation> This configuration file format is the medium for describing spacecraft and simulation parameters.
+      <p/>
+      The information that is specified in the configuration file includes:
+      <ul>
+        <li>Force models parameters and options</li>
+        <li>Geometric and measurement</li>
+        <li>Mass and weight/balance</li>
+        <li>Sensors and actuators parameters</li>
+        <li>Input/Output</li>
+      </ul>
+      <p/>
+    </xs:documentation>
+  </xs:annotation>
+  
+  <xs:element name="simparam">
+    <xs:annotation>
+      <xs:documentation> This is the root element for a simulation parameters file. </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <!--The file creation information-->
+        <xs:element ref="fileheader"/>
+        <!--The S/C faces characteristics-->
+        <xs:element ref="SC_Faces"/>
+        <!--Spacecraft physical properties-->
+        <xs:element ref="SC_properties"/>
+        <!--Required input files names-->
+        <xs:element ref="InputFiles"/>
+        <!--Required output files names-->
+        <xs:element ref="OutputFiles"/>
+        <!--Simulation options-->
+        <xs:element ref="SimParameters"/>
+        <!--Sensors and actuators characteristics-->
+        <xs:element ref="SensorsActuators" minOccurs="0" maxOccurs="unbounded"/>
+        <!--Manually commanded attitude maneuvers-->
+        <xs:element ref="Maneuvers" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:string">
+        <xs:annotation>
+          <xs:documentation> Name of the simulation. </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  <xs:element name="eventsparam">
+    <xs:annotation>
+      <xs:documentation> This is the root element for a simulation parameters file. </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <!--The file creation information-->
+        <xs:element ref="fileheader"/>
+        <!--General parameters for the events computation-->
+        <xs:element ref="CompParameters"/>
+        <!--Targets-->
+        <xs:element ref="TGs"/>
+        <!--Ground stations-->
+        <xs:element ref="GSs"/>
+        <!--Required input files names-->
+        <xs:element ref="EventsInputFiles"/>
+        <!--Required output files names-->
+        <xs:element ref="EventsOutputFiles"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:string">
+        <xs:annotation>
+          <xs:documentation> Name of the computation. </xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Global Types for this file -->
+  <xs:simpleType name="AreaType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="mm2"/>
+      <xs:enumeration value="cm2"/>
+      <xs:enumeration value="m2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="LengthType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="mm"/>
+      <xs:enumeration value="cm"/>
+      <xs:enumeration value="m"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="InertiaType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="kg*m2"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MassType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="mg"/>
+      <xs:enumeration value="g"/>
+      <xs:enumeration value="kg"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AngleType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="deg"/>
+      <xs:enumeration value="rad"/>
+      <xs:enumeration value="deg/s"/>
+      <xs:enumeration value="rad/s"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PositiveNumber">
+    <xs:restriction base="xs:double">
+      <xs:minInclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!--<xs:simpleType name="TimeType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ms"/>
+      <xs:enumeration value="s"/>
+      <xs:enumeration value="min"/>
+      <xs:enumeration value="h"/>
+      <xs:enumeration value="d"/>
+    </xs:restriction>
+  </xs:simpleType>-->
+
+  <!-- FILEHEADER ELEMENT -->
+  <xs:element name="fileheader">
+    <xs:annotation>
+      <xs:documentation>The fileheader section is where important information about the simulation is recorded. The authors, their contact information
+      and affiliation, are all documented in this section. Notes about the model, as well as limitations and reference information are also recorded
+      in this section.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="author" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>The name of the simulation author[s].</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="email" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>The contact email address for an author (optional).</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="organization" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>The organization that the author[s] belongs to.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:choice>
+        <xs:element name="license" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>This is an optional field for a license name and URL.</xs:documentation>
+          </xs:annotation>
+          <xs:complexType>
+            <xs:attribute name="licenseName" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>The name of the license, e.g. "GPL".</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="licenseURL" type="xs:anyURI">
+              <xs:annotation>
+                <xs:documentation>The URL where the license can be found.</xs:documentation>
+              </xs:annotation>
+            </xs:attribute>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="sensitivity" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>This field stores the sensitivity classification, such as "classified", "secret", "proprietary", etc.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="filecreationdate" type="xs:date" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>The date that the simulation was initially created in the form yyyy-mm-dd</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="version" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>The version number in the form #.#, or #.#.#, etc. This can also simply be a cvs keyword, such as "\$Revision: 1.26 $".</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+            <xs:documentation>A simple text description of the simulation.</xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element name="note" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>Notes are general notes about the simulation.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="limitation" type="xs:string">
+            <xs:annotation>
+              <xs:documentation>Limitations for this simulation should be noted (e.g. not completeness of the perturbation model used, etc.).</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element ref="reference">
+            <xs:annotation>
+              <xs:documentation>All references eventually required for the simulation.</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="reference">
+    <xs:annotation>
+      <xs:documentation>Author, date, reference ID (document ID, etc.) and title. The title is the only item in a reference that is required.</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="author" type="xs:string" use="optional"/>
+      <xs:attribute name="date" type="xs:string" use="optional"/>
+      <xs:attribute name="refID" type="xs:string" use="optional"/>
+      <xs:attribute name="title" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  <!-- State position vector -->
+  <xs:complexType name="posV">
+  <xs:annotation>
+      <xs:documentation> State position vector with components x, y, and z. The term position refers non necessarily to a position in space
+      but at a not derived state (like e.g. three angles). The measurement unit is specifed in the unit attribute of the position - not in
+      the individual x, y, or z child elements.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+        <xs:element ref="x"/>
+        <xs:element ref="y"/>
+        <xs:element ref="z"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string"/>
+      <xs:attribute name="unit" type="xs:string" use="required">
+        <!--<xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="m"/>
+            <xs:enumeration value="deg"/>
+            <xs:enumeration value="rad"/>
+          </xs:restriction>
+        </xs:simpleType>-->
+      </xs:attribute>
+    </xs:complexType>
+  
+  <!-- State velocity vector -->
+  <xs:complexType name="velV">
+    <xs:annotation>
+      <xs:documentation> First derivative of state position vector with components x, y, and z. The term position refers non necessarily to a position in space
+      but at a not derived state (like e.g. three angles). The measurement unit is specifed in the unit attribute of the position - not in
+      the individual vx, vy, or vz child elements.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+        <xs:element ref="vx"/>
+        <xs:element ref="vy"/>
+        <xs:element ref="vz"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string"/>
+      <xs:attribute name="unit" type="xs:string" use="required">
+        <!--<xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="m/s"/>
+            <xs:enumeration value="deg/s"/>
+            <xs:enumeration value="rad/s"/>
+          </xs:restriction>
+        </xs:simpleType>-->
+      </xs:attribute>
+    </xs:complexType>
+  
+  <!-- Versor -->
+  <xs:element name="Versor">
+    <xs:annotation>
+      <xs:documentation> A versor is a unit vector, containing an x, y, and z element which defines
+        a direction in a specified frame.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="x"/>
+        <xs:element ref="y"/>
+        <xs:element ref="z"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" />
+      <!--<xs:assert test="$x*$x + $z*$z + $y*$y = 1.0"/>-->
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Vector -->
+  <xs:complexType name="Vector">
+    <xs:annotation>
+      <xs:documentation>Generic vector</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+        <xs:element ref="x"/>
+        <xs:element ref="y"/>
+        <xs:element ref="z"/>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string"/>
+      <xs:attribute name="unit" type="xs:string"/>
+    </xs:complexType>
+  
+  <xs:element name="x" type="xs:double" />
+  <xs:element name="y" type="xs:double" />
+  <xs:element name="z" type="xs:double" />
+  
+  <xs:element name="vx" type="xs:double" />
+  <xs:element name="vy" type="xs:double" />
+  <xs:element name="vz" type="xs:double" />
+  
+  
+  <!--Degree and order of gravity field model-->
+  <xs:element name="nMAX">
+    <xs:simpleType>
+      <xs:restriction base="xs:integer">
+        <xs:minInclusive value="2"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:element>
+
+  <!-- Rotation matrix 3x3 -->
+  <xs:complexType name="RotationMatrix_3x3">
+    <xs:annotation>
+      <xs:documentation> A rotation matrix is symmetric and its rows and columns are versors.
+      </xs:documentation>
+    </xs:annotation>
+      <xs:sequence>
+        <xs:element name="m11" type="xs:double" />
+        <xs:element name="m12" type="xs:double" />
+        <xs:element name="m13" type="xs:double" />
+        <xs:element name="m21" type="xs:double" />
+        <xs:element name="m22" type="xs:double" />
+        <xs:element name="m23" type="xs:double" />
+        <xs:element name="m31" type="xs:double" />
+        <xs:element name="m32" type="xs:double" />
+        <xs:element name="m33" type="xs:double" />
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" />
+      <!--<xs:assert test="$m11*$m11 + $m12*$m12 + $m13*$m13 = 1.0"/>
+      <xs:assert test="$m21*$m21 + $m22*$m22 + $m23*$m23 = 1.0"/>
+      <xs:assert test="$m31*$m31 + $m32*$m32 + $m33*$m33 = 1.0"/>-->
+    </xs:complexType>
+
+  <!-- S/C faces -->
+  <xs:element name="SC_Faces">
+    <xs:annotation>
+      <xs:documentation>
+        The spacecraft faces section holds information about the characteristics of the spacecraft surfaces.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Face" minOccurs="0" maxOccurs="6"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  
+  <!-- Generic S/C face -->
+  <xs:element name="Face">
+    <xs:annotation>
+      <xs:documentation>
+        Spacecraft faces are defined by area, normal versor, material, position of solar radiation pressure and aerodynamic centres.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Area" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Versor" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="Material" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="cP_position" type="posV" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="cA_position" type="posV" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Generic dimensioned quantity -->
+  <xs:complexType name="Dimensioned">
+    <xs:annotation>
+      <xs:documentation>Generic dimensioned quantity</xs:documentation>
+    </xs:annotation>
+      <xs:simpleContent>
+        <xs:extension base="PositiveNumber">
+          <xs:attribute name="unit" use="required" type="xs:string" />
+        </xs:extension>
+      </xs:simpleContent>
+  </xs:complexType>
+  
+  <!-- Generic length -->
+  <xs:element name="Length">
+    <xs:annotation>
+      <xs:documentation> Generic length. The default unit is meters [m]. </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="PositiveNumber">
+          <xs:attribute name="unit" use="optional" default="m" type="LengthType" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Generic area -->
+  <xs:element name="Area">
+    <xs:annotation>
+      <xs:documentation> Generic area. The default unit is square meters [m2]. </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="PositiveNumber">
+          <xs:attribute name="unit" use="required" type="AreaType" />
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Generic angle -->
+  <xs:complexType name="Angle">
+    <xs:annotation>
+      <xs:documentation>Generic angle. The default unit is degrees (deg)</xs:documentation>
+    </xs:annotation>
+    <!--<xs:complexType>-->
+      <xs:simpleContent>
+        <xs:extension base="xs:double">
+          <xs:attribute name="unit" use="required" type="AngleType" />
+        </xs:extension>
+      </xs:simpleContent>
+    <!--</xs:complexType>
+  </xs:element>-->
+  </xs:complexType>
+  
+  <!-- Generic altitude -->
+  <xs:complexType name="Altitude">
+    <xs:annotation>
+      <xs:documentation> Generic altitude. The default unit is meters [m]. </xs:documentation>
+    </xs:annotation>
+      <xs:simpleContent>
+        <xs:extension base="xs:double">
+          <xs:attribute name="unit" use="optional" default="m" type="LengthType" />
+        </xs:extension>
+      </xs:simpleContent>
+  </xs:complexType>
+  
+  <!-- Moment of inertia -->
+  <xs:complexType name="MoI">
+    <xs:annotation>
+      <xs:documentation>Moment of inertia</xs:documentation>
+    </xs:annotation>
+    <!--<xs:complexType>-->
+      <xs:simpleContent>
+        <xs:extension base="PositiveNumber">
+          <xs:attribute name="unit" use="optional" default="kg*m2" type="InertiaType"/>
+        </xs:extension>
+      </xs:simpleContent>
+    <!--</xs:complexType>-->
+  </xs:complexType>
+  
+  <!-- Mass -->
+  <xs:complexType name="Mass">
+    <xs:annotation>
+      <xs:documentation>Spacecraft mass</xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+        <xs:extension base="PositiveNumber">
+          <xs:attribute name="unit" use="required" type="MassType"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  
+  <!-- Time -->
+  <!--<xs:complexType name="Time">
+    <xs:annotation>
+      <xs:documentation> Spacecraft mass. </xs:documentation>
+    </xs:annotation>
+    <xs:simpleContent>
+        <xs:extension base="PositiveNumber">
+          <xs:attribute name="name" use="optional"/>
+          <xs:attribute name="unit" use="required" type="TimeType"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>-->
+  
+  <!-- S/C properties -->
+  <xs:element name="SC_properties">
+    
+    <xs:annotation>
+      <xs:documentation> Spacecraft properties are specified in this section. The moments of inertia
+      are specified first. All of Ixx, Iyy, and Izz are required, in order. The products of inertia are
+      not required but, if present, must appear in order Ixy, Ixz, Iyz. Next, the mass of the spacecraft,
+      and the position of the centre of mass in spacecraft coordinates are specified. Then the drag and
+      radiation pressure coefficients. Finally the spacecraft magnetic dipole.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="InertiaMatrix" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="CoG" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Coefficients" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Areas" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="SC_dipole" type="posV" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="InertiaMatrix">
+    
+      <xs:complexType>
+        <xs:sequence>
+          <xs:element name="Ixx" type="MoI" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Iyy" type="MoI" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Izz" type="MoI" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Ixy" type="xs:double" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="Ixz" type="xs:double" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="Iyz" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+      <xs:attribute name="unit" type="InertiaType" use="required"/>  
+      </xs:complexType>
+     
+    </xs:element>
+    
+    <xs:element name="CoG">
+      <xs:complexType>
+        <xs:all>
+          <xs:element name="SC_mass" type="Mass" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="CoG_pos" type="posV" minOccurs="1" maxOccurs="1"/>
+        </xs:all>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="Coefficients">
+      <xs:complexType>
+        <xs:all>
+          <xs:element name="Cd" type="PositiveNumber" minOccurs="0" maxOccurs="1"/>
+          <xs:element name="Cr" type="PositiveNumber" minOccurs="0" maxOccurs="1"/>
+        </xs:all>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="Areas">
+      <xs:complexType>
+        <xs:all>
+          <xs:element name="Area_D" type="PositiveNumber" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Area_R" type="PositiveNumber" minOccurs="1" maxOccurs="1"/>
+        </xs:all>
+      </xs:complexType>
+    </xs:element>
+    
+  <!-- Simulation parameters -->
+  <xs:element name="SimParameters">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="durstep" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="ORB_initstate" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="ATT_initstate" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="simoptions" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+    
+    <xs:element name="durstep">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="simstep" type="xs:duration" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="simduration" type="xs:duration" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ORB_initstate">
+      <xs:complexType>
+        <xs:sequence>
+            <xs:element name="Initime" type="xs:dateTime" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Position" type="posV" minOccurs="1" maxOccurs="1"/>
+            <xs:element name="Velocity" type="velV" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ATT_initstate">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="phi" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="theta" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="psi" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="om_x" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="om_y" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="om_z" type="Angle" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="simoptions">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="initstate_in_RTN" type="xs:boolean" default="true" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="realtime" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>          
+          <xs:element name="realtime_wait" type="Dimensioned" minOccurs="1" maxOccurs="1"/>          
+          <xs:element name="ggrad_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>          
+          <xs:element name="mag_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="srp_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="drag_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element ref="nMAX" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="sunmoon_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Drag_Model" type="xs:string" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="SRP_Model" type="xs:string" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="AttitudeType" type="xs:string" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="attctrl_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="AttCtrlType" type="xs:string" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="orbctrl_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="OrbCtrlType" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    
+  <!-- Input files -->
+  <xs:element name="InputFiles">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="Orbit_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Attitude_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Data_path" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Planet_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="EOP_parameters" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="PCK_data" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Leap_second" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Gravity_model" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Atmospheric_model" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Magnetic_model" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+      <xs:attribute name="name" use="optional" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Output files -->
+  <xs:element name="OutputFiles">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="Orbit_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Attitude_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Sensor_output" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Torques" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Accelerations" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+      <xs:attribute name="name" use="optional" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Sensors and actuators -->
+  <xs:element name="SensorsActuators">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="subsystem_on" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="constparam" minOccurs="0" maxOccurs="unbounded"/>
+        <xs:element ref="auxparam" minOccurs="0" maxOccurs="unbounded"/>
+        <!--<xs:element name="constprm1" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="constprm2" type="xs:double" minOccurs="0" maxOccurs="1"/>-->
+        <xs:element ref="opslimit" minOccurs="0" maxOccurs="unbounded"/>
+        <!--<xs:element name="opslimits1" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="opslimits2" type="xs:double" minOccurs="0" maxOccurs="1"/>-->
+        <xs:element ref="accuracy" minOccurs="0" maxOccurs="unbounded"/>
+        <!--<xs:element name="accuracy_mean1" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="accuracy_std1" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="accuracy_mean2" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="accuracy_std2" type="xs:double" minOccurs="0" maxOccurs="1"/>-->
+        <xs:element name="SC2SYS_matrix" type="RotationMatrix_3x3" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Constant parameters -->
+  <xs:element name="constparam">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:double">
+          <xs:attribute name="name" use="required" type="xs:string"/>
+          <xs:attribute name="unit" use="required" type="xs:string"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Auxiliary parameters -->
+  <xs:element name="auxparam">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:double">
+          <xs:attribute name="name" use="required" type="xs:string"/>
+          <xs:attribute name="unit" use="required" type="xs:string"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Operational limits -->
+  <xs:element name="opslimit">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:double">
+          <xs:attribute name="name" use="required" type="xs:string"/>
+          <xs:attribute name="unit" use="required" type="xs:string"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Accuracy -->
+  <xs:element name="accuracy">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:double">
+          <xs:attribute name="name" use="required" type="xs:string"/>
+          <xs:attribute name="unit" use="required" type="xs:string"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- Attitude maneuvers -->
+  <xs:element name="Maneuvers">
+    <xs:annotation>
+      <xs:documentation>
+        Sequence of manually commanded attitude maneuvers.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Man" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="Man">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="maneuver_on" type="xs:boolean" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="init_time" type="xs:double" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="duration" type="xs:double" minOccurs="0" maxOccurs="1"/>
+        <xs:element name="ManVec" type="Vector" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+      <!--<xs:attribute name="name" use="required" type="ManType"/>-->
+      <!--<xs:attribute name="name" use="required" type="xs:string"/>-->
+      <xs:attribute name="name" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="WheelsManeuver"/>
+            <xs:enumeration value="MagnetoManeuver"/>
+            <xs:enumeration value="ThrustersManeuver"/>
+            <xs:enumeration value="ImpulsiveManeuverProp1_RTN"/>
+            <xs:enumeration value="ImpulsiveManeuverProp1_Body"/>
+            <xs:enumeration value="ContinuousManeuverProp1_RTN"/>
+            <xs:enumeration value="ContinuousManeuverProp1_Body"/>
+            <xs:enumeration value="ImpulsiveManeuverProp2_RTN"/>
+            <xs:enumeration value="ImpulsiveManeuverProp2_Body"/>
+            <xs:enumeration value="ContinuousManeuverProp2_RTN"/>
+            <xs:enumeration value="ContinuousManeuverProp2_Body"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  
+  <!--<xs:simpleType name="ManType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="WheelsManeuver"/>
+      <xs:enumeration value="MagnetoManeuver"/>
+      <xs:enumeration value="ThrustersManeuver"/>
+    </xs:restriction>
+  </xs:simpleType>-->
+  
+  <!-- ################################################# -->
+  <!-- ############ EVENTS COMPUTATION PARAMETERS ############# -->
+  <!-- ################################################# -->
+  <xs:element name="CompParameters">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="durstep" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Payload" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Spacecraft" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="Compoptions" minOccurs="1" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+    
+    <xs:element name="Payload">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="FOV_cross" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="FOV_along" type="Angle" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="Spacecraft">
+      <xs:complexType>
+        <xs:all>
+          <xs:element name="SC_start" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="SC_end" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="PL_start" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="PL_end" type="xs:positiveInteger" minOccurs="1" maxOccurs="1"/>
+        </xs:all>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="Compoptions">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="TGs_on" type="xs:boolean" default="true" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="GSs_on" type="xs:boolean" default="true" minOccurs="1" maxOccurs="1"/>          
+          <xs:element name="TGs_grid_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="Eclipse_on" type="xs:boolean" default="false" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+  
+  <!-- ################################## -->
+  <!-- ############ TARGETS ############# -->
+  <!-- ################################## -->
+  <xs:element name="TGs">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="TGs_grid" minOccurs="0" maxOccurs="1"/>
+        <xs:element ref="TGs_list" minOccurs="0" maxOccurs="1"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+    
+  <xs:element name="TGs_grid">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="minlon" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="maxlon" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="minlat" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="maxlat" type="Angle" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="gridstep" type="Angle" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+    
+  <xs:element name="TGs_list">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element ref="TG" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+    
+  <xs:element name="TG">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="lon" type="Angle" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="lat" type="Angle" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="alt" type="Altitude" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+      <xs:attribute name="name" type="xs:string" use="required"/>  
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- ########################################## -->
+  <!-- ############ GROUND STATIONS ############# -->
+  <!-- ########################################## -->
+  
+  <xs:element name="GSs">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element ref="GS" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="GS">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="lon" type="Angle" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="lat" type="Angle" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="alt" type="Altitude" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="minelev" type="Angle" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+      <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- ####################################################### -->
+  <!-- ################## EVENTS INPUT FILES ################# -->
+  <!-- ####################################################### -->
+  <xs:element name="EventsInputFiles">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="Orbit_ephemeris_path" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Orbit_ephemeris_rootname" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Data_path" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Planet_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="EOP_parameters" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="PCK_data" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="Leap_second" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+      <xs:attribute name="name" use="optional" type="xs:string" />
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- ####################################################### -->
+  <!-- ################## EVENTS OUTPUT FILES ################ -->
+  <!-- ####################################################### -->
+  <xs:element name="EventsOutputFiles">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="TG_contacts" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="GS_contacts" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="Eclipse_times" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      </xs:all>
+      <xs:attribute name="name" use="optional" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+  
+  
+  
+  
+  
+</xs:schema>
