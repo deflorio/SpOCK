@@ -223,6 +223,15 @@ int main(int argc, char *argv[])
           exit(EXIT_FAILURE);
           }
     
+    int matrows = loaded_ephem.rows();      
+    
+    double ephem_duration = loaded_ephem(matrows-1,1) - loaded_ephem(0,1);
+    if(SIM_DURATION > ephem_duration)
+        {
+        cerr << "\nThe duration of the simulation (<simduration>) cannot be longer than the duration of the input orbit ephemeris" << endl;
+        exit(EXIT_FAILURE);
+        }
+    
     //////////////////////////////////////////////////////////////
     /////////////// PROCESSING OF PARSED VARIABLES ///////////////
     //////////////////////////////////////////////////////////////
@@ -400,6 +409,13 @@ int main(int argc, char *argv[])
         
             init_attstateQ.segment(0,4) = RotationMatrix2Quaternion(ECItoBody);
             init_attstateQ.segment(4,3) = init_attstateRTN.segment(3,3);
+            //om_z = om_z + omega_orb;
+            //init_attstateQ.segment(4,3) = T_RTN2Body*init_attstateRTN.segment(3,3); // Angular velocity vector in body frame
+            
+            //// Euler angles with respect to ECI frame
+            //init_attstate.segment(0,3) = EulerAng;
+            //for(int i = 0; i < 3; i++) init_attstate(i) = mod(init_attstate(i),PI2);
+            //init_attstate.segment(3,3) = T_RTN2ECI*init_attstateRTN.segment(3,3);
             }
         else
             {
@@ -429,6 +445,9 @@ int main(int argc, char *argv[])
             init_attstateRTN(5) = om_z;
             
             cout << "\nInitial attitude state (RTN): phi = " << phi*RAD2DEG << " theta = " << theta*RAD2DEG << " psi = " << psi*RAD2DEG << " deg," << " om_x = " << om_x*RAD2DEG << " om_y = " << om_y*RAD2DEG << " om_z = " << om_z*RAD2DEG << " deg/s\n" << endl;
+        
+            //for(int i = 0; i < 3; i++) init_attstateRTN(i) = mod(init_attstateRTN(i)*DEG2RAD,PI2);
+            //for(int i = 3; i < 6; i++) init_attstateRTN(i) = init_attstateRTN(i)*DEG2RAD;
         
             T_ECI2RTN = ECI2RTN_Matrix(current_orbstate);
             T_RTN2ECI = T_ECI2RTN.transpose();
@@ -480,7 +499,9 @@ int main(int argc, char *argv[])
     if(SIM_DURATION/3600.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/60.0) + " minutes";
     
     string pert_txt = "Simulation duration: " + sim_duration_string + "\n\nPERTURBATIONS\n\n";
-    
+    //if(HarrisPriester_on) pert_txt = pert_txt + "Atmospheric drag: " + hr_atm_name + "\n";
+    //if(Jacchia_on) pert_txt = pert_txt + "Atmospheric drag: " + j_atm_name + "\n";
+    //if(DTM2000_on) pert_txt = pert_txt + "Atmospheric drag: " + dtm_atm_name + "\n";
     if(ggrad_on) pert_txt = pert_txt + "Gravity gradient\n";
     if(mag_on) pert_txt = pert_txt + "Earth's magnetic field: " + magneticfield + " model\n";
     if(drag_on) pert_txt = pert_txt + "Panels atmospheric drag model, Atmosphere: " + atmosphere + " model\n";
@@ -622,6 +643,9 @@ int main(int argc, char *argv[])
     for(int i = 0 ; i < 2; i++) SunRaw_d(i) = round(camera_out(i));
     SunRaw = SunRaw_d.cast<int>();
     
+    //camera_out = SunCamera.Output(ini_GPStime, stateQ.segment(0,4), posECI);
+    //SunRaw = ( camera_out.segment(0,2) ).cast<int>();
+    
     unsigned int SunBusy = (unsigned int)camera_out(2);
     unsigned int SunResult = (unsigned int)camera_out(3);
     
@@ -632,6 +656,9 @@ int main(int argc, char *argv[])
     camera_out = EarthCamera.Output(ini_GPStime, stateQ.segment(0,4), posECI);
     for(int i = 0 ; i < 2; i++) NadirRaw_d(i) = round(camera_out(i));
     NadirRaw = NadirRaw_d.cast<int>();
+    
+    //camera_out = EarthCamera.Output(ini_GPStime, stateQ.segment(0,4), posECI);
+    //NadirRaw = ( camera_out.segment(0,2) ).cast<int>();
     
     unsigned int NadirBusy = (unsigned int)camera_out(2);
     unsigned int NadirResult = (unsigned int)camera_out(3);
@@ -648,6 +675,8 @@ int main(int argc, char *argv[])
     for(int i = 0 ; i < 3; i++) MagRaw_d(i) = round(MagRaw_d(i)*1E-3); // Before casting to unsigned integer we have to round because the casting to integer rounds always down. 1E-3: conversion from nanotesla to microtesla
     MagRaw = MagRaw_d.cast<int>(); // Cast type of Eigen library variable
     
+    // MagRaw = ( Magnetometer1.Output(ini_GPStime, stateQ.segment(0,4), posECEF) ).cast<int>();
+    
     // Rate sensor
     VectorNd<3> RateRaw_d;
     VectorNi<3> RateRaw;
@@ -655,6 +684,8 @@ int main(int argc, char *argv[])
     RateRaw_d = RateSensor.Output(ini_GPStime, stateQ, current_orbstate);
     for(int i = 0 ; i < 3; i++) RateRaw_d(i) = round(RateRaw_d(i)*1E3); // 1E3: conversion from deg to millideg
     RateRaw = RateRaw_d.cast<int>();
+    
+    // RateRaw = ( RateSensor.Output(ini_GPStime, stateQ, current_orbstate) ).cast<int>();
     
     // Star sensors
     VectorNi<3> Star1Camera = VectorNi<3>::Zero();
@@ -749,6 +780,7 @@ int main(int argc, char *argv[])
     sensorTCs SensorReadings;
     sensorTCs* sensorTCs_ptr = &SensorReadings;
     
+    
     //////////////////////////////////////////////////////
     ///////////////// SOLAR PANELS OUTPUT ///////////////
     /////////////////////////////////////////////////////
@@ -771,6 +803,25 @@ int main(int argc, char *argv[])
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////// ATTITUDE INITIALIZATION /////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //
+    //VectorNd<12> orbstateECI_ECEF;
+    //orbstateECI_ECEF << current_orbstate, current_orbstateECEF;
+    //    
+    //SC_Attitude.ggrad_on = T_model[0];
+    //SC_Attitude.mag_on = T_model[1];
+    //SC_Attitude.drag_on = T_model[2];
+    //SC_Attitude.srp_on = T_model[3];
+    //
+    //SC_Attitude.Setup(SC_prms,envmodels_paths);
+    //SC_Attitude.Init(ini_GPStime, init_attstate, orbstateECI_ECEF);
+    //SC_Attitude.ForceModelsSetup();
+    //  
+    //double eps_abs = 1E-8;
+    //double eps_rel = 0.0;
+    //double factor_x = 0.0;
+    //double factor_dxdt = 0.0;
+    //
+    //SC_Attitude.StepperSetup(eps_abs, eps_rel, factor_x, factor_dxdt);
     
     cout << "Start\n" << endl;
     //chrono::time_point<chrono::high_resolution_clock> forstart, forend;
@@ -1174,6 +1225,17 @@ int main(int argc, char *argv[])
         attitudeRTN_state_vec(0) = GPStime;
         attitudeRTN_state_vec.segment(1,6) = attstateRTN;
         
+        //Vec3d euler_angECI = EulerAngles321(ECItoBody);
+        //cout << "\nEuler angles ECI: " << mod(euler_angECI(0),PI2)*RAD2DEG << "   " << mod(euler_angECI(1),PI2)*RAD2DEG << "   " << mod(euler_angECI(2),PI2)*RAD2DEG << "   " << stateQ(4)*RAD2DEG << "   " << stateQ(5)*RAD2DEG << "   " << stateQ(6)*RAD2DEG << endl;
+        
+        //attitude_state.segment(3,6) = fmod(attitude_state.segment(3,6), PI2);
+        
+        //stateECEF_all(step) = t+1; stateECEF_all(arr_len+step) = loaded_ephem(step,1); stateECEF_all(2*arr_len+step) = loaded_ephem(step,2); stateECEF_all(3*arr_len+step) = stateECEF(0); stateECEF_all(4*arr_len+step) = stateECEF(1); stateECEF_all(5*arr_len+step) = stateECEF(2); stateECEF_all(6*arr_len+step) = stateECEF(3); stateECEF_all(7*arr_len+step) = stateECEF(4); stateECEF_all(8*arr_len+step) = stateECEF(5);
+        //
+        //ECEF_state_file << setprecision(20) <<t+1<<","<<loaded_ephem(step,1)<<","<<loaded_ephem(step,2)<<","<<stateECEF(0)<<","<<stateECEF(1)<<","<<stateECEF(2)<<","<<stateECEF(3)<<","<<stateECEF(4)<<","<<stateECEF(5)<< endl;
+        
+        //Tenv = Torque_env.segment(12,3);
+        
         Mat3x3d T_Body2RTN = T_RTN2Body.transpose();
         
         TenvRTN.segment(0,3) = T_Body2RTN*Torque_env.segment(0,3);
@@ -1181,6 +1243,22 @@ int main(int argc, char *argv[])
         TenvRTN.segment(6,3) = T_Body2RTN*Torque_env.segment(6,3);
         TenvRTN.segment(9,3) = T_Body2RTN*Torque_env.segment(9,3);
         TenvRTN.segment(12,3) = T_Body2RTN*Torque_env.segment(12,3);
+        
+        //Torques(step,0) = GPStime;
+        //Torques.block<1,3>(step,1) = Tenv;
+        //Torques.block<1,3>(step,4) = TenvRTN;
+        //Torques.block<1,3>(step,7) = Tm;
+        //Torques.block<1,3>(step,10) = Tw;
+        //Torques.block<1,3>(step,13) = T_act;
+        
+        //////////////////////////// Vector for csv file /////////////////////////
+        
+        //Torques(0) = GPStime; //loaded_ephem(0,1) + (loaded_ephem(0,2))*1E-6;
+        //Torques.segment(1,3) = Torque_env.segment(12,3);;
+        //Torques.segment(4,3) = TenvRTN;
+        //Torques.segment(7,3) = Tm;
+        //Torques.segment(10,3) = Tw;
+        //Torques.segment(13,3) = T_act;
         
         //////////////////////////// Solar panels output /////////////////////////
         
@@ -1194,6 +1272,18 @@ int main(int argc, char *argv[])
         panels_output.segment(3,2) = panel2_out.segment(0,2);
         panels_output.segment(5,2) = panel3_out.segment(0,2);
         panels_output(7) = panel1_out(2);
+        
+        //step++;
+        
+        //forend = chrono::high_resolution_clock::now();
+        
+        //chrono::duration<double,milli> elapsed_millisecs = forend - forstart;
+        //cout << "elapsed_secs: " << elapsed_millisecs.count()*1.0E-3 << endl;
+        
+        //int dur_mill = realtime_wait*1E3; //SIM_STEP*1E3 - (int)elapsed_millisecs.count();
+        ////boost::asio::deadline_timer asio_timer(io, boost::posix_time::seconds(SIM_STEP - elapsed_secs));
+        ////asio_timer.wait();
+        //if(realtime) this_thread::sleep_for( chrono::milliseconds(dur_mill) );
         
         //////////////////////////// Write csv files //////////////////////////////
         
@@ -1305,3 +1395,352 @@ int main(int argc, char *argv[])
   
   } // End of main()
   
+  
+  ////////////////////////////////////////////////////////
+  /////////////////////// OLD STUFF //////////////////////
+  ////////////////////////////////////////////////////////
+  
+  
+    //////////////////////////// Write mat file //////////////////////////////    
+    //write_matfile(attitude_state, cols, "stateATTITUDE", mat_attfile_name.c_str());
+    
+  
+    //    #ifdef USE_MATLAB
+    //	
+    //		string matfilename = "ephem_row.mat";
+    //		Vec2matfile(matfilename.c_str(), ephem_row);
+    //	
+    //	#endif
+  
+  //string ECEFfilename = "stateECEF_new.mat";
+  //write_matfile(stateECEF_all, cols, "stateECEF_new", ECEFfilename.c_str());
+  
+  //planetephemeris = "data/cspice/de421.bsp";
+        //eop = "data/cspice/earth_000101_170401_170108.bpc";
+        //pck_data = "data/cspice/pck00010.tpc";
+        //leapsecond = "data/cspice/naif0011.tls";
+        
+  
+    // Magnetic field model
+    //magneticfield = "data/magneticfield/igrf11.wmm";
+    //magn_model = "igrf11";
+    //
+    //gravityfield = " ";
+    //atmosphere = " ";
+    
+    // Models paths
+    
+    
+    //bool initstate_in_RTN;
+    //bool realtime;
+    
+    //initstate_in_RTN = true;//false;//
+    //realtime = false;//true;//
+    // Simulation step
+    //double SIM_STEP;
+    //SIM_STEP = 1.0;
+    // Overall duration for extrapolation
+    //int SIM_DURATION;//15.0*(1.5*3600.0);
+    //SIM_DURATION = 1.0*86400.0;//15.0*(1.5*3600.0);
+    
+    // Moments of inertia matrix. Moment of inertia taken at the center of mass and aligned with the body-fixed frame [kg*m^2]
+    // static Mat3x3d MoI = Mat3x3d::Zero();
+    
+    //MoI(0,0) = 0.03; // Ixx
+    //MoI(1,1) = 0.03; // Iyy
+    //MoI(2,2) = 0.008; // Izz
+    
+    //// Spacecraft magnetic dipole moment vector
+    //static Vec3d Mdip;
+    
+    //Mdip(0) = 5.0e-4; // x component in body-fixed frame
+    //Mdip(1) = 0.0; // y component in body-fixed frame
+    //Mdip(2) = 5.0e-4; // z component in body-fixed frame
+    
+    //// Drag coefficient
+    //static double SC_Cd;
+    //// SRP coefficient
+    //static double SC_Cr;
+    
+    //SC_Cd = 2.5;
+    //// SRP coefficient
+    //SC_Cr = 1.2;
+    
+    
+    //Face F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus;
+    
+    //F_Xplus.Area = 0.03*2 + 0.03*cos(PI/4.0);   F_Xplus.n = spacecraft::Normals.at("+X");   F_Xplus.Material = "Solar Array";   F_Xplus.cP << 0.05, 0.1, 0.0;   F_Xplus.cA << 0.05, 0.1, 0.0;
+    //F_Xminus.Area = 0.03*2 + 0.03*cos(PI/4.0);   F_Xminus.n = spacecraft::Normals.at("-X");   F_Xminus.Material = "MLI";   F_Xminus.cP << -0.05, 0.1, 0.0;   F_Xminus.cA << -0.05, 0.1, 0.0;
+    //
+    //F_Yplus.Area = 0.03*cos(PI/4.0);   F_Yplus.n = spacecraft::Normals.at("+Y");   F_Yplus.Material = "Solar Array";   F_Yplus.cP << 0.0, 0.75, 0.0;   F_Yplus.cA << 0.0, 0.75, 0.0;
+    //F_Yminus.Area = 0.03;   F_Yminus.n = spacecraft::Normals.at("-Y");   F_Yminus.Material = "MLI";   F_Yminus.cP << 0.0, -0.05, 0.0;   F_Yminus.cA << 0.0, -0.05, 0.0;
+    //
+    //F_Zplus.Area = 0.01;   F_Zplus.n = spacecraft::Normals.at("+Z");   F_Zplus.Material = "MLI";   F_Zplus.cP << 0.0, 0.0, 0.15;   F_Zplus.cA << 0.0, 0.0, 0.15;
+    //F_Zminus.Area = 0.01;   F_Zminus.n = spacecraft::Normals.at("-Z");   F_Zminus.Material = "MLI";   F_Zminus.cP << 0.0, 0.0, -0.15;   F_Zminus.cA << 0.0, 0.0, -0.15;
+    
+    
+    
+    //double phi, theta, psi, om_x, om_y, om_z;
+    
+    //phi = 0.0; theta = 90.0; psi = 0.0; // [deg]           
+    //om_x = 0.0; om_y = 0.0; om_z = 0.0; // [deg/s]
+    
+    
+    
+    ///////////////////////////////////////////////////////////////////////////                    
+    /////////////////////////// PERTURBATION TORQUES //////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    //// Gravity gradient torque
+    //static bool ggrad_on;//true;//
+    //// Gravitational field
+    ////string gravfield_name = "eigen-6s.gfc";
+    ////static const int degree = 70;
+    ////static const int order = 70;
+    //
+    //// Magnetic torque
+    //static bool mag_on;//true;//
+    //
+    //// Atmospheric drag torque
+    //static bool drag_on;//true;//
+    //
+    //// Atmospheric drag
+    //static bool HarrisPriester_on;//true;//
+    //static bool Jacchia_on;//true;//
+    //static bool DTM2000_on;//true;//
+    //
+    ////string hr_atm_name, j_atm_name, dtm_atm_name;
+    ////if(HarrisPriester_on) hr_atm_name = "Harris-Priester";
+    ////if(Jacchia_on) j_atm_name = "Jacchia-Bowman 2006";
+    ////if(DTM2000_on) dtm_atm_name = "DTM2000";
+    //
+    //// Solar radiation pressure torque
+    //static bool srp_on;//false;//
+    
+    
+    // Gravity gradient torque
+    //ggrad_on = true;//false;//
+    // Gravitational field
+    //string gravfield_name = "eigen-6s.gfc";
+    //static const int degree = 70;
+    //static const int order = 70;
+    
+    // Magnetic torque
+    //mag_on = true;//false;//
+    
+    // Atmospheric drag torque
+    //drag_on = false;//true;//
+    
+    //// Atmospheric drag
+    //HarrisPriester_on = false;//true;//
+    //Jacchia_on = false;//true;//
+    //DTM2000_on = false;//true;//
+    //
+    //string hr_atm_name, j_atm_name, dtm_atm_name;
+    //if(HarrisPriester_on) hr_atm_name = "Harris-Priester";
+    //if(Jacchia_on) j_atm_name = "Jacchia-Bowman 2006";
+    //if(DTM2000_on) dtm_atm_name = "DTM2000";
+    
+    // Solar radiation pressure torque
+    //srp_on = false;//true;//
+    
+    //VectorNd<2> opslimits(0.0, 0.0);
+    //Vec4d accuracy = Vec4d::Zero();
+    //VectorNd<2> constprm(0.0, 0.0);
+    //// Sun camera
+    //SYS_params Sensor_prm;
+    //
+    //Sensor_prm.Name = "Sun Camera";
+    //Sensor_prm.SC2SYS << 0.0,  0.0, -1.0,     // Transformation matrix from SC body-fixed frame subsystem frame
+    //                    0.0,  1.0,  0.0,
+    //                    1.0,  0.0,  0.0;
+    //opslimits(0) = 180.0*DEG2RAD; // Camera FOV [rad]
+    //Sensor_prm.OPS_limits = opslimits;
+    //accuracy << 0.0, 0.2*DEG2RAD, 0.0, 0.0; // Accuracy (mean and standard deviation) [rad]
+    //Sensor_prm.Accuracy = accuracy;
+    //
+    //EARTHSUNSENS SunCamera(Sensor_prm);
+    ////cout << "Sono qui" << endl;
+    //// Earth camera
+    //Sensor_prm.Name = "Earth Camera";
+    //Sensor_prm.SC2SYS << 0.0,  0.0, -1.0,
+    //                    0.0, -1.0,  0.0,
+    //                   -1.0,  0.0,  0.0;
+    //opslimits(0) = 180.0*DEG2RAD; // Camera FOV [rad]                   
+    //Sensor_prm.OPS_limits = opslimits;
+    //accuracy << 0.0, 0.2*DEG2RAD, 0.0, 0.0;
+    //Sensor_prm.Accuracy = accuracy;
+    //
+    //EARTHSUNSENS EarthCamera(Sensor_prm);
+    //
+    //// Coarse Sun sensor (CSS)
+    //Sensor_prm.Name = "Coarse Sun Sensor";
+    //constprm << 290.0, 8.0; // Nominal current at zero Sun incidence angle and sensor signal noise
+    //Sensor_prm.ConstPrm = constprm;
+    //accuracy << 0.0, 10.0*DEG2RAD, 0.0, 0.0; // [rad]
+    //Sensor_prm.Accuracy = accuracy;
+    //
+    //EARTHSUNSENS CSS(Sensor_prm);
+    //CSS.Init();
+    //
+    //// Magnetometer (deployed)
+    //Sensor_prm.Name = "Magnetometer";
+    //Sensor_prm.SC2SYS << 0.0,  0.0, -1.0,     // Transformation matrix from SC body-fixed frame subsystem frame
+    //                    0.0, -1.0,  0.0,
+    //                    1.0,  0.0,  0.0;
+    //accuracy << 0.0, 50.0, 0.0, 0.0; // [Nanotesla]                   
+    //Sensor_prm.Accuracy = accuracy;
+    //Sensor_prm.SpaceEnv.magneticfield = envmodels_paths.magneticfield;
+    //
+    //MAGNETO Magnetometer(Sensor_prm);
+    //Magnetometer.Init();
+    //
+    //// Magnetometer (stowed)
+    //Sensor_prm.SC2SYS << 0.0, -1.0,  0.0,     // Transformation matrix from SC body-fixed frame subsystem frame
+    //                    0.0,  0.0,  1.0,
+    //                    1.0,  0.0,  0.0; 
+    //
+    //MAGNETO MagnetometerStowed(Sensor_prm);
+    //MagnetometerStowed.Init();
+    //
+    //// Rate sensor
+    //Sensor_prm.Name = "Rate Sensor";
+    //accuracy << 0.007*DEG2RAD, 0.015*DEG2RAD, 0.0, 0.0; // Accuracy (mean (bias instability) and standard deviation) [rad]
+    //Sensor_prm.Accuracy = accuracy;
+    //
+    //MRWHEEL RateSensor(Sensor_prm);
+    //
+    //// Magnetic torquer
+    //Sensor_prm.Name = "Magnetorquer";
+    //Sensor_prm.SC2SYS << 1.0,  0.0,  0.0,     // Transformation matrix from SC body-fixed frame to subsystem frame
+    //                    0.0,  1.0,  0.0,
+    //                    0.0,  0.0,  1.0;
+    //constprm(0) = 0.24/800;  // Conversion factor from ontime to dipole produced by a magnetic torquer ( m = ontime2dipole*ontime ) [A*m^2/ms]                    
+    //Sensor_prm.ConstPrm = constprm;
+    //accuracy << 0.0, 0.0012, 0.0, 0.0; // Accuracy (mean and standard deviation) [A*m^2]
+    //Sensor_prm.Accuracy = accuracy;
+    //
+    //MAGNETO Magnetorquer(Sensor_prm);
+    //Magnetorquer.Init();
+    //Magnetorquer.subsystem_on = false;//true;//
+    //
+    //// Reaction/momentum wheels
+    //Sensor_prm.Name = "Reaction/Momentum Wheels";
+    //Sensor_prm.SC2SYS << 1.0,  0.0,  0.0,     // Transformation matrix from SC body-fixed frame to subsystem frame
+    //                    0.0,  1.0,  0.0,
+    //                    0.0,  0.0,  1.0;
+    //constprm(0) = 2.029E-6;  // Moment of inertia of each wheel (assuming they are equal) [kg*m^2]
+    //Sensor_prm.ConstPrm = constprm;
+    //accuracy << 0.0, 1.0, 0.0, 1E-6; // Accuracy (mean and standard deviation) of wheels speed measurements [RPM] and torque generated by wheels [Nm]
+    //Sensor_prm.Accuracy = accuracy;
+    //
+    //MRWHEEL Wheels(Sensor_prm);
+    //Wheels.Init();
+    //Wheels.subsystem_on = false;//true;//
+    
+    
+    
+    //Orbit_ephemeris = "data/orbitephemeris/Orekit_Real_575km_7days_ECI-ECEF_1s.csv";  
+    //  
+    //  
+    //// Load orbit ephemerides
+    //Eigen::MatrixXd loaded_ephem;
+    //loaded_ephem = read_csvfile(Orbit_ephemeris,15);
+      
+    //loaded_ephem = read_csvfile("data/orbitephemeris/Orekit_Real_575km_7days_ECI-ECEF_1s.csv",15);
+      
+    //for(int i = 0; i < 3; i++) { phithetapsi_ECI(i) = mod(phithetapsi_ECI(i),PI2); phithetapsi_ECI(i) = phithetapsi_ECI(i)*RAD2DEG; }
+    
+    //cout << init_attstate(0)*RAD2DEG << "   " << init_attstate(1)*RAD2DEG << "   " << init_attstate(2)*RAD2DEG << "   " << init_attstate(3)*RAD2DEG << "   " << init_attstate(4)*RAD2DEG << "   " << init_attstate(5)*RAD2DEG << endl;
+    
+    
+    // Quaternion state + angular velocity vector to be used by the sensor and actuator objects
+    //VectorNd<7> stateQ = VectorNd<7>::Zero();
+    //
+    //stateQ.segment(0,4) = RotationMatrix2Quaternion(ECItoBody);
+    //stateQ(4) = om_x;
+    //stateQ(5) = om_y;
+    //stateQ(6) = om_z;
+    
+    /////////////////////////////////////////////////////////////////////////                    
+    ///////////////////////// PERTURBATION TORQUES //////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    
+    //// Gravity gradient torque
+    //ggrad_on = false;//true;//
+    //// Gravitational field
+    ////string gravfield_name = "eigen-6s.gfc";
+    ////static const int degree = 70;
+    ////static const int order = 70;
+    //
+    //// Magnetic torque
+    //mag_on = false;//true;//
+    //
+    //// Atmospheric drag torque
+    //drag_on = false;//true;//
+    //
+    //// Atmospheric drag
+    //HarrisPriester_on = false;//true;//
+    //Jacchia_on = false;//true;//
+    //DTM2000_on = false;//true;//
+    //
+    //string hr_atm_name, j_atm_name, dtm_atm_name;
+    //if(HarrisPriester_on) hr_atm_name = "Harris-Priester";
+    //if(Jacchia_on) j_atm_name = "Jacchia-Bowman 2006";
+    //if(DTM2000_on) dtm_atm_name = "DTM2000";
+    //
+    //// Solar radiation pressure torque
+    //srp_on = true;//false;//  
+    
+    //ofstream state_prop_file;
+    //state_prop_file.open ("state_prop.dat");
+    
+    //int arr_len = floor(SIM_DURATION/SIM_STEP) + 1;
+    //
+    //Eigen::VectorXd attitude_state;
+    //int vec_length = arr_len*cols+1;
+    //attitude_state.resize(vec_length);
+    //int step = 0;
+    //ephem(0) = t0_week; ephem(arr_len) = t0_secs; ephem(2*arr_len) = y0(0); ephem(3*arr_len) = y0(1); ephem(4*arr_len) = y0(2); ephem(5*arr_len) = y0(3); ephem(6*arr_len) = y0(4);ephem(7*arr_len) = y0(5);
+    //
+    //int step = 1;
+    
+    //////////////////////////// Execution ////////////////////////////
+    
+    // Propagator initialization
+    //double ini_GPStime, GPStime;
+    //Vector6d current_orbstate = Vector6d::Zero();
+    //Vec3d posECI = Vec3d::Zero();
+    //Vector6d current_orbstateECEF = Vector6d::Zero();
+    //Vec3d posECEF = Vec3d::Zero();
+    //Vector6d current_orbstate = Vector6d::Zero();
+    //Vector6d current_orbstateECEF = Vector6d::Zero();
+    //
+    //VectorNd<15> ephem_row = VectorNd<15>::Zero();
+    ////cout << loaded_ephem(0,0) << loaded_ephem(0,1) << loaded_ephem(0,2) << loaded_ephem(0,3) << endl;
+    ////cout << "Sono qui" << endl;
+    //ephem_row = loaded_ephem.row(0);
+    //ini_GPStime = ephem_row(1) + ephem_row(2)*1.0E-6;
+    //current_orbstate = ephem_row.segment(3,6);
+    //posECI = current_orbstate.segment(0,3);
+    //
+    //current_orbstateECEF = ephem_row.segment(9,6);
+    //posECEF = current_orbstateECEF.segment(0,3);
+    //step = 1;
+    
+            ////////////////////////////////////////////////////////////////////////////////////
+            
+            //Eigen::VectorXd stateECEF_all;
+            //stateECEF_all = attitude_state;
+            //Vector6d stateECEF;
+    
+    
+    /////////////////////// Vector for mat file /////////////////////////
+    //int arr_len = floor(SIM_DURATION/SIM_STEP) + 1;
+    //
+    //Eigen::VectorXd attitude_state;
+    //int vec_length = arr_len*cols+1;
+    //attitude_state.resize(vec_length);
+    //
+    //attitude_state(0) = 0; attitude_state(arr_len+0) = loaded_ephem(0,1); attitude_state(2*arr_len+0) = loaded_ephem(0,2); attitude_state(3*arr_len+0) = init_attstate(0); attitude_state(4*arr_len+0) = init_attstate(1); attitude_state(5*arr_len+0) = init_attstate(2); attitude_state(6*arr_len+0) = init_attstate(3); attitude_state(7*arr_len+0) = init_attstate(4); attitude_state(8*arr_len+0) = init_attstate(5);
+        

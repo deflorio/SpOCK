@@ -1,3 +1,4 @@
+input/SimulationParameters/*.txt
 input/AttitudeEphemerides/*.csv
 input/OrbitEphemerides/*.csv
 output/AttitudeEphemerides/*.csv
@@ -7,8 +8,13 @@ output/GS_Contacts/*.csv
 output/OrbitEphemerides/*.csv
 output/Sensors/*.csv
 output/TG_Contacts/*.csv
+data/cspice/*.bsp
 bin/*
 !bin/emptyfile.txt
 objs/
+extlib/Atmosphere/NRLMSISE-00/FORTRAN/*.o
+extlib/Atmosphere/JB2008/*.o
+extlib/MagneticField/IGRF/FORTRAN/*.o
+extlib/MagneticField/WMM/FORTRAN/*.o
 doc/UserGuide/doxydoc/html/
 doc/UserGuide/doxydoc/latex/

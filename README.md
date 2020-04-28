@@ -11,27 +11,21 @@ GNU make (sudo apt-get install build-essential)
 
 gcc $>=$ 7 supporting -std=c++17 (sudo apt-get install g++)
 
-Libraries usually not included by default in Linux Ubuntu distribution: libboost-all-dev, libxerces-c-dev, xsdcxx, gfortran, freeglut3, freeglut3-dev, mesa-utils, libsdl2*, libsoil*, doxygen, graphviz
+Libraries usually not included by default in Linux Ubuntu distribution: libboost-all-dev, libxerces-c-dev, xsdcxx, gfortran, freeglut3, freeglut3-dev, mesa-utils, libsdl2*, libsoil*, doxygen, graphviz. These libraries will be installed automatically during the installation process.
 
-After this operations, 1125 MB of addtional disk space will be used.
+For the installation of these libraries, 1125 MB of addtional disk space will be used.
 
 ---
 
 ## Installation
 
-In root directory: make install (if it is the first compilation)
-	
-cd extlib/Atmosphere/JB2008, gfortran -c JB2008.f -o JB2008.o , gfortran -c Readfiles.f -o Readfiles.o
-
-cd extlib/Atmosphere/NRLMSISE-00/FORTRAN, gfortran -c -std=legacy nrlmsise00\_sub.for -o nrlmsise00\_sub.o
-
-cd extlib/MagneticField/IGRF/FORTRAN, gfortran -c igrf13.f -o igrf13.o
-
-cd extlib/MagneticField/WMM/FORTRAN, gfortran -c geomag.for -o geomag.o
-
-Download file de438.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de438.bsp is too big for the software repository)
-
 In root directory:
+
+make install_libs (if it is the first compilation)
+
+make install_atmo
+
+make install_mag
 
 make orbit
 
@@ -40,6 +34,8 @@ make attitude
 make events
 
 All the executable will be generated in the 'bin' folder. Command 'make clean' will delete all executables in 'bin' folder and folder 'obj'.
+
+Download file de438.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de438.bsp is too big for the repository)
 
 ---
 

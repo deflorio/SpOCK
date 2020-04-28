@@ -139,7 +139,20 @@ ramdisk:
 	sudo mkdir $(RAMDISK_DIR)
 	sudo mount -t tmpfs -o size=512m tmpfs $(RAMDISK_DIR)
 
-install:
+install_libs:
 	sudo apt-get install libboost-all-dev libxerces-c-dev xsdcxx gfortran freeglut3 freeglut3-dev libxi-dev libxmu-dev mesa-utils libsdl2* libsoil* doxygen graphviz
+	
+install_atmo:
+	rm -f extlib/Atmosphere/NRLMSISE-00/FORTRAN/*.o
+	rm -f extlib/Atmosphere/JB2008/*.o
+	gfortran -c -std=legacy extlib/Atmosphere/NRLMSISE-00/FORTRAN/nrlmsise00_sub.for -o extlib/Atmosphere/NRLMSISE-00/FORTRAN/nrlmsise00_sub.o
+	gfortran -c extlib/Atmosphere/JB2008/JB2008.f -o extlib/Atmosphere/JB2008/JB2008.o
+	gfortran -c extlib/Atmosphere/JB2008/Readfiles.f -o extlib/Atmosphere/JB2008/Readfiles.o
+	
+install_mag:
+	rm -f extlib/MagneticField/IGRF/FORTRAN/*.o
+	rm -f extlib/MagneticField/WMM/FORTRAN/*.o
+	gfortran -c extlib/MagneticField/IGRF/FORTRAN/igrf13.f -o extlib/MagneticField/IGRF/FORTRAN/igrf13.o
+	gfortran -c extlib/MagneticField/WMM/FORTRAN/geomag.for -o extlib/MagneticField/WMM/FORTRAN/geomag.o
 
 .PHONY: test deploy all ramdisk
