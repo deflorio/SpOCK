@@ -8,6 +8,7 @@ output/OrbitEphemerides/*.csv
 output/Sensors/*.csv
 output/TG_Contacts/*.csv
 bin/*
+!bin/emptyfile.txt
 objs/
 doc/UserGuide/doxydoc/html/
 doc/UserGuide/doxydoc/latex/

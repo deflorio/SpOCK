@@ -183,7 +183,7 @@
         <Orbit_ephemeris>/your_path/SpOCK/output/OrbitEphemerides/P00_S01_RO_3days_10s_20190409_100115_GGM02C.csv</Orbit_ephemeris>
         <Attitude_ephemeris>/your_path/SpOCK/output/AttitudeEphemerides/Attitude.csv</Attitude_ephemeris>
         <Data_path>/your_path/SpOCK/data</Data_path>
-        <Planet_ephemeris>de430.bsp</Planet_ephemeris>
+        <Planet_ephemeris>de438.bsp</Planet_ephemeris>
         <EOP_parameters>earth_000101_200613_200322.bpc</EOP_parameters>
         <PCK_data>pck00010.tpc</PCK_data>
         <Leap_second>naif0012.tls</Leap_second>

@@ -7,11 +7,13 @@ The Spacecraft Orbital Computations Kit (SpOCK) is an open source tool for space
 
 Linux Ubuntu 18 or higher
 
-GNU make (build-essential package)
+GNU make (sudo apt-get install build-essential)
 
-gcc $>=$ 7 supporting -std=c++17
+gcc $>=$ 7 supporting -std=c++17 (sudo apt-get install g++)
 
 Libraries usually not included by default in Linux Ubuntu distribution: libboost-all-dev, libxerces-c-dev, xsdcxx, gfortran, freeglut3, freeglut3-dev, mesa-utils, libsdl2*, libsoil*, doxygen, graphviz
+
+After this operations, 1125 MB of addtional disk space will be used.
 
 ---
 
@@ -27,11 +29,23 @@ cd extlib/MagneticField/IGRF/FORTRAN, gfortran -c igrf13.f -o igrf13.o
 
 cd extlib/MagneticField/WMM/FORTRAN, gfortran -c geomag.for -o geomag.o
 
-Download file de430.bsp from SPICE library kernels ftp and put it into folder data/cspice (file de430.bsp is too big for the software repository)
+Download file de438.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de438.bsp is too big for the software repository)
 
-In root directory: make orbit, make attitude, make events
+In root directory:
+
+make orbit
+
+make attitude
+
+make events
 
 All the executable will be generated in the 'bin' folder. Command 'make clean' will delete all executables in 'bin' folder and folder 'obj'.
+
+---
+
+## Configuration
+
+Put correct inputs/outputs paths in input files simparam_sample.xml and eventsparam_sample.xml
 
 ---
 

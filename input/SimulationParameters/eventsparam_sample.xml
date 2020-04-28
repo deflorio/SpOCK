@@ -144,7 +144,7 @@
         <Orbit_ephemeris_path>/your_path/SpOCK/output/OrbitEphemerides</Orbit_ephemeris_path>
         <Orbit_ephemeris_rootname>P00_S01_RO_3days_10s_20190409_100115_GGM02C.csv</Orbit_ephemeris_rootname> <!-- If a constellation is considered, this is the orbit ephemeris name without the prefix S#-P#_, otherwise this is the complete name of the spacecraft ephemeris (see tag <Spacecraft>)-->
         <Data_path>/your_path/SpOCK/data</Data_path>
-        <Planet_ephemeris>de430.bsp</Planet_ephemeris>
+        <Planet_ephemeris>de438.bsp</Planet_ephemeris>
         <EOP_parameters>earth_000101_200613_200322.bpc</EOP_parameters>
         <PCK_data>pck00010.tpc</PCK_data>
         <Leap_second>naif0012.tls</Leap_second>
