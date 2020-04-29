@@ -5,27 +5,25 @@ The Spacecraft Orbital Computations Kit (SpOCK) is an open source tool for space
 
 ## System Requirements
 
-Linux Ubuntu 18 or higher
+Linux Ubuntu 19 or higher
 
 GNU make (sudo apt-get install build-essential)
 
-gcc $>=$ 7 supporting -std=c++17 (sudo apt-get install g++)
+gcc >= 7 supporting -std=c++17 (sudo apt-get install build-essential)
 
-Libraries usually not included by default in Linux Ubuntu distribution: libboost-all-dev, libxerces-c-dev, xsdcxx, gfortran, freeglut3, freeglut3-dev, mesa-utils, libsdl2*, libsoil*, doxygen, graphviz. These libraries will be installed automatically during the installation process.
-
-For the installation of these libraries, 1125 MB of addtional disk space will be used.
+Libraries usually not included by default in Linux Ubuntu distribution: libboost-all-dev, libxerces-c-dev, xsdcxx, gfortran, freeglut3, freeglut3-dev, mesa-utils, libsdl2\*, libsoil\*, doxygen, graphviz. These libraries (1125 MB of addtional disk space) will be installed automatically during the installation process.
 
 ---
 
 ## Installation
 
-In root directory:
+*In root directory:*
 
-make install_libs (if it is the first compilation)
+make install_libs (first compilation or after OS upgrade)
 
-make install_atmo
+make install_atmo (first compilation or after OS upgrade)
 
-make install_mag
+make install_mag (first compilation or after OS upgrade)
 
 make orbit
 
@@ -37,6 +35,12 @@ All the executable will be generated in the 'bin' folder. Command 'make clean' w
 
 Download file de438.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de438.bsp is too big for the repository)
 
+*Remarks:*
+
+Installation and run were tested successfully on different real and virtual machines (VMware on Windows 10) running Linux Ubuntu 19.04 or higher. It is possible but not guaranteed that the installation on Ubuntu < 19 or other Linux distributions could work
+
+Coomands make install_atmo and install_mag are used to compile external Fortran libraries and could give some Fortran compilation warnings.
+
 ---
 
 ## Configuration
@@ -47,7 +51,7 @@ Put correct inputs/outputs paths in input files simparam_sample.xml and eventspa
 
 ## Run
 
-In linux terminal:
+*In linux terminal:*
 
 ./bin/OrbitPropagator input/SimulationParameters/simparam_sample.xml
 
