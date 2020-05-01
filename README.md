@@ -3,6 +3,26 @@ The Spacecraft Orbital Computations Kit (SpOCK) is an open source tool for space
 
 ---
 
+## Features
+
+*Spacecraft hardware*
+
+Model of 6 spacecraft faces, 3 solar panels, 1 Sun camera, 1 Earth camera, 3 magnetometers, 6 coarse Sun sensors, 3-axis rate sensor, 3 reaction wheels, 3 magnetorquers, 2 types of orbit control propulsion systems.
+
+*Dynamics*
+
+Precise orbit and attitude propagation, mission events computation, atmospheric drag and solar radiation pressure with panels model (dependent on attitude) or reference area model, attitude and orbital maneuvers with different type of actuators.
+
+*Orbit environment models*
+
+Gravity field (EIGEN-6S, GGM02C), atmospheric density (JB2008, NRLMSISE-00), Earth's magnetic field (IGRF13, WMM2020), solar radiation pressure, third body (JPL planet ephemerides), gravity gradient.
+
+*Customizability*
+
+Easy implementation of new spacecraft hardware, ready-to-use insertion of attitude and orbit control modules, set up for hardware-in-the-loop simulations.
+
+---
+
 ## System Requirements
 
 Linux Ubuntu 19 or higher
