@@ -416,6 +416,19 @@ int main(int argc, char *argv[])
     //SC_Orbit.StepperSetup(eps_abs, eps_rel, factor_x, factor_dxdt);
     
     cout << "Start\n" << endl;
+    
+//    string spaceweather_file = "data/atmosphere/CssiSpaceWeather_indices.txt";
+//    MatrixXd SpaceWeather_idx;
+//
+//    SpaceWeather_idx = read_SpaceWeather(spaceweather_file.c_str(),ini_GPSorbtime,SIM_DURATION);
+//    for(int i = 0; i < SpaceWeather_idx.rows(); i++)
+//		{
+//        for(int j = 0; j < SpaceWeather_idx.cols(); j++)
+//            {
+//            cout << SpaceWeather_idx(i,j) << endl;
+//			}
+//		cout << "\n" << endl;
+//		}
 			
     //////////////////////////// Vector for csv files /////////////////////////
     VectorNd<14> orbit_state_vec;
@@ -713,6 +726,10 @@ int main(int argc, char *argv[])
           
         ++step;
         }
+    //clockend = chrono::high_resolution_clock::now();
+    //    
+    //chrono::duration<double,milli> elapsed_millisecs = clockend - clockstart;
+    //cout << "elapsed_millisecs: " << elapsed_millisecs.count() << endl;
     
     if(!realtime)
         {

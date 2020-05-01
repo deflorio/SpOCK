@@ -1,3 +1,5 @@
+input/SimulationParameters/simparam_test.xml
+input/SimulationParameters/eventsparam_test.xml
 input/SimulationParameters/*.txt
 input/AttitudeEphemerides/*.csv
 input/OrbitEphemerides/*.csv
