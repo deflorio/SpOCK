@@ -45,7 +45,7 @@ using namespace Eigen;
 using namespace constants;
 using namespace mathconst;
 using namespace astro;
-
+using namespace events;
 
 //------------------------------------------------------------------------------
 // Matrix<double,Dynamic,6> GSsContacts(int SC_num, int PL_num, Vec4d& orbel, const MatrixXd& orbstateECEF, const MatrixXd& targets, string output_path, double FOV, double FOVdir, double duration, int simstep);
@@ -84,8 +84,11 @@ void TGsContacts( int SC_num,
                   int simstep,
                   bool TGs_on,
                   bool TGs_grid_on,
-                  ofstream& AllContacts_file)
+                  vector<Pass>& TG_passes)
                   {
+                  Pass TG_pass;
+                  vector<Pass> SC_TG_passes;
+                  
                   int last_element = comp_duration/simstep;
                   
                   bool maxel_computed = false;
@@ -160,16 +163,18 @@ void TGsContacts( int SC_num,
                   /////////////////////////////////////////////////////////////////////////////////////////////////////////////
                   
                   string TG_filename = output_path + "/S" + to_string(SC_num) + "-P" + to_string(PL_num) + "_TG_contacts.csv";
+                  string TG_filename_sorted = output_path + "/S" + to_string(SC_num) + "-P" + to_string(PL_num) + "_TG_contacts_bytime.csv";
                   //cout << TG_filename << endl;
                   ofstream Contacts_file;
                   Contacts_file.open(TG_filename);
                   
-                  Contacts_file << "TG,Epoch UTC in,GPS time [s] in,Duration [s],El. in,El. out,Epoch UTC Max. El.,Max. El. [deg],Az. in [deg],Az. out [deg],Az. Max El. [deg],lon [deg],lat [deg]" << endl;
+                  Contacts_file << "TG,Epoch UTC in,Epoch UTC out,GPS time in [s],Duration [min],El. in [deg],El. out [deg],Epoch UTC Max. El.,Max. El. [deg],Az. in [deg],Az. out [deg],Az. Max El. [deg],lon [deg],lat [deg]" << endl;
           
                   int grid_rows = TGs_grid_lons.size();
                   int grid_cols = TGs_grid_lats.size();
                   
                   SpiceChar time_in_string[35];
+                  SpiceChar time_out_string[35];
                   SpiceChar time_maxel_string[35];
                   //SpiceChar time_out_string[35];
                   ConstSpiceChar* format;
@@ -283,15 +288,38 @@ void TGsContacts( int SC_num,
                                 }while( ( (xT*xT)*(bF*bF) + (yT*yT)*(aF*aF) <= (aF*aF)*(bF*bF) ) && ind < len );//while( ( (xT/aF)*(xT/aF) + (yT/bF)*(yT/bF) <= 1.0 ) && ind < len );
                         
                               time_out = time;
+                              sec_J2000 = GPS2ET(time_out);
+                              timout_c( sec_J2000, format, 35, time_out_string );
+                              
                               duration = time_out - time_in;
                               maxel_computed = false;
                               
                               Az_out = Az;
                               El_out = El;
                               
-                              Contacts_file << TGname << "," << string(time_in_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
+                              TG_pass.Location_name = TGname;
+                              TG_pass.Epoch_in = string(time_in_string);
+                              TG_pass.Epoch_out = string(time_out_string);
+                              TG_pass.GPSsecs_in = time_in;
+                              TG_pass.duration = duration/60.0;
+                              TG_pass.elev_in = El_in;
+                              TG_pass.elev_out = El_out;
+                              TG_pass.maxel_time = string(time_maxel_string);
+                              TG_pass.maxel = max_elevation;
+                              TG_pass.Az_in = Az_in;
+                              TG_pass.Az_out = Az_out;
+                              TG_pass.Az_maxel = Az_maxel;
+                              TG_pass.lon = TGlon;
+                              TG_pass.lat = TGlat;
+                              TG_pass.PP = PL_num;
+                              TG_pass.SS = SC_num;
                               
-                              AllContacts_file << TGname << "," << string(time_in_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << PL_num << "," << SC_num << endl;
+                              SC_TG_passes.push_back(TG_pass);
+                              TG_passes.push_back(TG_pass);
+                              
+                              Contacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
+                              
+                              //AllContacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << PL_num << "," << SC_num << endl;
                               
                               *i_ptr = ind;
                               }
@@ -408,15 +436,38 @@ void TGsContacts( int SC_num,
                                 }while( ( (xT*xT)*(bF*bF) + (yT*yT)*(aF*aF) <= (aF*aF)*(bF*bF) ) && ind < len );//while( ( (xT/aF)*(xT/aF) + (yT/bF)*(yT/bF) <= 1.0 ) && ind < len );
                               
                               time_out = time;
+                              sec_J2000 = GPS2ET(time_out);
+                              timout_c( sec_J2000, format, 35, time_out_string );
+                              
                               duration = time_out - time_in;
                               maxel_computed = false;
                               
                               Az_out = Az;
                               El_out = El;
                               
-                              Contacts_file << TGname << "," << string(time_in_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
+                              TG_pass.Location_name = TGname;
+                              TG_pass.Epoch_in = string(time_in_string);
+                              TG_pass.Epoch_out = string(time_out_string);
+                              TG_pass.GPSsecs_in = time_in;
+                              TG_pass.duration = duration/60.0;
+                              TG_pass.elev_in = El_in;
+                              TG_pass.elev_out = El_out;
+                              TG_pass.maxel_time = string(time_maxel_string);
+                              TG_pass.maxel = max_elevation;
+                              TG_pass.Az_in = Az_in;
+                              TG_pass.Az_out = Az_out;
+                              TG_pass.Az_maxel = Az_maxel;
+                              TG_pass.lon = TGlon;
+                              TG_pass.lat = TGlat;
+                              TG_pass.PP = PL_num;
+                              TG_pass.SS = SC_num;
                               
-                              AllContacts_file << TGname << "," << string(time_in_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << PL_num << "," << SC_num << endl;
+                              SC_TG_passes.push_back(TG_pass);
+                              TG_passes.push_back(TG_pass);
+                              
+                              Contacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
+                              
+                              //AllContacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << PL_num << "," << SC_num << endl;
                               
                               *i_ptr = ind;
                               }
@@ -426,8 +477,18 @@ void TGsContacts( int SC_num,
                         TGind++;
                         }  
                     }
+                    
+                  sort(SC_TG_passes.begin(), SC_TG_passes.end());
+                  ofstream Contacts_file_sorted;
+                  Contacts_file_sorted.open(TG_filename_sorted);
+                  Contacts_file_sorted << "TG,Epoch UTC in,Epoch UTC out,GPS time in [s],Duration [min],El. in [deg],El. out [deg],Epoch UTC Max. El.,Max. El. [deg],Az. in [deg],Az. out [deg],Az. Max El. [deg],lon [deg],lat [deg]" << endl;
+                  for(unsigned int i = 0 ; i < SC_TG_passes.size(); i++)
+                      {
+                      Contacts_file_sorted << SC_TG_passes[i].Location_name << "," << SC_TG_passes[i].Epoch_in << "," << SC_TG_passes[i].Epoch_out << "," << fixed << SC_TG_passes[i].GPSsecs_in << "," << SC_TG_passes[i].duration << "," << SC_TG_passes[i].elev_in << "," << SC_TG_passes[i].elev_out << "," << SC_TG_passes[i].maxel_time << "," << SC_TG_passes[i].maxel << "," << SC_TG_passes[i].Az_in << "," << SC_TG_passes[i].Az_out << "," << SC_TG_passes[i].Az_maxel << "," << SC_TG_passes[i].lon << "," << SC_TG_passes[i].lat << endl;
+                      }
           
                   Contacts_file.close();
+                  Contacts_file_sorted.close();
                   };                  
 //------------------------------------------------------------------------------
 // GSsContacts(int SC_num, int PL_num, Vec4d& orbel, const MatrixXd& orbstateECEF, const MatrixXd& groundstations, string output_path, double min_elevation, double duration, int simstep);
@@ -456,8 +517,11 @@ void GSsContacts( int SC_num,
                   string output_path,
                   double comp_duration,
                   int simstep,
-                  ofstream& AllContacts_file)
+                  vector<Pass>& GS_passes)
                   {
+                  Pass GS_pass;
+                  vector<Pass> SC_GS_passes;
+                  
                   int last_element = comp_duration/simstep;
                   
                   bool maxel_computed = false;
@@ -472,23 +536,28 @@ void GSsContacts( int SC_num,
                   /////////////////////////////////////////////////////////////////////////////////////////////////////////////
                   
                   string GS_filename = output_path + "/S" + to_string(SC_num) + "-P" + to_string(PL_num) + "_GS_contacts.csv";
+                  string GS_filename_sorted = output_path + "/S" + to_string(SC_num) + "-P" + to_string(PL_num) + "_GS_contacts_bytime.csv";
+                  
                   //cout << GS_filename << endl;
                   ofstream Contacts_file;
                   Contacts_file.open(GS_filename);
                   
-                  Contacts_file << "GS,AOS UTC,LOS UTC,AOS [GPS secs],Duration [m],Epoch UTC Max. El.,Max Elevation [deg],Az. AOS [deg],Az. LOS [deg],Az. Max El. [deg], lon [deg],lat [deg]" << endl;
+                  Contacts_file << "GS,AOS UTC,LOS UTC,AOS [GPS secs],Duration [min],Epoch UTC Max. El.,Max Elevation [deg],Az. AOS [deg],Az. LOS [deg],Az. Max El. [deg], lon [deg],lat [deg]" << endl;
                   
                   SpiceChar time_in_string[35];
                   SpiceChar time_out_string[35];
                   SpiceChar time_maxel_string[35];
                   ConstSpiceChar* format;
                   //format = "DD-MM-YYYY HR:MN:SC";
-                  format = "YYYY-MM-DDTHR:MN:SCZ";
+                  format = "YYYY-MM-DD HR:MN:SC";
                   
                   string GSname;
                   double GSlon, GSlat, min_elevation, max_elevation;
+                  GSlon = GSlat = min_elevation = max_elevation = 0.0;
                   double time, time_in, time_out, time_maxel, sec_J2000, duration;
+                  time = time_in = time_out = time_maxel = sec_J2000 = duration = 0.0;
                   double Az, Az_in, Az_out, Az_maxel, El, El_first, El_last;
+                  Az = Az_in = Az_out = Az_maxel = El = El_first = El_last = 0.0;
                   Vec3d AzElAlt;
                   Vector6d stateECEF;
                   VectorNd<7> ephem_row;
@@ -588,9 +657,34 @@ void GSsContacts( int SC_num,
                                   duration = time_out - time_in;
                                   maxel_computed = false;
                                   
-                                  Contacts_file << GSname << "," << string(time_in_string) << "," << string(time_out_string) << "," << fixed << time_in << "," << duration/60.0 << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << GSlon << "," << GSlat << "," << endl;
+                                  GS_pass.Location_name = GSname;
+                                  GS_pass.Epoch_in = string(time_in_string);
+                                  GS_pass.Epoch_out = string(time_out_string);
+                                  GS_pass.GPSsecs_in = time_in;
+                                  GS_pass.duration = duration/60.0;
+                                  GS_pass.maxel_time = string(time_maxel_string);
+                                  GS_pass.maxel = max_elevation;
+                                  GS_pass.Az_in = Az_in;
+                                  GS_pass.Az_out = Az_out;
+                                  GS_pass.Az_maxel = Az_maxel;
+                                  GS_pass.lon = GSlon;
+                                  GS_pass.lat = GSlat;
+                                  GS_pass.PP = PL_num;
+                                  GS_pass.SS = SC_num;
                                   
-                                  AllContacts_file << GSname << "," << string(time_in_string) << "," << string(time_out_string) << "," << fixed << time_in << "," << duration/60.0 << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << GSlon << "," << GSlat << "," << PL_num << "," << SC_num << endl;
+                                  SC_GS_passes.push_back(GS_pass);
+                                  GS_passes.push_back(GS_pass);
+                                  
+                                  Contacts_file << GS_pass.Location_name << "," << GS_pass.Epoch_in << "," << GS_pass.Epoch_out << "," << fixed << GS_pass.GPSsecs_in << "," << GS_pass.duration << "," << GS_pass.maxel_time << "," << GS_pass.maxel << "," << GS_pass.Az_in << "," << GS_pass.Az_out << "," << GS_pass.Az_maxel << "," << GS_pass.lon << "," << GS_pass.lat << "," << endl;
+                                  
+                                  //AllContacts_file << pass.GS << "," << pass.AOS << "," << pass.LOS << "," << fixed << pass.GPSsecs << "," << pass.dur << "," << pass.maxel_time << "," << pass.maxel << "," << pass.AOS_Az << "," << pass.LOS_Az << "," << pass.maxel_Az << "," << pass.lon << "," << pass.lat << "," << pass.PP << "," << pass.SS << endl;
+                                  
+                                  
+                                  
+                                  
+                                  //Contacts_file << GSname << "," << string(time_in_string) << "," << string(time_out_string) << "," << fixed << time_in << "," << duration/60.0 << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << GSlon << "," << GSlat << "," << endl;
+                                  //
+                                  //AllContacts_file << GSname << "," << string(time_in_string) << "," << string(time_out_string) << "," << fixed << time_in << "," << duration/60.0 << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << GSlon << "," << GSlat << "," << PL_num << "," << SC_num << endl;
                                   
                                   *i_ptr = ind;
                                   }
@@ -599,8 +693,18 @@ void GSsContacts( int SC_num,
                                 }
                         GSind++;
                         }
+                        
+                  sort(SC_GS_passes.begin(), SC_GS_passes.end());
+                  ofstream Contacts_file_sorted;
+                  Contacts_file_sorted.open(GS_filename_sorted);
+                  Contacts_file_sorted << "GS,AOS UTC,LOS UTC,AOS [GPS secs],Duration [min],Epoch UTC Max. El.,Max Elevation [deg],Az. AOS [deg],Az. LOS [deg],Az. Max El. [deg], lon [deg],lat [deg]" << endl;
+                  for(unsigned int i = 0 ; i < SC_GS_passes.size(); i++)
+                      {
+                      Contacts_file_sorted << SC_GS_passes[i].Location_name << "," << SC_GS_passes[i].Epoch_in << "," << SC_GS_passes[i].Epoch_out << "," << fixed << SC_GS_passes[i].GPSsecs_in << "," << SC_GS_passes[i].duration << "," << SC_GS_passes[i].maxel_time << "," << SC_GS_passes[i].maxel << "," << SC_GS_passes[i].Az_in << "," << SC_GS_passes[i].Az_out << "," << SC_GS_passes[i].Az_maxel << "," << SC_GS_passes[i].lon << "," << SC_GS_passes[i].lat << endl;
+                      }
           
                   Contacts_file.close();
+                  Contacts_file_sorted.close();
                   };           
 //------------------------------------------------------------------------------
 // void Umbras(int SC_num, int PL_num, const MatrixXd& orbpos, string output_path, double comp_duration, int simstep, ofstream& Umbras_file);
@@ -644,7 +748,7 @@ void Umbras(int SC_num,
                   ofstream Umbras_file;
                   Umbras_file.open(umbra_filename);
                   
-                  Umbras_file << "Penumbra start UTC,Umbra start UTC,Umbra end UTC,Penumbra end UTC,Umbra duration [m],Penumbra duration [m]" << endl;
+                  Umbras_file << "Penumbra start UTC,Umbra start UTC,Umbra end UTC,Penumbra end UTC,Umbra duration [min],Penumbra duration [min]" << endl;
                   
                   SpiceChar time_umbrain_string[35];
                   SpiceChar time_umbraout_string[35];
@@ -652,7 +756,7 @@ void Umbras(int SC_num,
                   SpiceChar time_penumbraout_string[35];
                   
                   ConstSpiceChar* format;
-                  format = "YYYY-MM-DDTHR:MN:SCZ";
+                  format = "YYYY-MM-DD HR:MN:SC";
                   
                   bool umbra, penumbra;
                   

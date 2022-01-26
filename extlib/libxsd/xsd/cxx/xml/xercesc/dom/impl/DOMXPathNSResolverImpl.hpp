@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMXPathNSResolverImpl.hpp 657774 2008-05-19 09:59:33Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMXPATHNSRESOLVERIMPL_HPP)

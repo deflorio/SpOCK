@@ -101,8 +101,6 @@ int main(int argc, char *argv[])
     
     ORB SC_Orbit;
     
-    //PROP* SC_Orbit_ptr = &SC_Orbit;
-    
     ///////////////////////////////////////////////////////////////
     //////////// SIMULATION PARAMETERS VARIABLES //////////////////
     ///////////////////////////////////////////////////////////////
@@ -237,12 +235,6 @@ int main(int argc, char *argv[])
     envmodels_paths.gravityfield = gravityfield;
     envmodels_paths.atmosphere = atmosphere;
     
-    ////////////////////////////// Outputs //////////////////////////////////
-    
-    // Files
-    //string mat_attfile_name = "output/" + attfile_name + ".mat";            
-    //string csv_attfile_name = "output/" + attfile_name + ".csv";
-    
     ///////////////// Spacecraft parameters /////////////////
     
     SC_params SC_prms;
@@ -344,7 +336,6 @@ int main(int argc, char *argv[])
     
     vector<maneuver> all_enabled_orbman;
     
-    //vector<maneuver>::iterator man_ind;
     unsigned int man_ind;
     bool man_on;
     
@@ -386,7 +377,6 @@ int main(int argc, char *argv[])
     
     double ini_GPSorbtime, GPStime;
     ini_GPSorbtime = UTCdate2GPSsecs(init_orbtime);
-    //cout << "\ini_GPSorbtime: " << ini_GPSorbtime << endl;
     
     Vector6d orbit_state_vec_ECEF = Vector6d::Zero();
     orbit_state_vec_ECEF = ECI2ECEF(ini_GPSorbtime, init_orbstate);
@@ -398,37 +388,16 @@ int main(int argc, char *argv[])
     SPACEENV::n_max = nMAX;
     
     SC_Orbit.Setup(SC_prms,envmodels_paths);
-    //SC_Orbit.nMAX = nMAX;
     SC_Orbit.Init(ini_GPSorbtime, attstate, init_orbstate);
     SC_Orbit.drag_on = T_model[2];
     SC_Orbit.srp_on = T_model[3];
-	SC_Orbit.sunmoon_on = T_model[4];
-	SC_Orbit.Drag_Model = Drag_Model;
-	SC_Orbit.SRP_Model = SRP_Model;
-	SC_Orbit.simdur = SIM_DURATION;
+    SC_Orbit.sunmoon_on = T_model[4];
+    SC_Orbit.Drag_Model = Drag_Model;
+    SC_Orbit.SRP_Model = SRP_Model;
+    SC_Orbit.simdur = SIM_DURATION;
     SC_Orbit.ForceModelsSetup();
     
-    //double eps_abs = 1E-8;
-    //double eps_rel = 0.0;
-    //double factor_x = 0.0;
-    //double factor_dxdt = 0.0;
-    //
-    //SC_Orbit.StepperSetup(eps_abs, eps_rel, factor_x, factor_dxdt);
-    
     cout << "Start\n" << endl;
-    
-//    string spaceweather_file = "data/atmosphere/CssiSpaceWeather_indices.txt";
-//    MatrixXd SpaceWeather_idx;
-//
-//    SpaceWeather_idx = read_SpaceWeather(spaceweather_file.c_str(),ini_GPSorbtime,SIM_DURATION);
-//    for(int i = 0; i < SpaceWeather_idx.rows(); i++)
-//		{
-//        for(int j = 0; j < SpaceWeather_idx.cols(); j++)
-//            {
-//            cout << SpaceWeather_idx(i,j) << endl;
-//			}
-//		cout << "\n" << endl;
-//		}
 			
     //////////////////////////// Vector for csv files /////////////////////////
     VectorNd<14> orbit_state_vec;
@@ -451,16 +420,14 @@ int main(int argc, char *argv[])
     
     accelerations_file << "GPS Time [s],GravR [m/s²],GravT [m/s²],GravN [m/s²],SunMoonR [m/s²],SunMoonT [m/s²],SunMoonN [m/s²],SRP_R [m/s²],SRP_T [m/s²],SRP_N [m/s²],DragR [m/s²],DragT [m/s²],DragN [m/s²],AccR [m/s²],AccT [m/s²],AccN [m/s²],dvR [m/s],dvT [m/s],dvN [m/s]" << endl;
     
-    //VectorNd<10> Accelerations;
     VectorNd<15> Accenv = VectorNd<15>::Zero();
     VectorNd<15> AccenvRTN = VectorNd<15>::Zero();
     Vec3d Acc_act = Vec3d::Zero();
 	
-	// Attitude state
+    // Attitude state
     ofstream attstate_file;
     attstate_file.open(attfile_name);
 	
-	//VectorXd orbprop_state;
     Vector6d orbprop_state = Vector6d::Zero();
     
     const int output_rows = SIM_DURATION/SIM_STEP;
@@ -469,18 +436,20 @@ int main(int argc, char *argv[])
     MatrixXd orbstate_to_file = MatrixXd::Zero(output_rows+1,14);
     orbstate_to_file.row(step) = orbit_state_vec;
     step++;
-    //Matrix<double, output_rows, 15> orbstate_to_file;
     MatrixXd accelerations_to_file = MatrixXd::Zero(output_rows+1,19);
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////// ORBIT PROPAGATION LOOP ////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-    double part_dur = SIM_DURATION/10.0;
-    double sim_done = 10.0;
     man_ind = 0;
     
-    //clockstart = chrono::high_resolution_clock::now();
+    //double part_dur = SIM_DURATION/10.0;
+    //int sim_done = 10;
+    //bool barinit = false;
+    int barwidth = 100;
+    //int barpos = 0;
+    
     for( double t = 0.0 ; t < SIM_DURATION ; t += SIM_STEP )
         {
         //forstart = chrono::high_resolution_clock::now();
@@ -590,15 +559,82 @@ int main(int argc, char *argv[])
                 }
               }
           }
-          
-        /////////////////////////////////// PUT YOUR ORBIT CONTROL FUNCTION HERE ///////////////////////////////////
         
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+        /////////////////////////////////// PUT YOUR ORBIT CONTROL FUNCTION HERE ///////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+        
+        ////////////////////////////////////////// UNCOMMENT THE FOLLOWING /////////////////////////////////////////
+        
+        //double control_vec[4]; // control_vec[0] = GPSsecs time of maneuver issued by orbit controller control_vec[1], control_vec[1], control_vec[1] = components in RTN frame of dv vector issued by orbit controller
+        //
         //if(orbctrl_on)
         //    {
-        //    dv_CTRL = My_orbit_control_function(orbprop_state, OrbCtrlType, input2, input3);    
+        //    if( OrbCtrlType.compare("ControllerName") == 0 )
+        //        {
+        //        ////////////// User own code for orbit control //////////////
+        //        control_vec = YourOrbitControlFunction();
+        //        ////////////////////////////////////////////////////////////
+        //        
+        //        // Put maneuver in ctrl_maneuver vector for execution by propulsion system
+        //        if( control_vec[0] != 0.0 && ( fabs(control_vec[1]) + fabs(control_vec[2]) + fabs(control_vec[3]) ) != 0.0 && GPStime >= control_vec[0] && ctrl_maneuver.size() == 1 ) // Maneuver time is different than 0 and there is at least one component of the maneuver vector which different than 0 
+        //            {
+        //            ctrl_maneuver[0].name = "ContinuousManeuver" + CtrProp_name + "_RTN";
+        //            ctrl_maneuver[0].maneuver_on = true;
+        //            ctrl_maneuver[0].init_time = control_vec[0] - ini_GPSorbtime; // Conversion in simulation time
+        //            for(int k = 0; k < 3; k ++) ctrl_maneuver[0].ManVec(k) = control_vec[k+1];
+        //            
+        //            if( CtrProp_name.compare("Prop1") == 0 ) OrbitPropulsion1.impman2contman(ctrl_maneuver, SIM_STEP);
+        //            else if( CtrProp_name.compare("Prop2") == 0 ) OrbitPropulsion2.impman2contman(ctrl_maneuver, SIM_STEP);
+        //            
+        //            ctrl_contman_ind = ctrl_maneuver.begin();
+        //            }
+        //        }
+        //    
+        //    if( ( ctrl_maneuver[0].init_time != 0 ) && ( ctrl_maneuver[0].ManVec.norm() != 0 ) && ( ctrl_contman_ind != ctrl_maneuver.end() ) )
+        //        {
+        //        m_init_time = ctrl_contman_ind->init_time;
+        //        
+        //        if( t >= m_init_time )
+        //            {
+        //            dv_CTRL = ctrl_contman_ind->ManVec;
+        //            man_name = ctrl_contman_ind->name;
+        //            man_sys = "RTN";
+        //            
+        //            if( CtrProp_name.compare("Prop1") == 0 )
+        //                {
+        //                OrbitPropulsion1.dv_CMD = dv_CTRL;
+        //                OrbitPropulsion1.man_sys = man_sys;
+        //                dv_CTRL = OrbitPropulsion1.Output(GPStime, attstate, orbprop_state);
+        //                }
+        //            else if( CtrProp_name.compare("Prop2") == 0 )
+        //                {
+        //                OrbitPropulsion2.dv_CMD = dv_CTRL;
+        //                OrbitPropulsion2.man_sys = man_sys;
+        //                dv_CTRL = OrbitPropulsion2.Output(GPStime, attstate, orbprop_state);
+        //                }
+        //         
+        //            ctrl_contman_ind++;
+        //            
+        //            if(ctrl_contman_ind == ctrl_maneuver.end())
+        //                {
+        //                // Resize and reinitialize vector ctrl_maneuver
+        //                ctrl_maneuver.resize(1);
+        //                ctrl_maneuver[0].ManVec = Vec3d::Zero();
+        //                ctrl_maneuver[0].name = "";
+        //                ctrl_maneuver[0].init_time = 0.0;
+        //                ctrl_maneuver[0].duration = 0.0;
+        //                ctrl_maneuver[0].maneuver_on = false;
+        //                // Reset control maneuver counter
+        //                ctrl_contman_ind = ctrl_maneuver.begin();
+        //                }
+        //            }
+        //        }
         //    }
         
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////  
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////  
           
         dv_CMD = dv1_imp_CMD + dv1_cont_CMD + dv2_imp_CMD + dv2_cont_CMD + dv_CTRL;
     
@@ -622,37 +658,24 @@ int main(int argc, char *argv[])
         
         ///////////////////////////////////////////////////////
         
-        //GPStime = ini_GPSorbtime + t + SIM_STEP;
-        
         if( AttitudeType.compare("Ephemeris") == 0 )
           {    
           ephem_row = loaded_ephem.row(ind);
-          //GPStime = ephem_row(0);
           attstate = ephem_row.segment(1,4);
           
-          //cout << fixed << GPStime << " " << attstate(0) << " " << attstate(1) << " " << attstate(2) << " " << attstate(3) << endl;
           ind++;
           }
         
-        //orbit_state_vec_ECEF = ECI2ECEF(GPStime,orbprop_state);
-        
         T_ECI2RTN = ECI2RTN_Matrix(orbprop_state);
         
-		//////////////// Display propagation progress /////////////////
-        if( (t - part_dur) >= 0)
-            {
-            cout << (int)sim_done << "% done" << endl;
-            part_dur = part_dur + SIM_DURATION/10.0;
-            sim_done = sim_done + 10.0;
-            }
+        //////////////// Display propagation progress /////////////////
+        RunStatusBar(t, SIM_DURATION, barwidth);
 		
         //////////////////////////// Orbit ephemeris //////////////////////////////
         
         orbit_state_vec(0) = t + SIM_STEP;
         orbit_state_vec(1) = GPStime;
-        //orbit_state_vec(2) = 0.0;
         orbit_state_vec.segment(2,6) = orbprop_state;
-        //orbit_state_vec.segment(8,6) = orbit_state_vec_ECEF;
         
         //////////////////////////// Accelerations /////////////////////////
         
@@ -687,7 +710,6 @@ int main(int argc, char *argv[])
         if( AttitudeType.compare("RTN_fixed") == 0 ) T_RTN2Body = RotationMatrix321(phi, theta, psi);
         if( AttitudeType.compare("Fixed") == 0 )
           {
-          //T_ECI2RTN = ECI2RTN_Matrix(orbprop_state);
           T_RTN2ECI = T_ECI2RTN.transpose();    
           ECItoBody = Quaternion2RotationMatrix(attstate);    
           T_RTN2Body = ECItoBody*T_RTN2ECI;
@@ -716,8 +738,6 @@ int main(int argc, char *argv[])
 		//////////////// Get new attitude in case it is RTN-fixed /////////////////
 		if( AttitudeType.compare("RTN_fixed") == 0 )
           {
-          //T_ECI2RTN = ECI2RTN_Matrix(orbprop_state);
-          //T_RTN2ECI = T_ECI2RTN.transpose();
           T_RTN2Body = RotationMatrix321(phi, theta, psi);
           ECItoBody = T_RTN2Body*T_ECI2RTN;
       
@@ -726,10 +746,6 @@ int main(int argc, char *argv[])
           
         ++step;
         }
-    //clockend = chrono::high_resolution_clock::now();
-    //    
-    //chrono::duration<double,milli> elapsed_millisecs = clockend - clockstart;
-    //cout << "elapsed_millisecs: " << elapsed_millisecs.count() << endl;
     
     if(!realtime)
         {
@@ -770,7 +786,6 @@ int main(int argc, char *argv[])
     clockend = chrono::high_resolution_clock::now();
         
     chrono::duration<double,milli> elapsed_millisecs = clockend - clockstart;
-    //cout << "Elapsed_millisecs: " << elapsed_millisecs.count() << endl;
     cout << "Elapsed seconds: " << elapsed_millisecs.count()/1000.0 << endl;
     
   return(0);  

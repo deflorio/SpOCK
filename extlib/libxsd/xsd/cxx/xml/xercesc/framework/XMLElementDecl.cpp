@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLElementDecl.cpp 679359 2008-07-24 11:15:19Z borisk $
+ * $Id$
  */
 
 

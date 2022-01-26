@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSElementDeclaration.hpp 1804272 2017-08-06 20:25:24Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XSELEMENTDECLARATION_HPP)

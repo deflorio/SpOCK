@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: StdOutFormatTarget.cpp 881225 2009-11-17 10:19:57Z borisk $
+ * $Id$
  */
 
 #include <xercesc/framework/StdOutFormatTarget.hpp>

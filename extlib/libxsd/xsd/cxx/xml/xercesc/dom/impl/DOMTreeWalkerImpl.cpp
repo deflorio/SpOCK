@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMTreeWalkerImpl.cpp 671894 2008-06-26 13:29:21Z borisk $
+ * $Id$
  */
 
 #include "DOMTreeWalkerImpl.hpp"

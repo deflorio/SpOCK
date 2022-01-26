@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CharToken.hpp 678879 2008-07-22 20:05:05Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_CHARTOKEN_HPP)

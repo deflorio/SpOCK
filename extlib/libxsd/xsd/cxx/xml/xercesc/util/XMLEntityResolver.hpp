@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLEntityResolver.hpp 1701582 2015-09-07 09:21:15Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XMLENTITYRESOLVER_HPP)

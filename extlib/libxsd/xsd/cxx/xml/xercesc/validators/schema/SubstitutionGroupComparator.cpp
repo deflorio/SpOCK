@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SubstitutionGroupComparator.cpp 794273 2009-07-15 14:13:07Z amassari $
+ * $Id$
  */
 
 

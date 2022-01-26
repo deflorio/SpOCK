@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IconvTransService.cpp 695885 2008-09-16 14:00:19Z borisk $
+ * $Id$
  */
 
 

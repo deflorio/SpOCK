@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: OutOfMemoryException.hpp 673960 2008-07-04 08:50:12Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_OUT_OF_MEMORY_EXCEPTION_HPP)

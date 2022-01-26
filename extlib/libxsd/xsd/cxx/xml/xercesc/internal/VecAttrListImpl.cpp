@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: VecAttrListImpl.cpp 672273 2008-06-27 13:57:00Z borisk $
+ * $Id$
  */
 
 

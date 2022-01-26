@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: HexBinaryDatatypeValidator.hpp 695949 2008-09-16 15:57:44Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_HEXBINARY_DATATYPEVALIDATOR_HPP)

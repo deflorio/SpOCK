@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSSimpleTypeDefinition.hpp 1801237 2017-07-07 21:55:11Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XSSIMPLETYPEDEFINITION_HPP)

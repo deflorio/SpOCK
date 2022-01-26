@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DatatypeValidatorFactory.cpp 1798761 2017-06-14 21:17:19Z rleigh $
+ * $Id$
  */
 
 

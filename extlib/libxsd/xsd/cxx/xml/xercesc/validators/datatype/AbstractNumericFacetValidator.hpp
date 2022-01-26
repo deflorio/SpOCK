@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: AbstractNumericFacetValidator.hpp 673155 2008-07-01 17:55:39Z dbertoni $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_ABSTRACT_NUMERIC_FACET_VALIDATOR_HPP)

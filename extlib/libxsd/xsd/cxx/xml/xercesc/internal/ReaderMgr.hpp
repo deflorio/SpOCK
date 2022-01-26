@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ReaderMgr.hpp 833045 2009-11-05 13:21:27Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_READERMGR_HPP)

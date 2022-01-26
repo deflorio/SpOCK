@@ -213,7 +213,7 @@ namespace orbpropulsion
                                         double m_init_time;
                                         Vec3d dv = Vec3d::Zero();
                                         //Vec3d dv_prms = Vec3d::Zero();
-                                        double dv_unit;
+                                        double dv_unit, minus_dv_unit;
                                         Vec3d unit_dv = Vec3d::Zero();
                                         maneuver unit_maneuver;
                                         
@@ -225,6 +225,8 @@ namespace orbpropulsion
                                         
                                         dv_unit = SIM_STEP*dv_thr; // dv obtained by thrusting for SIM_STEP s. A maneuver with dv < dv_unit is considered as impulsive. The most accurate simuation is
                                                                         // given by choosing SIM_STEP = 1 s, since in this case dv_unit = dv_thr (see function thrust2dv)
+                                        minus_dv_unit = -dv_unit;
+                                                                        
                                         
                                         for( man_ind = 0; man_ind < man_size; man_ind++ )
                                             {
@@ -238,9 +240,13 @@ namespace orbpropulsion
                                             dv = impman[man_ind].ManVec;
                                             
                                             if(dv_res != 0.0) // Take into account the dv resolution if this parameter is given in the propulsion system characterization
-                                              {
-                                              for(int i = 0 ; i < 3; i++) dv(i) = dv_res*round(dv(i)/dv_res);
-                                              }
+                                                {
+                                                if( dv.norm() < dv_res ) impman[man_ind].ManVec = Vec3d::Zero();
+                                                //for(int i = 0 ; i < 3; i++)
+                                                //    {
+                                                //    if(fabs(dv(i)) < dv_res) dv(i) = 0.0; //dv(i) = dv_res*round(dv(i)/dv_res);
+                                                //    }
+                                                }
                                             
                                             //if( (dv(0) > dv_unit) || (dv(1) > dv_unit) || (dv(2) > dv_unit) )
                                             if( dv.norm() >= dv_unit )
@@ -251,10 +257,15 @@ namespace orbpropulsion
                                                     {
                                                     m_init_time = m_init_time + SIM_STEP;
                                                        
-                                                    if( dv(i) > dv_unit )
+                                                    if( dv(i) > 0.0 && dv(i) > dv_unit )
                                                       {
                                                       dv(i) = dv(i) - dv_unit;
                                                       unit_dv(i) = dv_unit;
+                                                      }
+                                                    else if( dv(i) < 0.0 && fabs(dv(i)) > dv_unit )
+                                                      {
+                                                      dv(i) = dv(i) - minus_dv_unit;
+                                                      unit_dv(i) = minus_dv_unit;
                                                       }
                                                     else
                                                       {
@@ -282,7 +293,7 @@ namespace orbpropulsion
     //------------------------------------------------------------------------------
     
 
-}; // End of namespace spaceenvironment
+}; // End of namespace orbpropulsion
 
 
 

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BinMemOutputStream.cpp 932889 2010-04-11 13:10:10Z borisk $
+ * $Id$
  */
 
 #include <xercesc/internal/BinMemOutputStream.hpp>

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLDateTime.hpp 1803924 2017-08-02 21:14:44Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XML_DATETIME_HPP)

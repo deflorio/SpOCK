@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaValidator.cpp 806488 2009-08-21 10:36:58Z amassari $
+ * $Id$
  */
 
 // ---------------------------------------------------------------------------
@@ -769,10 +769,10 @@ void SchemaValidator::preContentValidation(bool,
     RefHashTableOfEnumerator<Grammar> grammarEnum = fGrammarResolver->getGrammarEnumerator();
     while (grammarEnum.hasMoreElements())
     {
-        SchemaGrammar& sGrammar = (SchemaGrammar&) grammarEnum.nextElement();
-        if (sGrammar.getGrammarType() != Grammar::SchemaGrammarType || sGrammar.getValidated())
+        Grammar& grammar = grammarEnum.nextElement();
+        if (grammar.getGrammarType() != Grammar::SchemaGrammarType || grammar.getValidated())
              continue;
-
+        SchemaGrammar& sGrammar = (SchemaGrammar&) grammar;
         sGrammar.setValidated(true);
 
         RefHash3KeysIdPoolEnumerator<SchemaElementDecl> elemEnum = sGrammar.getElemEnumerator();

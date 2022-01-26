@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSWildcard.cpp 674012 2008-07-04 11:18:21Z borisk $
+ * $Id$
  */
 
 #include <xercesc/framework/psvi/XSWildcard.hpp>

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLGrammarPoolImpl.cpp 676823 2008-07-15 07:57:44Z borisk $
+ * $Id$
  */
 
 

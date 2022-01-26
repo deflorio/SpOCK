@@ -2,6 +2,7 @@
 // for linear algebra.
 //
 // Copyright (C) 2008-2018 Gael Guennebaud <gael.guennebaud@inria.fr>
+// Copyright (C) 2020, Arm Limited and Contributors
 //
 // This Source Code Form is subject to the terms of the Mozilla
 // Public License v. 2.0. If a copy of the MPL was not distributed
@@ -240,15 +241,19 @@
       #define EIGEN_VECTORIZE_SSE4_2
     #endif
     #ifdef __AVX__
-      #define EIGEN_VECTORIZE_AVX
+      #ifndef EIGEN_USE_SYCL 
+        #define EIGEN_VECTORIZE_AVX
+      #endif
       #define EIGEN_VECTORIZE_SSE3
       #define EIGEN_VECTORIZE_SSSE3
       #define EIGEN_VECTORIZE_SSE4_1
       #define EIGEN_VECTORIZE_SSE4_2
     #endif
     #ifdef __AVX2__
-      #define EIGEN_VECTORIZE_AVX2
-      #define EIGEN_VECTORIZE_AVX
+      #ifndef EIGEN_USE_SYCL 
+        #define EIGEN_VECTORIZE_AVX2
+        #define EIGEN_VECTORIZE_AVX
+      #endif
       #define EIGEN_VECTORIZE_SSE3
       #define EIGEN_VECTORIZE_SSSE3
       #define EIGEN_VECTORIZE_SSE4_1
@@ -267,19 +272,26 @@
       #error Please enable FMA in your compiler flags (e.g. -mfma): compiling with AVX512 alone without SSE/AVX FMA is not supported (bug 1638).
       #endif
       #endif
-      #define EIGEN_VECTORIZE_AVX512
-      #define EIGEN_VECTORIZE_AVX2
-      #define EIGEN_VECTORIZE_AVX
+      #ifndef EIGEN_USE_SYCL
+        #define EIGEN_VECTORIZE_AVX512
+        #define EIGEN_VECTORIZE_AVX2
+        #define EIGEN_VECTORIZE_AVX
+      #endif
       #define EIGEN_VECTORIZE_FMA
       #define EIGEN_VECTORIZE_SSE3
       #define EIGEN_VECTORIZE_SSSE3
       #define EIGEN_VECTORIZE_SSE4_1
       #define EIGEN_VECTORIZE_SSE4_2
-      #ifdef __AVX512DQ__
-        #define EIGEN_VECTORIZE_AVX512DQ
-      #endif
-      #ifdef __AVX512ER__
-        #define EIGEN_VECTORIZE_AVX512ER
+      #ifndef EIGEN_USE_SYCL
+        #ifdef __AVX512DQ__
+          #define EIGEN_VECTORIZE_AVX512DQ
+        #endif
+        #ifdef __AVX512ER__
+          #define EIGEN_VECTORIZE_AVX512ER
+        #endif
+        #ifdef __AVX512BF16__
+          #define EIGEN_VECTORIZE_AVX512BF16
+        #endif
       #endif
     #endif
 
@@ -373,37 +385,60 @@
     #undef vector
     #undef pixel
 
-  #elif (defined  __ARM_NEON) || (defined __ARM_NEON__)
+  #elif ((defined  __ARM_NEON) || (defined __ARM_NEON__)) && !(defined EIGEN_ARM64_USE_SVE)
 
     #define EIGEN_VECTORIZE
     #define EIGEN_VECTORIZE_NEON
     #include <arm_neon.h>
 
-  #elif (defined __s390x__ && defined __VEC__)
+  // We currently require SVE to be enabled explicitly via EIGEN_ARM64_USE_SVE and
+  // will not select the backend automatically
+  #elif (defined __ARM_FEATURE_SVE) && (defined EIGEN_ARM64_USE_SVE)
 
     #define EIGEN_VECTORIZE
-    #define EIGEN_VECTORIZE_ZVECTOR
-    #include <vecintrin.h>
+    #define EIGEN_VECTORIZE_SVE
+    #include <arm_sve.h>
 
-  #elif defined __mips_msa
-
-    // Limit MSA optimizations to little-endian CPUs for now.
-    // TODO: Perhaps, eventually support MSA optimizations on big-endian CPUs?
-    #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
-      #if defined(__LP64__)
-        #define EIGEN_MIPS_64
-      #else
-        #define EIGEN_MIPS_32
-      #endif
-      #define EIGEN_VECTORIZE
-      #define EIGEN_VECTORIZE_MSA
-      #include <msa.h>
-    #endif
-
-  #endif
+    // Since we depend on knowing SVE vector lengths at compile-time, we need
+    // to ensure a fixed lengths is set
+    #if defined __ARM_FEATURE_SVE_BITS
+      #define EIGEN_ARM64_SVE_VL __ARM_FEATURE_SVE_BITS
+    #else
+#error "Eigen requires a fixed SVE lector length but EIGEN_ARM64_SVE_VL is not set."
 #endif
 
-#if defined(__F16C__) && (!defined(EIGEN_COMP_CLANG) || EIGEN_COMP_CLANG>=380)
+#elif (defined __s390x__ && defined __VEC__)
+
+#define EIGEN_VECTORIZE
+#define EIGEN_VECTORIZE_ZVECTOR
+#include <vecintrin.h>
+
+#elif defined __mips_msa
+
+// Limit MSA optimizations to little-endian CPUs for now.
+// TODO: Perhaps, eventually support MSA optimizations on big-endian CPUs?
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+#if defined(__LP64__)
+#define EIGEN_MIPS_64
+#else
+#define EIGEN_MIPS_32
+#endif
+#define EIGEN_VECTORIZE
+#define EIGEN_VECTORIZE_MSA
+#include <msa.h>
+#endif
+
+#endif
+#endif
+
+// Following the Arm ACLE arm_neon.h should also include arm_fp16.h but not all
+// compilers seem to follow this. We therefore include it explicitly.
+// See also: https://bugs.llvm.org/show_bug.cgi?id=47955
+#if defined(EIGEN_HAS_ARM64_FP16_SCALAR_ARITHMETIC)
+  #include <arm_fp16.h>
+#endif
+
+#if defined(__F16C__) && (!defined(EIGEN_GPUCC) && (!defined(EIGEN_COMP_CLANG) || EIGEN_COMP_CLANG>=380))
   // We can use the optimized fp16 to float and float to fp16 conversion routines
   #define EIGEN_HAS_FP16_C
 
@@ -431,9 +466,6 @@
 #if defined(EIGEN_HIPCC)
   #define EIGEN_VECTORIZE_GPU
   #include <hip/hip_vector_types.h>
-#endif
-
-#if defined(EIGEN_HIP_DEVICE_COMPILE)
   #define EIGEN_HAS_HIP_FP16
   #include <hip/hip_fp16.h>
 #endif
@@ -463,6 +495,8 @@ inline static const char *SimdInstructionSetsInUse(void) {
   return "VSX";
 #elif defined(EIGEN_VECTORIZE_NEON)
   return "ARM NEON";
+#elif defined(EIGEN_VECTORIZE_SVE)
+  return "ARM SVE";
 #elif defined(EIGEN_VECTORIZE_ZVECTOR)
   return "S390X ZVECTOR";
 #elif defined(EIGEN_VECTORIZE_MSA)

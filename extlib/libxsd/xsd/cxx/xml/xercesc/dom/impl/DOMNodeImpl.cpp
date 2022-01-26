@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeImpl.cpp 1800911 2017-07-05 18:52:15Z scantor $
+ * $Id$
  */
 
 // This class doesn't support having any children, and implements the behavior

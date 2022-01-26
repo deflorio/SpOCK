@@ -53,7 +53,13 @@ namespace subsystem
     //------------------------------------------------------------------------------         
     SUBSYS::SUBSYS()
         {
-        SYS_Parameters = {};
+        //SYS_Parameters = {};
+        SYS_Parameters.SC2SYS = Mat3x3d::Zero();
+        SYS_Parameters.Position = Vec3d::Zero();
+        SYS_Parameters.Name = "";
+        SYS_Parameters.Range = 0.0;
+        SYS_Parameters.MaxUpdateRate = 0;
+        SYS_Parameters.on_off = false;
         
         On = true; // This value will be passe to member On by TC in a later version of the software
         subsystem_on = true;

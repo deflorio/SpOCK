@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DocTypeHandler.hpp 557282 2007-07-18 14:54:15Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOCTYPEHANDLER_HPP)

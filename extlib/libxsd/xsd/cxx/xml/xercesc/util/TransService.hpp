@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: TransService.hpp 1826420 2018-03-10 21:01:56Z rleigh $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_TRANSSERVICE_HPP)

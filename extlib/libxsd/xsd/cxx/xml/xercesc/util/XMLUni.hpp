@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLUni.hpp 1798755 2017-06-14 20:54:41Z rleigh $
+ * $Id$
  */
 
 
@@ -36,7 +36,7 @@
 XERCES_CPP_NAMESPACE_BEGIN
 
 // Ignore warning about private constructor
-#ifdef __GNUC__
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 5))
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 #endif
@@ -334,7 +334,7 @@ private:
     XMLUni();
 };
 
-#ifdef __GNUC__
+#if defined __GNUC__ && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 5))
 #  pragma GCC diagnostic pop
 #endif
 

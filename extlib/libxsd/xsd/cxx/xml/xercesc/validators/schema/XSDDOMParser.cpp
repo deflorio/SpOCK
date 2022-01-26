@@ -16,7 +16,7 @@
  */
 
 /**
-  * $Id: XSDDOMParser.cpp 729944 2008-12-29 17:03:32Z amassari $
+  * $Id$
   */
 
 

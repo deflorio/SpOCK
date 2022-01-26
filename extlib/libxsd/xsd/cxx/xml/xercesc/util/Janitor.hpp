@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: Janitor.hpp 1826420 2018-03-10 21:01:56Z rleigh $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_JANITOR_HPP)
@@ -154,10 +154,10 @@ private :
     MFPT    fToCall;
 };
 
-
+#if defined(__GNUC__) || (! defined(_AIX) && ! defined(__hpux) && ! defined(__sun))
 XERCES_TEMPLATE_EXTERN template class XMLUTIL_EXPORT ArrayJanitor<XMLByte>;
 XERCES_TEMPLATE_EXTERN template class XMLUTIL_EXPORT ArrayJanitor<XMLCh>;
-
+#endif
 
 XERCES_CPP_NAMESPACE_END
 

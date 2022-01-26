@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ContentSpecNode.hpp 1092729 2011-04-15 14:56:36Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_CONTENTSPECNODE_HPP)

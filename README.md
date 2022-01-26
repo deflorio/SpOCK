@@ -1,4 +1,4 @@
-# SpOCK
+# SpOCK 1.2
 The Spacecraft Orbital Computations Kit (SpOCK) is an open source tool for spacecraft mission analysis and simulation. SpOCK allows the simulation of spacecrafts' hardware, orbital and attitude dynamics, and the computations of mission events (ground station contacts, payload data-takes and eclipses). The ambition of the author is to develop an operational tool (mission analysis, flight dynamics and operations) which includes only few but accurate simulations features and which can be easily further developed and customized. For this reason the software is developed with a (hopefully) clear structure with elements which can be easily read and reproduced and without a graphical user interface. For detailed information about installation, configuration and use please read the user guide.
 
 ---
@@ -15,7 +15,7 @@ Precise orbit and attitude propagation, mission events computation, atmospheric 
 
 *Orbit environment models*
 
-Gravity field (EIGEN-6S, GGM02C), atmospheric density (JB2008, NRLMSISE-00), Earth's magnetic field (IGRF13, WMM2020), solar radiation pressure, third body (JPL planet ephemerides), gravity gradient.
+Gravity field (all GGM0\*, EIGEN\* and models with .gfc files format of this type), atmospheric density (JB2008, NRLMSISE-00), Earth's magnetic field (IGRF13, WMM2020), solar radiation pressure, third body (JPL planet ephemerides), gravity gradient.
 
 *Customizability*
 
@@ -53,11 +53,11 @@ make events
 
 All the executable will be generated in the 'bin' folder. Command 'make clean' will delete all executables in 'bin' folder and folder 'obj'.
 
-Download file de438.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de438.bsp is too big for the repository)
+Download file de440.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de440.bsp is too big for the repository)
 
 *Remarks:*
 
-Installation and run were tested successfully on different real and virtual machines (VMware on Windows 10) running Linux Ubuntu 19.04 or higher. It is possible but not guaranteed that the installation on Ubuntu < 19 or other Linux distributions could work
+Installation and run were tested successfully on different real and virtual machines (VMware on Windows 10) running Linux Ubuntu 19.04 or higher. It is likely but not guaranteed that the installation on Ubuntu < 19 or other Linux distributions could work
 
 Coomands make install_atmo and install_mag are used to compile external Fortran libraries and could give some Fortran compilation warnings.
 

@@ -112,7 +112,7 @@ namespace subsystem
         
         protected:
         /** Subsystem parameters (@see VarTypes.h).*/
-        SYS_params SYS_Parameters;
+        SYS_params SYS_Parameters;// {};
         /** Subsystem telecommands.*/
         VectorXd TCs;
         /** Subsystem name.*/

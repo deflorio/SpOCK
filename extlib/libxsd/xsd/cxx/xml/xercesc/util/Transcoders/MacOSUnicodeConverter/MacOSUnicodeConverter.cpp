@@ -16,7 +16,7 @@
  */
 
 /*
- *	$Id: MacOSUnicodeConverter.cpp 1801642 2017-07-11 18:27:09Z scantor $
+ *	$Id$
  */
  
  

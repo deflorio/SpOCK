@@ -20,7 +20,7 @@
 *  handler with the scanner. In these handler methods, appropriate DOM nodes
 *  are created and added to the DOM tree.
 *
-* $Id: XercesDOMParser.cpp 882548 2009-11-20 13:44:14Z borisk $
+* $Id$
 *
 */
 

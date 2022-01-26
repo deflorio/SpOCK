@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSModelGroupDefinition.cpp 1804272 2017-08-06 20:25:24Z scantor $
+ * $Id$
  */
 
 #include <xercesc/framework/psvi/XSModelGroupDefinition.hpp>

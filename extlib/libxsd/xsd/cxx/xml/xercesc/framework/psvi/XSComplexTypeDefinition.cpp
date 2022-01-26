@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSComplexTypeDefinition.cpp 1801237 2017-07-07 21:55:11Z scantor $
+ * $Id$
  */
 
 #include <xercesc/framework/psvi/XSComplexTypeDefinition.hpp>

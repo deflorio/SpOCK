@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ElemStack.hpp 830538 2009-10-28 13:41:11Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_ELEMSTACK_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSerializeEngine.hpp 679296 2008-07-24 08:13:42Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XSERIALIZE_ENGINE_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SecurityManager.hpp 673960 2008-07-04 08:50:12Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_SECURITYMANAGER_HPP)

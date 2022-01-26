@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMProcessingInstructionImpl.cpp 1800911 2017-07-05 18:52:15Z scantor $
+ * $Id$
  */
 
 #include "DOMProcessingInstructionImpl.hpp"

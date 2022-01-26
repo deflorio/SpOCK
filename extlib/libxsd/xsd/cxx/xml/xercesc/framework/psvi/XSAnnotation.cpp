@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSAnnotation.cpp 679296 2008-07-24 08:13:42Z borisk $
+ * $Id$
  */
 
 #include <xercesc/framework/psvi/XSAnnotation.hpp>

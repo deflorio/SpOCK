@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: QNameDatatypeValidator.hpp 577322 2007-09-19 14:58:04Z cargilld $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_QNAME_DATATYPEVALIDATOR_HPP)

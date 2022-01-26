@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLScanner.cpp 1800342 2017-06-30 00:29:50Z scantor $
+ * $Id$
  */
 
 

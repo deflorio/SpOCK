@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDScanner.cpp 1799527 2017-06-21 22:32:05Z scantor $
+ * $Id$
  */
 
 

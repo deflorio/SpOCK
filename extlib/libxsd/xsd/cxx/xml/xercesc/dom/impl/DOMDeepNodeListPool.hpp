@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMDeepNodeListPool.hpp 883368 2009-11-23 15:28:19Z amassari $
+ * $Id$
  */
 
 //

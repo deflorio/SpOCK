@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DFAContentModel.hpp 677705 2008-07-17 20:15:32Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DFACONTENTMODEL_HPP)

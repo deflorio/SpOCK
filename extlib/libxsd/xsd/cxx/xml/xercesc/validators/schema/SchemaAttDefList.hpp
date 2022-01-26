@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaAttDefList.hpp 673679 2008-07-03 13:50:10Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_SCHEMAATTDEFLIST_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: Hashers.hpp 679382 2008-07-24 12:09:39Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_HASHERS_HPP)

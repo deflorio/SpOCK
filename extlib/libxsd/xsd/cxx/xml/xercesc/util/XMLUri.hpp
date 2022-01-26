@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLUri.hpp 1798769 2017-06-14 21:30:14Z rleigh $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XMLURI_HPP)

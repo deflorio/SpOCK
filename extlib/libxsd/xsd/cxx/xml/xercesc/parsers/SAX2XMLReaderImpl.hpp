@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SAX2XMLReaderImpl.hpp 932889 2010-04-11 13:10:10Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_SAX2XMLREADERIMPL_HPP)

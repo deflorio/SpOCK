@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: Locator.hpp 672273 2008-06-27 13:57:00Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_LOCATOR_HPP)

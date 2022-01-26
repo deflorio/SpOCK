@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: PlatformUtils.hpp 1825016 2018-02-21 22:04:13Z rleigh $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_PLATFORMUTILS_HPP)

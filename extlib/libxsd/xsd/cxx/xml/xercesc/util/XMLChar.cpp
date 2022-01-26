@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLChar.cpp 1517488 2013-08-26 10:33:26Z amassari $
+ * $Id$
  */
 
 // ---------------------------------------------------------------------------
@@ -8837,7 +8837,7 @@ XMLByte XMLChar1_1::fgCharCharsTable1_1[0x10000] =
 
 #include <stdio.h>
 
-static XMLCh gTmpCharTable[0xFFFF];
+static XMLCh gTmpCharTable[0x10000];
 
 static void initOneTable(const  XMLCh* const    theTable
                         , const XMLByte         theMask)

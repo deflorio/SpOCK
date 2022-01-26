@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SynchronizedStringPool.cpp 903137 2010-01-26 09:26:28Z borisk $
+ * $Id$
  */
 
 

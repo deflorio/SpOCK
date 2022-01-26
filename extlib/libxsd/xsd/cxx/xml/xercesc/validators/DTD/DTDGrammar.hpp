@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDGrammar.hpp 883368 2009-11-23 15:28:19Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DTDGRAMMAR_HPP)

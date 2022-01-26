@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: AnySimpleTypeDatatypeValidator.cpp 637054 2008-03-14 11:08:37Z amassari $
+ * $Id$
  */
 
 

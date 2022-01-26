@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMAttrNSImpl.cpp 901107 2010-01-20 08:45:02Z borisk $
+ * $Id$
  */
 
 #include <xercesc/util/XMLUniDefs.hpp>

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: PosixMutexMgr.cpp 471747 2006-11-06 14:31:56Z amassari $
+ * $Id$
  */
 
 // on some platforms, THREAD_MUTEX_RECURSIVE is defined only if _GNU_SOURCE is defined

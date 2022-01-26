@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLUTF8Transcoder.hpp 1383364 2012-09-11 11:48:30Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XMLUTF8TRANSCODER_HPP)

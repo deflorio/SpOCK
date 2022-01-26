@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLInitializer.cpp 1329261 2012-04-23 14:35:09Z amassari $
+ * $Id$
  */
 
 

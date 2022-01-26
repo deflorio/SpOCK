@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XIncludeDOMDocumentProcessor.cpp 655706 2008-05-13 01:08:39Z amassari $
+ * $Id$
  */
 
 

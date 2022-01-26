@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMXPathNSResolver.hpp 698579 2008-09-24 14:13:08Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMXPATHNSRESOLVER_HPP)

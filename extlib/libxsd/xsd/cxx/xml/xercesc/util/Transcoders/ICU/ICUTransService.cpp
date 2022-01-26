@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ICUTransService.cpp 1539311 2013-11-06 11:15:31Z amassari $
+ * $Id$
  */
 
 

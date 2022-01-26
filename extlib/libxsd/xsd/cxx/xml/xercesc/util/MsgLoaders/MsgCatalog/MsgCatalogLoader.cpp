@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: MsgCatalogLoader.cpp 614259 2008-01-22 16:59:21Z amassari $
+ * $Id$
  */
 
 

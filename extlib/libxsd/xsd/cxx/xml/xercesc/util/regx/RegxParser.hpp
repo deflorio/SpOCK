@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: RegxParser.hpp 711369 2008-11-04 20:03:14Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_REGXPARSER_HPP)

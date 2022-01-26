@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLFloat.hpp 673155 2008-07-01 17:55:39Z dbertoni $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XML_FLOAT_HPP)

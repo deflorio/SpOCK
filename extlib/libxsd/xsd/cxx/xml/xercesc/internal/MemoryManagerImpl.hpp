@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: MemoryManagerImpl.hpp 673975 2008-07-04 09:23:56Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_MEMORYMANAGERIMPL_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: PosixFileMgr.cpp 1805935 2017-08-23 16:09:19Z scantor $
+ * $Id$
  */
 
 #include <config.h>

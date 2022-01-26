@@ -135,12 +135,10 @@ namespace SC
                       double duration;
                       bool maneuver_on;
                       };
-                       
-               
         }
 
 namespace ground
-        {
+    {
 	// Target        
 	struct TG
 		{
@@ -158,6 +156,39 @@ namespace ground
 		double alt;	// Altitude
 		double minelev;	// Minimum spacecraft elevation for acquisition of signal
 		};
+	};
+	
+namespace events
+	{
+	struct Pass
+		{
+		std::string Location_name, Epoch_in, Epoch_out; // GS name, start epoch UTC, end epoch UTC
+		int GPSsecs_in; // Start epoch in GPS seconds
+		double duration; // Pass duration
+        double elev_in, elev_out; // Star elevation, end elevation 
+        std::string maxel_time; // max elevation epoch UTC
+        double maxel; // max elevation
+		double Az_in, Az_out, Az_maxel;	// Azimuth at AOS, azimuth at LOS, azimuth at max elevation
+		double lon, lat;	// Longitude and latitude of pass location
+		double PP, SS; // Number of orbital plane, number of spacecraft
+        std::string pass_type;
+		
+		bool operator<(Pass const& other_Pass) { return GPSsecs_in < other_Pass.GPSsecs_in; }
+		};
+        
+//    struct TG_contact
+//		{
+//		std::string TG, Epoch_in, LOS; // GS name, AOS epoch UTC, LOS epoch UTC
+//		int GPSsecs; // AOS GPS seconds
+//		double dur; // Contact duration
+//        std::string maxel_time; // max elevation epoch UTC
+//        double maxel; // max elevation
+//		double AOS_Az, LOS_Az, maxel_Az;	// Azimuth at AOS, azimuth at LOS, azimuth at max elevation
+//		double lon, lat;	// Longitude and latitude of ground station
+//		double PP, SS; // Number of orbital plane, number of spacecraft
+//		
+//		bool operator<(GS_contact const& other_GS_contact) { return GPSsecs < other_GS_contact.GPSsecs; }
+//		};
 	};
         
 using namespace math;

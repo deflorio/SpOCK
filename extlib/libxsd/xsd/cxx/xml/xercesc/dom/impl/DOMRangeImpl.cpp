@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMRangeImpl.cpp 1801099 2017-07-06 19:37:56Z scantor $
+ * $Id$
  */
 
 #include "DOMRangeImpl.hpp"

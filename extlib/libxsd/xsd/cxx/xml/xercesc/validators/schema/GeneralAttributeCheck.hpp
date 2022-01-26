@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: GeneralAttributeCheck.hpp 729944 2008-12-29 17:03:32Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_GENERALATTRIBUTECHECK_HPP)

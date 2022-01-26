@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: PlatformUtils.cpp 1826421 2018-03-10 21:07:56Z rleigh $
+ * $Id$
  *
  */
 

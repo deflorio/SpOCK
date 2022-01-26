@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ContentSpecNode.cpp 1449139 2013-02-22 17:11:10Z amassari $
+ * $Id$
  */
 
 

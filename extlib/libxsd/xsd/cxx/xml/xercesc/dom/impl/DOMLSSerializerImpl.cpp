@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMLSSerializerImpl.cpp 1824086 2018-02-13 00:54:01Z scantor $
+ * $Id$
  */
 
 #include "DOMLSSerializerImpl.hpp"

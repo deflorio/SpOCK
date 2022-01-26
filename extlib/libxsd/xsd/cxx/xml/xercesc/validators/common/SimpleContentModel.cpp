@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SimpleContentModel.cpp 799211 2009-07-30 09:06:43Z amassari $
+ * $Id$
  */
 
 

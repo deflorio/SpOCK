@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: RegularExpression.hpp 822158 2009-10-06 07:52:59Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_REGULAREXPRESSION_HPP)

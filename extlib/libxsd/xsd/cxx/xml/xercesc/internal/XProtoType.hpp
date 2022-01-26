@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XProtoType.hpp 1798772 2017-06-14 21:32:44Z rleigh $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XPROTOTYPE_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNode.hpp 1840502 2018-09-10 23:11:13Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMNODE_HPP)

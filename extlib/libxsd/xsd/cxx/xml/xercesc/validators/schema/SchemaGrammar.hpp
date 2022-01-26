@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaGrammar.hpp 924841 2010-03-18 14:57:13Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_SCHEMAGRAMMAR_HPP)

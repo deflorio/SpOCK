@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: FlagJanitor.c 471747 2006-11-06 14:31:56Z amassari $
+ * $Id$
  */
 
 

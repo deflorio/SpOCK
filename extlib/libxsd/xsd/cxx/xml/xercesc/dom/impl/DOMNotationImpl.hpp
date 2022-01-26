@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNotationImpl.hpp 1800911 2017-07-05 18:52:15Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMNOTATIONIMPL_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMErrorImpl.hpp 676853 2008-07-15 09:58:05Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMERRORIMPL_HPP)

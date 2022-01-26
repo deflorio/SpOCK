@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: KVStringPair.hpp 554580 2007-07-09 09:09:51Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_KVSTRINGPAIR_HPP)

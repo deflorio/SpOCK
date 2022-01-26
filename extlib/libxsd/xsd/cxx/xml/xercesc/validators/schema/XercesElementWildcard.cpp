@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XercesElementWildcard.cpp 671133 2008-06-24 11:22:29Z borisk $
+ * $Id$
  */
 
 

@@ -16,7 +16,7 @@
  */
 
  /*
- * $Id: DOMRangeImpl.hpp 641193 2008-03-26 08:06:57Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMRANGEIMPL_HPP)

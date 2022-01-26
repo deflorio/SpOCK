@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSModel.hpp 674012 2008-07-04 11:18:21Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XSMODEL_HPP)

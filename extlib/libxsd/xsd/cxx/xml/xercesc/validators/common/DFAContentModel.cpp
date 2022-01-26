@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DFAContentModel.cpp 1805934 2017-08-23 16:05:11Z scantor $
+ * $Id$
  */
 
 

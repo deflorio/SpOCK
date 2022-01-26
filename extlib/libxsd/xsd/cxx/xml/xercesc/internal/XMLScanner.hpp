@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLScanner.hpp 1800006 2017-06-27 02:40:16Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XMLSCANNER_HPP)

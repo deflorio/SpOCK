@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: KVStringPair.cpp 554580 2007-07-09 09:09:51Z amassari $
+ * $Id$
  */
 
 

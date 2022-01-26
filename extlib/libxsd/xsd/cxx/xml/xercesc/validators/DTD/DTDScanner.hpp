@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DTDScanner.hpp 1799527 2017-06-21 22:32:05Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DTDSCANNER_HPP)

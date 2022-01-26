@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNamedNodeMapImpl.cpp 678381 2008-07-21 10:15:01Z borisk $
+ * $Id$
  */
 
 

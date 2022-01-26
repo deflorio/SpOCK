@@ -39,7 +39,9 @@ using namespace std;
 using namespace SC;
 
 // Load and read a csv file
-Eigen::MatrixXd read_csvfile(const char* filename, int cols);
+Eigen::MatrixXd read_csvfile(const char* filename, int cols, bool header = false);
+// Determine if a string is a number
+bool isNumber(const string& str);
 // Load and read a geopotential model file
 Matrix3D read_gfc(const char* filename, int maxdeg, double epoch, double& mu, double& Re);
 // Load and read a space weather indices file
@@ -64,5 +66,9 @@ int XML_parser_events(const string XML_events_file, int& simstep, int& duration,
       
 // Write events computation parameters read by parser XML_parser_events in a text file for verification purposes
 void ReadXMLeventstoTXT(const string txt_file, int simstep, int duration, double FOV_cross, double FOV_along, int SC_start, int SC_end, int PL_start, int PL_end, bool TGs_on, bool GSs_on, bool TGs_grid_on, bool Eclipse_on, Vec4d TG_grid_limits, double gridstep, ground::TG* TGs_list, ground::GS* GSs_list, string Orbit_ephemeris_path, string Orbit_ephemeris_rootname, string Data_path, string planetephemeris, string eop, string pck_data, string leapsecond, string TG_filename, string GS_filename, string Eclipse_filename);
+
+// Display in terminal the simulation execution status bar
+void RunStatusBar(double t, int simduration, int barwidth);
+
 
 #endif // IO_UTILS_H_

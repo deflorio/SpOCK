@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DGXMLScanner.hpp 810580 2009-09-02 15:52:22Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DGXMLSCANNER_HPP)

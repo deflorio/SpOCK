@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: IC_Selector.hpp 1515307 2013-08-19 08:03:01Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_IC_SELECTOR_HPP)

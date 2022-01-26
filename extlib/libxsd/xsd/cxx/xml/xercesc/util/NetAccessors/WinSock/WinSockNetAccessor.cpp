@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: WinSockNetAccessor.cpp 635984 2008-03-11 15:54:37Z borisk $
+ * $Id$
  */
 
 

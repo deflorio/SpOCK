@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DGXMLScanner.cpp 1517488 2013-08-26 10:33:26Z amassari $
+ * $Id$
  */
 
 

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: Win32TransService.hpp 676954 2008-07-15 16:29:19Z dbertoni $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_WIN32TRANSSERVICE_HPP)

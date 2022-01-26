@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XIncludeUtils.hpp 673949 2008-07-04 08:04:44Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XINCLUDEUTILS_HPP)

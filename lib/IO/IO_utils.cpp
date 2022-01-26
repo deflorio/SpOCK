@@ -37,19 +37,22 @@ using namespace SC;
 using namespace constants;
 
 //-------------------------------------------------------------------------------------
-// Eigen::MatrixXd read_csvfile(const char* filename, int cols)
+// Eigen::MatrixXd read_csvfile(const char* filename, int cols, bool header = false)
 //-------------------------------------------------------------------------------------
 /**
  * Load and read a csv file
  *
- * @param filename   Complete path to csv file (e.g. dir1/dir2/dir3/filenae.csv)
- * @param cols       Number of columns to be read in csv file
+ * @param filename              Complete path to csv file (e.g. dir1/dir2/dir3/filenae.csv)
+ * @param cols                  Number of columns to be read in csv file
+ * @param header (optional)     If header == true all the lines not containing only numbers
+ *                              are skipped. Default value is header = false.
  *
  * @return Eigen matrix containing the data read in the csv file
  */
 //------------------------------------------------------------------------------------- 
 Eigen::MatrixXd read_csvfile(const char* filename,
-                             int cols)
+                             int cols,
+                             bool header)
                               {
                               Eigen::MatrixXd loaded_file;
                               
@@ -74,18 +77,47 @@ Eigen::MatrixXd read_csvfile(const char* filename,
                               if(file1.is_open())
                                  {
                                  int ind = 0;
+                                 int linenum = 0;
                                  while( getline(file1,line1) )
-                                       {
-                                       int k = 0;
-                                       ephem_tokenizer tok(line1);
-                                       for(ephem_tokenizer::iterator beg = tok.begin(); beg != tok.end(); ++beg)
-                                           {
-                                           //cout << stod(*beg) << "\n";
-                                           loaded_file(ind,k) = stod(*beg);
-                                           k++;
-                                           }
-                                       ind ++;
-                                       }
+                                        {
+                                        int k = 0;
+                                        bool isnum;
+                                        ephem_tokenizer tok(line1);
+                                        
+                                        if(header)
+                                            {
+                                            isnum = isNumber(line1);
+                                            if(!isnum)
+                                                {
+                                                cout << "Not considered line N. " << linenum << ": " << line1 << " of file " << filename << " because containing not number characters" << endl;
+                                                rows--;
+                                                loaded_file.resize(rows,cols);
+                                                linenum++;
+                                                continue;
+                                                }
+                                            else
+                                                {
+                                                for(ephem_tokenizer::iterator beg = tok.begin(); beg != tok.end(); ++beg)
+                                                    {
+                                                    //cout << stod(*beg) << "\n";
+                                                    loaded_file(ind,k) = stod(*beg);
+                                                    k++;
+                                                    }
+                                                ind ++;
+                                                linenum++;
+                                                }
+                                            }
+                                        else
+                                            {
+                                            for(ephem_tokenizer::iterator beg = tok.begin(); beg != tok.end(); ++beg)
+                                                {
+                                                //cout << stod(*beg) << "\n";
+                                                loaded_file(ind,k) = stod(*beg);
+                                                k++;
+                                                }
+                                            ind ++;
+                                            }
+                                        }
                                           
                                  file1.close();
                                  }
@@ -98,6 +130,22 @@ Eigen::MatrixXd read_csvfile(const char* filename,
                                   
                               return loaded_file;    
                               };
+//-------------------------------------------------------------------------------------
+// bool isNumber(const string& str)
+//-------------------------------------------------------------------------------------
+/**
+ * Determine if a string is a number. NOTE: letters eE has not be considered since a number
+ * can be written also in scientific notation (e.g. 1e-3)
+ *
+ * @param String to be analyzed
+ *
+ * @return 1 if the string considered contains only numbers
+ */
+//-------------------------------------------------------------------------------------                               
+bool isNumber(const string& str)                             
+                  {
+                  return str.find_first_of("AaBbCcDdFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz") == string::npos;
+                  }   
 //-------------------------------------------------------------------------------------
 // Matrix3D read_gfc(const char* filename, int maxdeg, double epoch, double& mu, double& Re)
 //-------------------------------------------------------------------------------------
@@ -140,6 +188,7 @@ Matrix3D read_gfc(const char* filename,
                             while(getline(file,line))
                                  {
                                  if(line.empty()) continue;
+                                 if(isspace(line[0])) continue;
                                  
                                  grav_tokenizer tokens(line, sep);
                                  
@@ -431,13 +480,16 @@ Matrix3D read_gfc(const char* filename,
                         return loaded_file;    
                         };          
 //-------------------------------------------------------------------------------------
-// Matrix3D read_gfc(const char* filename)
+// Eigen::MatrixXf read_SpaceWeather(const char* filename, double start_epoch, int sim_duration)
 //-------------------------------------------------------------------------------------
 /**
- * Load and read a geopotential model file
+ * Load and read a space weather file
+ * @note This function is based on the free source C++ library GeographicLib
+ * @see http://geographiclib.sourceforge.net
  *
- * @param filename    Complete path to gfc gravity model file
- * @param epoch       Epoch in GPS seconds
+ * @param filename      Complete path to gfc gravity model file
+ * @param start_epoch   Epoch from which to read the data [GPS seconds]
+ * @param start_epoch   Time span of interest [s]
  *
  * @return Eigen matrix containing all space weather data in read file
  */
@@ -2017,6 +2069,57 @@ void ReadXMLeventstoTXT(const string txt_file,
                   
                         txtfile.close();
                         }
+//-------------------------------------------------------------------------------------
+// void RunStatusBar(double t, int simduration, int barwidth)
+//-------------------------------------------------------------------------------------
+/**
+ * Display in terminal the simulation execution status bar
+ *
+ * @param t             Current simulation time [s]
+ * @param simduration   Duration of simulation run [s]
+ * @param barwidth      Desired width of status bar at the end of the simulation (100 %)
+ *
+ */
+//------------------------------------------------------------------------------------- 
+void RunStatusBar(double t,
+                  int simduration,
+                  int barwidth)
+                  {
+                  int barpos = 0;
+                  static bool barinit;
+                  static double part_dur;
+                  static int sim_done;
+                  
+                  if(!barinit)
+                    {
+                    part_dur = simduration/10.0;
+                    sim_done = 10;
+                    barinit = true;
+                    }
+                  
+                  if( (t - part_dur) >= 0)
+                    {
+                    barpos = barwidth*sim_done/100;
+                    for (int i = 0; i < barwidth; ++i) if(i <= barpos) cout << "\u25A0";
+                    cout << " " << sim_done << "%" << endl;
+                    
+                    part_dur = part_dur + simduration/10.0;
+                    sim_done = sim_done + 10.0;
+                    }  
+                    
+                    
+                    
+                    
+                    
+                    
+                  };
+                  
+
+
+
+
+
+
 //Eigen::MatrixXd read_matfile(const char* filename,
 //                             const char* matvarname)
 //        {

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SAX2XMLReaderImpl.cpp 882548 2009-11-20 13:44:14Z borisk $
+ * $Id$
  */
 
 #include <xercesc/util/IOException.hpp>

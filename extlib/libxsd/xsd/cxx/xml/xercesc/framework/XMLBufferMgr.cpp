@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLBufferMgr.cpp 673679 2008-07-03 13:50:10Z borisk $
+ * $Id$
  */
 
 

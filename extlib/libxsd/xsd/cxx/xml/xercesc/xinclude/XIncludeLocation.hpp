@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XIncludeLocation.hpp 655706 2008-05-13 01:08:39Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XINCLUDELOCATION_HPP)

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: NamespaceScope.hpp 1801095 2017-07-06 19:04:47Z scantor $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_NAMESPACESCOPE_HPP)

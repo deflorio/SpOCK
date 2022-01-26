@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeIDMap.cpp 678144 2008-07-19 12:08:55Z borisk $
+ * $Id$
  */
 
 #include "DOMAttrImpl.hpp"

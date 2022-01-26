@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DatatypeValidator.cpp 555320 2007-07-11 16:05:13Z amassari $
+ * $Id$
  */
 
 

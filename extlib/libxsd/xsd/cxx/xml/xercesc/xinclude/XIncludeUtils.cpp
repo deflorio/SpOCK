@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XIncludeUtils.cpp 1801096 2017-07-06 19:10:17Z scantor $
+ * $Id$
  */
 
 #include <xercesc/xinclude/XIncludeUtils.hpp>

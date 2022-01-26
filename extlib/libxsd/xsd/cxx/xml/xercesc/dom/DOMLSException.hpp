@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMLSException.hpp 671894 2008-06-26 13:29:21Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMLSEXCEPTION_HPP)

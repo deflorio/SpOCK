@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: FieldValueMap.hpp 708224 2008-10-27 16:02:26Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_FIELDVALUEMAP_HPP)

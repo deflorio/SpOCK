@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: URLAccessCFBinInputStream.cpp 1803393 2017-07-29 20:43:21Z scantor $
+ * $Id$
  */
 
 #include <cstdlib>

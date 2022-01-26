@@ -780,7 +780,6 @@ int main(int argc, char *argv[])
     sensorTCs SensorReadings;
     sensorTCs* sensorTCs_ptr = &SensorReadings;
     
-    
     //////////////////////////////////////////////////////
     ///////////////// SOLAR PANELS OUTPUT ///////////////
     /////////////////////////////////////////////////////
@@ -918,9 +917,7 @@ int main(int argc, char *argv[])
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     VectorXd prop_state;
-    
-    double part_dur = SIM_DURATION/10.0;
-    double sim_done = 10.0;
+    int barwidth = 100;
             
     for( double t = 0.0 ; t < SIM_DURATION ; t += SIM_STEP )
         {
@@ -969,12 +966,7 @@ int main(int argc, char *argv[])
         #endif
         
         //////////////// Display propagation progress /////////////////
-        if( (t - part_dur) >= 0)
-            {
-            cout << (int)sim_done << "% done" << endl;
-            part_dur = part_dur + SIM_DURATION/10.0;
-            sim_done = sim_done + 10.0;
-            }
+        RunStatusBar(t, SIM_DURATION, barwidth);
         
         /////////////// ADCS sensors/actuators inputs/outputs ////////////////
         

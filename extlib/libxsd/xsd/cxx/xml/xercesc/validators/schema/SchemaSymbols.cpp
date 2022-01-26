@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaSymbols.cpp 802804 2009-08-10 14:21:48Z amassari $
+ * $Id$
  */
 
 

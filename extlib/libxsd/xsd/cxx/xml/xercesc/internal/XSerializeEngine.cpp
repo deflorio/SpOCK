@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSerializeEngine.cpp 1798775 2017-06-14 21:35:37Z rleigh $
+ * $Id$
  */
 
 

@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: BinMemInputStream.cpp 1798767 2017-06-14 21:28:26Z rleigh $
+ * $Id$
  */
 
 

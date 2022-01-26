@@ -36,15 +36,16 @@ using namespace math;
 using namespace Eigen;
 
 using namespace solarsystem;
+using namespace events;
 
 //------------------------------------------------------------------------------
 // Group of functions for spacecraft contacts with targets and ground stations
 //------------------------------------------------------------------------------
 
 // Compute sensor contacts of one or more spacecraft with one or more targets
-void TGsContacts(int SC_num, int PL_num, Vec4d& orbel, const MatrixXd& orbstateECEF, VectorXd& TGs_grid_lons, VectorXd& TGs_grid_lats, ground::TG* TGs_list, string output_path, double FOV, double FOVdir, double comp_duration, int simstep, bool TGs_on, bool TGs_grid_on, ofstream& AllContacts_file);
+void TGsContacts(int SC_num, int PL_num, Vec4d& orbel, const MatrixXd& orbstateECEF, VectorXd& TGs_grid_lons, VectorXd& TGs_grid_lats, ground::TG* TGs_list, string output_path, double FOV, double FOVdir, double comp_duration, int simstep, bool TGs_on, bool TGs_grid_on, vector<Pass>& TG_passes);
 // Compute contacts of one or more spacecraft with one or more ground stations
-void GSsContacts(int SC_num, int PL_num, Vec4d& orbel, const MatrixXd& orbstateECEF, ground::GS* GSs_list, string output_path, double comp_duration, int simstep, ofstream& AllContacts_file);
+void GSsContacts(int SC_num, int PL_num, Vec4d& orbel, const MatrixXd& orbstateECEF, ground::GS* GSs_list, string output_path, double comp_duration, int simstep, vector<Pass>& GS_passes);
 // Compute umbra and penumbra entry and exit times of one or more spacecraft
 void Umbras(int SC_num, int PL_num, SOLSYS Solar, const MatrixXd& orbpos, string output_path, double comp_duration, int simstep, ofstream& AllUmbras_file);
 

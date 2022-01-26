@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: ICUMsgLoader.cpp 1800344 2017-06-30 01:14:49Z scantor $
+ * $Id$
  */
 
 

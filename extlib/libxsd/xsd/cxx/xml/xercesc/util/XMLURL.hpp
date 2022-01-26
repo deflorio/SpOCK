@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLURL.hpp 536133 2007-05-08 09:05:14Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XMLURL_HPP)

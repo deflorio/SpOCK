@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMCharacterDataImpl.cpp 1528170 2013-10-01 18:23:57Z amassari $
+ * $Id$
  */
 
 #include "DOMCharacterDataImpl.hpp"

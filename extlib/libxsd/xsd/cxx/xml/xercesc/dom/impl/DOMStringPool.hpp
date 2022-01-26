@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMStringPool.hpp 1528170 2013-10-01 18:23:57Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMSTRINGPOOL_HPP)

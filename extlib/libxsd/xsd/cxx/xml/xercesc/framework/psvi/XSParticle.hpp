@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XSParticle.hpp 883665 2009-11-24 11:41:38Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XSPARTICLE_HPP)

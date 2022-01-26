@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SchemaElementDecl.cpp 609971 2008-01-08 13:30:47Z amassari $
+ * $Id$
  */
 
 

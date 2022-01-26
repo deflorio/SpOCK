@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CMStateSet.hpp 1798777 2017-06-14 21:37:39Z rleigh $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_CMSTATESET_HPP)

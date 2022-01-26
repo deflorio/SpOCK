@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: SGXMLScanner.hpp 882548 2009-11-20 13:44:14Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_SGXMLSCANNER_HPP)

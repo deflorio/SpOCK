@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLAbstractDoubleFloat.hpp 605828 2007-12-20 08:05:47Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_XML_ABSTRACT_DOUBLE_FLOAT_HPP)

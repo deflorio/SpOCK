@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: XMLException.cpp 673960 2008-07-04 08:50:12Z borisk $
+ * $Id$
  */
 
 

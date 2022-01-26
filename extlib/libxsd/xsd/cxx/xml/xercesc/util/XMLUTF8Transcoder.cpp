@@ -16,7 +16,7 @@
  */
 
 /**
- * $Id: XMLUTF8Transcoder.cpp 1383364 2012-09-11 11:48:30Z amassari $
+ * $Id$
  */
 
 // ---------------------------------------------------------------------------
@@ -391,12 +391,13 @@ XMLUTF8Transcoder::transcodeFrom(const  XMLByte* const          srcData
             //
             //  If we have enough room to store the leading and trailing
             //  chars, then lets do it. Else, pretend this one never
-            //  happened, and leave it for the next time. Since we don't
-            //  update the bytes read until the bottom of the loop, by
-            //  breaking out here its like it never happened.
+            //  happened, and leave it for the next time.
             //
             if (outPtr + 1 >= outEnd)
+            {
+                srcPtr -= (trailingBytes + 1);
                 break;
+            }
 
             // Store the leading surrogate char
             tmpVal -= 0x10000;

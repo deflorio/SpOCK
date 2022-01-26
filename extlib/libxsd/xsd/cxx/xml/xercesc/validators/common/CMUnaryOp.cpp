@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: CMUnaryOp.cpp 677396 2008-07-16 19:36:20Z amassari $
+ * $Id$
  */
 
 

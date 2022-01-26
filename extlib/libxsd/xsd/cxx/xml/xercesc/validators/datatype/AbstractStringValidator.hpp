@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: AbstractStringValidator.hpp 695949 2008-09-16 15:57:44Z borisk $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_ABSTRACT_STRING_VALIDATOR_HPP)

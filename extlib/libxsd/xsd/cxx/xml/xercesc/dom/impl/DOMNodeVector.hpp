@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: DOMNodeVector.hpp 676796 2008-07-15 05:04:13Z dbertoni $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_DOMNODEVECTOR_HPP)

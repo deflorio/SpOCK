@@ -23,6 +23,8 @@
 #ifndef PROPAGATOR_H
 #define PROPAGATOR_H
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+
 // External libraries: Eigen
 #include <Eigen/Core>
 

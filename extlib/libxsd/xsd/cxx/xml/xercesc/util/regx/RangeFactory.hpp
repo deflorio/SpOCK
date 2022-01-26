@@ -16,7 +16,7 @@
  */
 
 /*
- * $Id: RangeFactory.hpp 678879 2008-07-22 20:05:05Z amassari $
+ * $Id$
  */
 
 #if !defined(XERCESC_INCLUDE_GUARD_RANGEFACTORY_HPP)

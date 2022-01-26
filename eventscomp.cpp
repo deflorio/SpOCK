@@ -58,6 +58,7 @@ using namespace solarsystem;
 using namespace constants;
 using namespace mathconst;
 using namespace math;
+using namespace events;
 
 using namespace Eigen;
 
@@ -113,7 +114,11 @@ int main(int argc, char *argv[])
 	// Input files path
     string ephem_file, Orbit_ephemeris_path, Orbit_ephemeris_rootname, Data_path, planetephemeris, eop, pck_data, leapsecond;
     // Output files path
-    string TG_filename, GS_filename, Eclipse_filename;
+    string TG_filename, GS_filename, Time_sorted_GS_filename, Eclipse_filename;
+    // Vector of GS contacts structs
+    vector<Pass> GS_passes;
+    // Vector of TG contacts structs
+    vector<Pass> TG_passes;
     
     XML_parser_events(XML_events_file, simstep, duration, FOV_cross, FOV_along, SC_start, SC_end, PL_start, PL_end, TGs_on, GSs_on, TGs_grid_on, Eclipse_on, TG_grid_limits, gridstep, TGs_list, GSs_list, Orbit_ephemeris_path, Orbit_ephemeris_rootname, Data_path, planetephemeris, eop, pck_data, leapsecond, TG_filename, GS_filename, Eclipse_filename);
     //const string ReadXML_TXT_file = "../input/readXMLevents.txt";
@@ -232,7 +237,7 @@ int main(int argc, char *argv[])
         {
         AllContacts_file.open(TG_filename);
         
-        AllContacts_file << "TG,Epoch UTC in,GPS time [s] in,Duration [s],El. in,El. out,Epoch UTC Max. El.,Max. El. [deg],Az. in [deg],Az. out [deg],Az. Max El. [deg],lon [deg],lat [deg],Orbital plane,Spacecraft" << endl;
+        AllContacts_file << "TG,Epoch UTC in,Epoch UTC out,GPS time in [s],Duration [min],El. in [deg],El. out [deg],Epoch UTC Max. El.,Max. El. [deg],Az. in [deg],Az. out [deg],Az. Max El. [deg],lon [deg],lat [deg],P#,S#" << endl;
         }
 	  
 	ofstream GS_AllContacts_file;
@@ -240,7 +245,17 @@ int main(int argc, char *argv[])
         {
         GS_AllContacts_file.open(GS_filename);
         
-        GS_AllContacts_file << "GS,AOS UTC,LOS UTC,AOS [GPS secs],Duration [m],Epoch UTC Max. El.,Max Elevation [deg],Az. AOS [deg],Az. LOS [deg],Az. Max El. [deg],lon [deg],lat [deg],Orbital plane,Spacecraft" << endl;
+        GS_AllContacts_file << "GS,AOS UTC,LOS UTC,AOS [GPS secs],Duration [min],Epoch UTC Max. El.,Max Elevation [deg],Az. AOS [deg],Az. LOS [deg],Az. Max El. [deg],lon [deg],lat [deg],P#,S#" << endl;
+        }
+    
+    string TG_GS_filename;   
+    ofstream TG_GS_AllContacts_file;
+    if( GSs_on && (TGs_on || TGs_grid_on) )
+        {
+        TG_GS_filename = TG_output_path + "/All_TG_GS_Contacts.csv";
+        TG_GS_AllContacts_file.open(TG_GS_filename);
+        
+        TG_GS_AllContacts_file << "Pass type,Location,Epoch UTC in,Epoch UTC out,GPS time [s] in,Duration [min],El. in [deg],El. out [deg],Epoch UTC Max. El.,Max. El. [deg],Az. in [deg],Az. out [deg],Az. Max El. [deg],lon [deg],lat [deg],P#,S#" << endl;
         }
       
     SOLSYS Suncompute;
@@ -250,7 +265,7 @@ int main(int argc, char *argv[])
         {
         AllUmbras_file.open(Eclipse_filename);
         
-        AllUmbras_file << "Penumbra start UTC,Umbra start UTC,Umbra end UTC,Penumbra end UTC,Umbra duration [m],Penumbra duration [m],Orbital plane,Spacecraft" << endl;
+        AllUmbras_file << "Penumbra start UTC,Umbra start UTC,Umbra end UTC,Penumbra end UTC,Umbra duration [min],Penumbra duration [min],P#,S#" << endl;
         }
         
     if(TGs_on)  cout << "Compute TG contacts (list)" << endl;
@@ -282,7 +297,7 @@ int main(int argc, char *argv[])
                 bool valid;
                 Vec4d a_ex_ey_i;
                 ephem_file = Orbit_ephemeris_path + "/" + "S" + to_string(s_ind) + "-P" + to_string(p_ind) + "_" + Orbit_ephemeris_rootname;
-				if(PL_start == 1 || PL_end == 1 || SC_start == 1 || SC_end == 1) ephem_file = Orbit_ephemeris_path + "/" + Orbit_ephemeris_rootname;
+				if(PL_start == 1 && PL_end == 1 && SC_start == 1 && SC_end == 1) ephem_file = Orbit_ephemeris_path + "/" + Orbit_ephemeris_rootname;
                 //cout << ephem_file << endl;
                 loaded_ephem = read_csvfile(ephem_file.c_str(),15);
                 matrows = loaded_ephem.rows();
@@ -314,9 +329,9 @@ int main(int argc, char *argv[])
                     orbstateECEF(i,0) = GPStime;
                     }
                     
-                if(TGs_on || TGs_grid_on) TGsContacts(s_ind, p_ind, a_ex_ey_i, orbstateECEF, TGs_grid_lons, TGs_grid_lats, TGs_list, TG_output_path, FOV_cross, FOV_along, duration, simstep, TGs_on, TGs_grid_on, AllContacts_file);
+                if(TGs_on || TGs_grid_on) TGsContacts(s_ind, p_ind, a_ex_ey_i, orbstateECEF, TGs_grid_lons, TGs_grid_lats, TGs_list, TG_output_path, FOV_cross, FOV_along, duration, simstep, TGs_on, TGs_grid_on, TG_passes);
                   
-                if(GSs_on) GSsContacts(s_ind, p_ind, a_ex_ey_i, orbstateECEF, GSs_list, GS_output_path, duration, simstep, GS_AllContacts_file);
+                if(GSs_on) GSsContacts(s_ind, p_ind, a_ex_ey_i, orbstateECEF, GSs_list, GS_output_path, duration, simstep, GS_passes);
 				
 				if(Eclipse_on) Umbras(s_ind, p_ind, Suncompute, time_posECI, Umbras_output_path, duration, simstep, AllUmbras_file);
                 }
@@ -324,12 +339,50 @@ int main(int argc, char *argv[])
             
     //////////////////////////////////////////////////////////////////////
     /////////////// WRITE FILE WITH ALL CONTACTS INFORMATION /////////////
-    //////////////////////////////////////////////////////////////////////        
+    //////////////////////////////////////////////////////////////////////
     
-    if(TGs_on || TGs_grid_on) AllContacts_file.close();
-	if(GSs_on) GS_AllContacts_file.close();
+    
+    //if(TGs_on || TGs_grid_on) AllContacts_file.close();
+	//if(GSs_on) GS_AllContacts_file.close();
+    
+    if(TGs_on || TGs_grid_on)
+      {
+      sort(TG_passes.begin(), TG_passes.end());
+      for(unsigned int i = 0 ; i < TG_passes.size(); i++)
+          {
+          AllContacts_file << TG_passes[i].Location_name << "," << TG_passes[i].Epoch_in << "," << TG_passes[i].Epoch_out << "," << fixed << TG_passes[i].GPSsecs_in << "," << TG_passes[i].duration << "," << TG_passes[i].elev_in << "," << TG_passes[i].elev_out << "," << TG_passes[i].maxel_time << "," << TG_passes[i].maxel << "," << TG_passes[i].Az_in << "," << TG_passes[i].Az_out << "," << TG_passes[i].Az_maxel << "," << TG_passes[i].lon << "," << TG_passes[i].lat << "," << TG_passes[i].PP << "," << TG_passes[i].SS << endl;
+          }
+          
+      AllContacts_file.close();
+      }
 	
 	if(Eclipse_on) AllUmbras_file.close();
+    
+    if(GSs_on)
+      {
+      sort(GS_passes.begin(), GS_passes.end());
+      for(unsigned int i = 0 ; i < GS_passes.size(); i++)
+          {
+          GS_AllContacts_file << GS_passes[i].Location_name << "," << GS_passes[i].Epoch_in << "," << GS_passes[i].Epoch_out << "," << fixed << GS_passes[i].GPSsecs_in << "," << GS_passes[i].duration << "," << GS_passes[i].maxel_time << "," << GS_passes[i].maxel << "," << GS_passes[i].Az_in << "," << GS_passes[i].Az_out << "," << GS_passes[i].Az_maxel << "," << GS_passes[i].lon << "," << GS_passes[i].lat << "," << GS_passes[i].PP << "," << GS_passes[i].SS << endl;
+          
+          GS_passes[i].pass_type = "GS";
+          }
+          
+      GS_AllContacts_file.close();
+      }
+      
+    if( GSs_on && (TGs_on || TGs_grid_on) )
+        {
+        TG_passes.insert( TG_passes.end(), GS_passes.begin(), GS_passes.end() );
+        sort(TG_passes.begin(), TG_passes.end());
+        
+        for(unsigned int i = 0 ; i < TG_passes.size(); i++)
+          {
+          TG_GS_AllContacts_file << TG_passes[i].pass_type << "," << TG_passes[i].Location_name << "," << TG_passes[i].Epoch_in << "," << TG_passes[i].Epoch_out << "," << fixed << TG_passes[i].GPSsecs_in << "," << TG_passes[i].duration << "," << TG_passes[i].elev_in << "," << TG_passes[i].elev_out << "," << TG_passes[i].maxel_time << "," << TG_passes[i].maxel << "," << TG_passes[i].Az_in << "," << TG_passes[i].Az_out << "," << TG_passes[i].Az_maxel << "," << TG_passes[i].lon << "," << TG_passes[i].lat << "," << TG_passes[i].PP << "," << TG_passes[i].SS << endl;
+          }
+          
+        TG_GS_AllContacts_file.close();
+        }
     
     clockend = chrono::high_resolution_clock::now();
         

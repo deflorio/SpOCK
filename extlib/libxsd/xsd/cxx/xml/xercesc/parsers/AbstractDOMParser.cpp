@@ -20,7 +20,7 @@
 *  handler with the scanner. In these handler methods, appropriate DOM nodes
 *  are created and added to the DOM tree.
 *
-* $Id: AbstractDOMParser.cpp 1801664 2017-07-11 23:39:09Z scantor $
+* $Id$
 *
 */
 
