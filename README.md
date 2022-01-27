@@ -1,4 +1,4 @@
-# SpOCK 1.2
+# SpOCK
 The Spacecraft Orbital Computations Kit (SpOCK) is an open source tool for spacecraft mission analysis and simulation. SpOCK allows the simulation of spacecrafts' hardware, orbital and attitude dynamics, and the computations of mission events (ground station contacts, payload data-takes and eclipses). The ambition of the author is to develop an operational tool (mission analysis, flight dynamics and operations) which includes only few but accurate simulations features and which can be easily further developed and customized. For this reason the software is developed with a (hopefully) clear structure with elements which can be easily read and reproduced and without a graphical user interface. For detailed information about installation, configuration and use please read the user guide.
 
 ---
