@@ -253,9 +253,11 @@ namespace orbpropulsion
                                                 {
                                                 unit_maneuver = impman[man_ind];
                                                 
+                                                m_init_time = m_init_time + SIM_STEP;
+                                                
                                                 for(int i = 0 ; i < 3; i++)
                                                     {
-                                                    m_init_time = m_init_time + SIM_STEP;
+                                                    //m_init_time = m_init_time + SIM_STEP;
                                                        
                                                     if( dv(i) > 0.0 && dv(i) > dv_unit )
                                                       {
@@ -273,7 +275,7 @@ namespace orbpropulsion
                                                       }
                                                     }
                                                 
-                                                if( dv.norm() >= dv_unit )
+                                                if( ( dv.norm() >= dv_unit ) || ( dv.norm() < dv_unit && dv.norm() > dv_res ) )
                                                     {    
                                                     // Make place for the insertion of a new element
                                                     man_size = man_size + 1;
