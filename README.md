@@ -11,7 +11,7 @@ Model of 6 spacecraft faces, 3 solar panels, 1 Sun camera, 1 Earth camera, 3 mag
 
 *Dynamics*
 
-Precise orbit and attitude propagation, mission events computation, atmospheric drag and solar radiation pressure with panels model (dependent on attitude) or reference area model, attitude and orbital maneuvers with different type of actuators.
+Precise orbit and attitude propagation, mission events computation, atmospheric drag and solar radiation pressure with panels model (dependent on attitude) or reference area model, attitude and orbital maneuvers with different type of actuators. The simplified general perturbations (SGP4) propagator used with two-line mean element (TLE) sets is also implemented.
 
 *Orbit environment models*
 
@@ -47,6 +47,8 @@ make install_mag (first compilation or after OS upgrade)
 
 make orbit
 
+make sgp4
+
 make attitude
 
 make events
@@ -65,7 +67,7 @@ Coomands make install_atmo and install_mag are used to compile external Fortran 
 
 ## Configuration
 
-Put correct inputs/outputs paths in input files simparam_sample.xml and eventsparam_sample.xml
+Put correct inputs/outputs paths in input files simparam_sample.xml and eventsparam_sample.xml as explained in detail in SPOCK_UserGuide.pdf.
 
 ---
 
@@ -74,6 +76,8 @@ Put correct inputs/outputs paths in input files simparam_sample.xml and eventspa
 *In linux terminal:*
 
 ./bin/OrbitPropagator input/SimulationParameters/simparam_sample.xml
+
+./bin/SGP4Propagator input/SimulationParameters/simparam_sample.xml
 
 ./bin/AttitudePropagator input/SimulationParameters/simparam_sample.xml
 

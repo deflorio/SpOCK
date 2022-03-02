@@ -489,7 +489,7 @@ Matrix3D read_gfc(const char* filename,
  *
  * @param filename      Complete path to gfc gravity model file
  * @param start_epoch   Epoch from which to read the data [GPS seconds]
- * @param start_epoch   Time span of interest [s]
+ * @param sim_duration   Time span of interest [s]
  *
  * @return Eigen matrix containing all space weather data in read file
  */
@@ -1278,6 +1278,190 @@ int XML_parser(const string XML_simparam_file,
               
               return(0);
               };
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+//-------------------------------------------------------------------------------------
+// int SGP4_XML_parser(...)
+//-------------------------------------------------------------------------------------
+/**
+ * Load and read simulation parameters XML file and validate it against an XML schema file.
+ * This is a reduced version of function XML_parser for the SGP4 propagator which requires
+ * a small subset of the inputs required by the precise orbit propagation.
+ *
+ * @param XML_simparam_file      Complete path to XML file (e.g. dir1/dir2/dir3/filenae.xml)
+ *
+ * @return exception against XML schema
+ *
+ * @note The implementation of this parser is based on CodeSynthesis XSD binding compiler and the xerces library
+ * @see http://www.codesynthesis.com/products/xsd/
+ * @see https://xerces.apache.org/xerces-c/
+ */
+//------------------------------------------------------------------------------------- 
+int SGP4_XML_parser(const string XML_simparam_file,
+                string& TLE_file,
+                string& Data_path,
+                string& eop,
+                string& pck_data,
+                string& leapsecond,
+                string& orbfile_name,
+                int& SIM_STEP,
+                int& SIM_DURATION)
+                {
+                ::simparam_pimpl simparam_p;
+                ::fileheader_pimpl fileheader_p;
+                ::xml_schema::string_pimpl string_p;
+                ::license_pimpl license_p;
+                ::xml_schema::uri_pimpl uri_p;
+                ::xml_schema::date_pimpl date_p;
+                ::reference_pimpl reference_p;
+                ::SC_Faces_pimpl SC_Faces_p;
+                ::SC_properties_pimpl SC_properties_p;
+                ::InputFiles_pimpl InputFiles_p;
+                ::OutputFiles_pimpl OutputFiles_p;
+                ::SimParameters_pimpl SimParameters_p;
+                ::durstep_pimpl durstep_p;
+                ::xml_schema::duration_pimpl duration_p;
+                ::ORB_initstate_pimpl ORB_initstate_p;
+                ::ATT_initstate_pimpl ATT_initstate_p;
+                ::simoptions_pimpl simoptions_p;
+                ::SensorsActuators_pimpl SensorsActuators_p;
+                ::Maneuvers_pimpl Maneuvers_p;
+             
+                // Connect the parsers together.
+                //
+                simparam_p.parsers (fileheader_p,
+                          SC_Faces_p,
+                          SC_properties_p,
+                          InputFiles_p,
+                          OutputFiles_p,
+                          SimParameters_p,
+                          SensorsActuators_p,
+                          Maneuvers_p,
+                          string_p);
+  
+                fileheader_p.parsers (string_p,
+                                      string_p,
+                                      string_p,
+                                      license_p,
+                                      string_p,
+                                      date_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      reference_p);
+            
+                license_p.parsers (string_p,
+                                   uri_p);
+            
+                reference_p.parsers (string_p,
+                                    string_p,
+                                    string_p,
+                                    string_p);
+            
+                InputFiles_p.parsers (string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p,
+                                      string_p);
+  
+                OutputFiles_p.parsers (string_p,
+                                       string_p,
+                                       string_p,
+                                       string_p,
+                                       string_p,
+                                       string_p);
+            
+                SimParameters_p.parsers (durstep_p,
+                                         ORB_initstate_p,
+                                         ATT_initstate_p,
+                                         simoptions_p);
+            
+                durstep_p.parsers (duration_p,
+                                   duration_p);
+                 
+                try
+                  {
+                  // Parse the XML document.
+                  //
+                  ::xml_schema::document doc_p(simparam_p, "simparam");
+              
+                  simparam_p.pre ();
+                  doc_p.parse(XML_simparam_file);
+                  simparam_p.post_simparam ();
+                  }
+                catch (const ::xml_schema::exception& e)
+                  {
+                  std::cerr << e << std::endl;
+                  return 1;
+                  }
+                  
+                ///////////////////////////////////////////////////////////////
+                ///////////////////////// FILES PATHS /////////////////////////
+                ///////////////////////////////////////////////////////////////
+                // Input files paths
+                TLE_file = InputFiles_p.Orbit_ephemeris_in;
+                Data_path = InputFiles_p.Data_path_in;
+                pck_data = InputFiles_p.pck_data_in;
+                eop = InputFiles_p.eop_in;
+                leapsecond = InputFiles_p.leapsecond_in;
+                // Output files paths
+                orbfile_name = OutputFiles_p.orbfile_name_in;
+                /////////////////////////////////////////////////////////////////////////
+                ///////////////////////// SIMULATION PARAMETERS /////////////////////////
+                /////////////////////////////////////////////////////////////////////////
+                // Simulation step
+                SIM_STEP = durstep_p.sim_step;
+                // Simulation duration
+                SIM_DURATION = durstep_p.sim_duration;
+                
+                return(0);
+              };              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
+              
 //-------------------------------------------------------------------------------------
 // void ReadXMLtoTXT(...)
 //-------------------------------------------------------------------------------------

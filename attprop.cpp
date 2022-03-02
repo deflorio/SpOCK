@@ -593,6 +593,7 @@ int main(int argc, char *argv[])
     SC_Attitude.mag_on = T_model[1];
     SC_Attitude.drag_on = T_model[2];
     SC_Attitude.srp_on = T_model[3];
+    SC_Attitude.simdur = SIM_DURATION;
     SC_Attitude.magnetometer_on = Magnetometer1.On || Magnetometer1.On; // True if at least one of the magnetometers is switched-on
     
     SC_Attitude.Setup(SC_prms,envmodels_paths);

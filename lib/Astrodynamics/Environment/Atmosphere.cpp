@@ -183,12 +183,12 @@ namespace atmosphere
                                                 //return(0);
                                                 return;
                                                 }
-                                        
+                                                
                                         doy = (int)SpaceWeather_idx(swind,1);
                                         UTsecs = time - SpaceWeather_idx(swind,0); // Seconds of day
                                         f107a = SpaceWeather_idx(swind,27);
                                         f107 = SpaceWeather_idx(swind - 1, 29);
-                                        
+                                           
                                         Ap_4days.segment(0,3) = SpaceWeather_idx.block<1,3>(swind - 3,18);
                                         Ap_4days.segment(3,8) = SpaceWeather_idx.block<1,8>(swind - 2,13);
                                         Ap_4days.segment(11,8) = SpaceWeather_idx.block<1,8>(swind - 1,13);
@@ -369,7 +369,7 @@ namespace atmosphere
                             if( modelname.compare("NRLMSISE-00") == 0 )
                                 {
                                 string spaceweather_file = modelfilepath + "/spaceweather/CssiSpaceWeather_indices.txt";
-                                SpaceWeather_idx = read_SpaceWeather(spaceweather_file.c_str(),init_epoch, simduration); // inittime variable of class PROP
+                                SpaceWeather_idx = read_SpaceWeather(spaceweather_file.c_str(),init_epoch, simduration + 86400); // inittime variable of class PROP
                                 }
                             
                             };
