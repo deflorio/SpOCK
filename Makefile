@@ -1,11 +1,13 @@
 SHELL := /bin/bash
 
 TARGET_ORB = bin/OrbitPropagator
+TARGET_SGP4 = bin/SGP4Propagator
 TARGET_ATT = bin/AttitudePropagator
 TARGET_EVE = bin/EventsComputation
 
 C_SRC   :=  $(wildcard *.c)
 CPP_SRC_ORB :=  orbprop.cpp
+CPP_SRC_SGP4 := sgp4prop.cpp
 CPP_SRC_ATT :=  attprop.cpp
 CPP_SRC_EVE :=  eventscomp.cpp
 H_SRC   :=  $(wildcard *.h)
@@ -29,6 +31,8 @@ LD_FLAGS =
 #OBJECTS_ORB = $(patsubst %.c, %.o, $(C_SRC))
 OBJECTS_ORB += $(patsubst %.cpp, %.o, $(CPP_SRC_ORB))
 
+OBJECTS_SGP4 += $(patsubst %.cpp, %.o, $(CPP_SRC_SGP4))
+
 OBJECTS_ATT = $(patsubst %.c, %.o, $(C_SRC))
 OBJECTS_ATT += $(patsubst %.cpp, %.o, $(CPP_SRC_ATT))
 
@@ -43,6 +47,9 @@ OBJ_DIR = objs
 OBJS_ORB = $(addprefix $(OBJ_DIR)/, $(OBJECTS_ORB))
 DEPS_ORB = $(patsubst %.o, %.o.d, $(OBJECTS_ORB))
 
+OBJS_SGP4 = $(addprefix $(OBJ_DIR)/, $(OBJECTS_SGP4))
+DEPS_SGP4 = $(patsubst %.o, %.o.d, $(OBJECTS_SGP4))
+
 OBJS_ATT = $(addprefix $(OBJ_DIR)/, $(OBJECTS_ATT))
 DEPS_ATT = $(patsubst %.o, %.o.d, $(OBJECTS_ATT))
 
@@ -54,6 +61,10 @@ DEPS_EVE = $(patsubst %.o, %.o.d, $(OBJECTS_EVE))
 orbit: $(TARGET_ORB) silent
 
 -include $(DEPS_ORB)
+
+sgp4: $(TARGET_SGP4) silent
+
+-include $(DEPS_SGP4)
 
 attitude: $(TARGET_ATT) silent
 
@@ -75,6 +86,10 @@ silent:
 $(TARGET_ORB): $(OBJS_ORB)
 	@echo Linking
 	@$(CCXX) $(LD_FLAGS) $(LIBRARY_PATH) -o $(TARGET_ORB) $^ $(LIBRARY)
+	
+$(TARGET_SGP4): $(OBJS_SGP4)
+	@echo Linking
+	@$(CCXX) $(LD_FLAGS) $(LIBRARY_PATH) -o $(TARGET_SGP4) $^ $(LIBRARY)
 	
 $(TARGET_ATT): $(OBJS_ATT)
 	@echo Linking
@@ -113,6 +128,7 @@ clean:
 	@rm -rf $(OBJ_DIR)
 	@echo Removing target
 	@rm -f $(TARGET_ORB)
+	@rm -f $(TARGET_SGP4)
 	@rm -f $(TARGET_ATT)
 	@rm -f $(TARGET_EVE)
 
@@ -132,6 +148,7 @@ test:
 
 run: all
 	@./$(TARGET_ORB)
+	@./$(TARGET_SGP4)
 	@./$(TARGET_ATT)
 	@./$(TARGET_EVE)
 
