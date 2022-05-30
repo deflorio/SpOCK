@@ -76,8 +76,17 @@ namespace thirdbody
                             // Position of spacecraft in ECI
                             SC_posECI = orbstate;
                             // Position at epoch of Sun and Moon in ECI
-                            sunpos = Solar.sunposREC(time);
-                            moonpos = Solar.moonposREC(time);
+                            if( modelname.compare("LP") == 0 )
+                                {
+                                sunpos = Solar.LP_sunposREC(time);
+                                moonpos = Solar.LP_moonposREC(time);    
+                                }
+                            else if( modelname.compare("DE") == 0 )
+                                {
+                                sunpos = Solar.sunposREC(time);
+                                moonpos = Solar.moonposREC(time);
+                                }
+                            
                             // Position of Sun and Moon relative to the spacecraft
                             SCtoSunpos = sunpos - SC_posECI;
                             SCtoMoonpos = moonpos - SC_posECI;

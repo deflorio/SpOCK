@@ -33,6 +33,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry> 
 #include <VarTypes.h>
+#include <NutCoeff.h>
 
 //#include <boost/math/quaternion.hpp>
 
@@ -48,6 +49,83 @@ using namespace constants;
 using namespace mathconst;
 using namespace astro;
 
+
+
+//------------------------------------------------------------------------------
+// Mat3x3d Rot_x(double alpha)
+//------------------------------------------------------------------------------
+/**
+ * Compute elementary x-rotation matrix
+ *
+ * @param alpha   Rotation around x-axis
+ *
+ * @return Rotation matrix
+ */
+//------------------------------------------------------------------------------  
+Mat3x3d Rot_x(double alpha)
+            {
+            Mat3x3d Tx;
+            double calpha = cos(alpha);
+            double salpha = sin(alpha);
+            
+            Tx(0,0) = 1.0;     Tx(0,1) = 0.0;         Tx(0,2) = 0.0;
+                        
+            Tx(1,0) = 0.0;     Tx(1,1) = +calpha;     Tx(1,2) = +salpha;
+            
+            Tx(2,0) = 0.0;     Tx(2,1) = -salpha;     Tx(2,2) = +calpha;
+      
+            return(Tx);
+            };
+//------------------------------------------------------------------------------
+// Mat3x3d Rot_y(double alpha)
+//------------------------------------------------------------------------------
+/**
+ * Compute elementary y-rotation matrix
+ *
+ * @param alpha   Rotation around y-axis
+ *
+ * @return Rotation matrix
+ */
+//------------------------------------------------------------------------------  
+Mat3x3d Rot_y(double alpha)
+            {
+            Mat3x3d Ty;
+            double calpha = cos(alpha);
+            double salpha = sin(alpha);
+            
+            Ty(0,0) = +calpha;    Ty(0,1) = 0.0;    Ty(0,2) = -salpha;
+                        
+            Ty(1,0) = 0.0;        Ty(1,1) = 1.0;    Ty(1,2) = 0.0;
+            
+            Ty(2,0) = +salpha;    Ty(2,1) = 0.0;    Ty(2,2) = +calpha;
+      
+            return(Ty);
+            };
+//------------------------------------------------------------------------------
+// Mat3x3d Rot_z(double alpha)
+//------------------------------------------------------------------------------
+/**
+ * Compute elementary z-rotation matrix
+ *
+ * @param alpha   Rotation around z-axis
+ *
+ * @return Rotation matrix
+ */
+//------------------------------------------------------------------------------  
+Mat3x3d Rot_z(double alpha)
+            {
+            Mat3x3d Tz;
+            double calpha = cos(alpha);
+            double salpha = sin(alpha);
+            
+            Tz(0,0) = +calpha;    Tz(0,1) = +salpha;    Tz(0,2) = 0.0;
+                        
+            Tz(1,0) = -salpha;    Tz(1,1) = +calpha;    Tz(1,2) = 0.0;
+            
+            Tz(2,0) = 0.0;        Tz(2,1) = 0.0;        Tz(2,2) = 1.0;
+      
+            return(Tz);
+            };
 //-------------------------------------------------------------------------------------
 // Mat3x3d RotationMatrix(double alpha, double beta, double gamma, int a, int b, int c)
 //-------------------------------------------------------------------------------------
@@ -152,7 +230,7 @@ Vec3d EulerAngles321(Mat3x3d& Mat)
                     Vec3d angles(phi, theta, psi);
                     
                     return(angles);
-                    };                    
+                    };
 //------------------------------------------------------------------------------
 // Vec3d EulerAngles321(Vec4d& q) (overloaded function)
 //------------------------------------------------------------------------------
@@ -745,6 +823,360 @@ Vector6d ECI2ECEF(double GPStime, Vector6d& ECIstate)
                     return(ECEFstate);
                     };
 //------------------------------------------------------------------------------
+// Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstate)
+//------------------------------------------------------------------------------
+/**
+ * State transformation from ICRF to ITRF
+ *
+ * @param GPStime       GPS epoch (seconds) of the input state
+ * @param ECIstate      3-dimensional vector containing Earth orientation parameters
+ *                      eop(0) = CEP x-coordinate xp [1e-6 arcsec]
+ *                      eop(1) = CEP y-coordinate yp [1e-6 arcsec]
+ *                      eop(1) = UT1 - UTC [1e-7 sec]
+ *                      The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
+ * @param leapsec       Current leap second
+ * @param ICRFstate     6-dimensional ICRF state state vector
+ * @param SIM_STEP      Integration step    
+ *
+ * @return 6-dimensional ITRF state vector
+ * 
+ */
+//------------------------------------------------------------------------------
+Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstate, int SIM_STEP)
+                    {
+                    Vector6d ITRFstate;
+                    
+                    double dt = SIM_STEP;
+                    Vec3d r, v, posITRF, velITRF;
+                    
+                    r = ICRFstate.segment(0,3); // Position
+                    v = ICRFstate.segment(3,3); // Velocity
+                    
+                    Mat3x3d T_ICRF2ITRF, dT_ICRF2ITRF, dT_ICRF2ITRF_2, dT_ICRF2ITRF_1;
+                    // Compute transformation matrices
+                    T_ICRF2ITRF = ICRF2ITRF_Mat(GPStime, eop, leapsec);
+                    
+                    dT_ICRF2ITRF_2 = ICRF2ITRF_Mat(GPStime + dt, eop, leapsec);
+                    dT_ICRF2ITRF_1 = ICRF2ITRF_Mat(GPStime - dt, eop, leapsec);
+                    
+                    dT_ICRF2ITRF = (dT_ICRF2ITRF_2 - dT_ICRF2ITRF_1)/(2*dt);
+                    
+                    // Transform state vector
+                    posITRF = T_ICRF2ITRF*r;
+                    velITRF = dT_ICRF2ITRF*r + T_ICRF2ITRF*v;
+                    
+                    ITRFstate.segment(0,3) = posITRF;
+                    ITRFstate.segment(3,3) = velITRF;
+                    
+                    return(ITRFstate);
+                    };       
+//------------------------------------------------------------------------------
+// Mat6x6d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec)
+//------------------------------------------------------------------------------
+/**
+ * State (position) transformation matrix from ICRF to ITRF
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param GPStime      GPS epoch (seconds) of the input state
+ * @param ECIstate     3-dimensional vector containing Earth orientation parameters
+ *                     eop(0) = CEP x-coordinate xp [1e-6 arcsec]
+ *                     eop(1) = CEP y-coordinate yp [1e-6 arcsec]
+ *                     eop(1) = UT1 - UTC [1e-7 sec]
+ *                     The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
+ * @param leapsec      Current leap second
+ * 
+ * @return 3-dimensional ICRF2ITRF transformation matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec)
+                      {
+                      Mat3x3d T_ICRF2ITRF;
+                      
+                      double xp = 1.0e-6*ARCS2RAD*eop(0); // [rad]
+                      double yp = 1.0e-6*ARCS2RAD*eop(1); // [rad]
+                      double UT1_UTC = 1.0e-7*eop(2); // [s]
+                      
+                      VectorNd<2> GPSws;
+                      double TTsecs, UTCsecs, UT1secs, MJD_TT, MJD_UT1;
+                      Mat3x3d T_Prec, T_Nut, T_GHA, T_Pole;
+                      
+                      // Compute TT seconds from GPS seconds
+                      GPSws = VectorNd<2>::Zero();
+                      TTsecs = GPS2TT(GPStime);
+                      GPSws = GPS2GPSws(TTsecs);
+                      // Compute MJD at TT seconds
+                      MJD_TT = GPSws2MJD(GPSws(0), GPSws(1));
+                      
+                      // Compute UTC seconds from GPS seconds
+                      GPSws = VectorNd<2>::Zero();
+                      UTCsecs = GPS2UTC(GPStime, leapsec);
+                      GPSws = GPS2GPSws(UTCsecs);
+                      // Compute MJD at UTC seconds
+                      //MJD_UTC = GPSws2MJD(GPSws(0), GPSws(1));
+                      
+                      // Compute UT1 seconds from UTC seconds
+                      GPSws = VectorNd<2>::Zero();
+                      UT1secs = UTCsecs + UT1_UTC;
+                      GPSws = GPS2GPSws(UT1secs);
+                      // Compute MJD at UT1 seconds
+                      MJD_UT1 = GPSws2MJD(GPSws(0), GPSws(1));
+                      
+                      // Precession transformation of equatorial coordinates
+                      T_Prec = PrecMat(timescales::MJD_J2000, MJD_TT);
+                      // Transformation matrix from mean to true equator and equinox
+                      T_Nut = NutMat(MJD_TT); // dpsi is computed in function NutMat and used as input of function GHAMat
+                      // Transformation matrix from true equator and equinox to Earth equator and Greenwich meridian system
+                      T_GHA = GHAMat(MJD_UT1);
+                      // Transformation matrix from pseudo Earth-fixed to Earth-fixed coordinates for a given date
+                      T_Pole = PoleMat(xp, yp);
+                      
+                      // Transformation matrix ICRF2ITRF
+                      T_ICRF2ITRF = T_Pole*T_GHA*T_Nut*T_Prec;
+                      
+                      return(T_ICRF2ITRF);
+                      };
+//------------------------------------------------------------------------------
+// Mat3x3d PrecMat(double MJD1_TT, double MJD2_TT)
+//------------------------------------------------------------------------------
+/**
+ * Precession matrix for equatorial coordinates
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param MJD1_TT    Epoch given (Modified Julian Date TT)
+ * @param MJD2_TT    Epoch to precess to (Modified Julian Date TT)
+ *
+ * @return 3-dimensional precession transformation matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d PrecMat(double MJD1_TT, double MJD2_TT)
+                {
+                Mat3x3d T_Prec;
+                Mat3x3d T_z, T_y, T_zeta;
+                double zeta,z,theta;
+                
+                // Conversion from MJD to Julian centuries Terrestrial Time since J2000 TT
+                const double T = (MJD1_TT - timescales::MJD_J2000)/timescales::JULIAN_DAYS_CENTURY;
+                const double t = (MJD2_TT - MJD1_TT)/timescales::JULIAN_DAYS_CENTURY;
+                
+                // Precession angles                
+                zeta = ( ( 2306.2181 + (1.39656 - 0.000139*T)*T ) + ( (0.30188 - 0.000344*T) + 0.017998*t )*t )*t*ARCS2RAD;
+                
+                z = zeta + ( (0.79280 + 0.000411*T) + 0.000205*t )*t*t*ARCS2RAD;
+                
+                theta = ( ( 2004.3109 - (0.85330 + 0.000217*T)*T ) - ( (0.42665 + 0.000217*T) + 0.041833*t )*t )*t*ARCS2RAD;
+              
+                // Precession matrix
+                T_z = Rot_z(-z);
+                T_y = Rot_y(theta);
+                T_zeta = Rot_z(-zeta);
+                
+                T_Prec = T_z*T_y*T_zeta;
+                  
+                return(T_Prec);
+                };
+//------------------------------------------------------------------------------
+// Mat3x3d NutMat(double MJD_TT)
+//------------------------------------------------------------------------------
+/**
+ * Nutation matrix (transformation from mean-of-date to true-of-date coordinates)
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param MJD_TT    Modified Julian Date TT
+ *
+ * @return 3-dimensional nutation transformation matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d NutMat(double MJD_TT)
+                {
+                Mat3x3d T_nut;
+                Mat3x3d T_epsdeps, T_dpsi, T_eps;
+                Matrix<long, 106, 9> NutCoeff = Matrix<long, 106, 9>::Zero();
+                double T, eps, deps, dpsi;                
+                deps = 0.0;
+                dpsi = 0.0;
+                
+                // Conversion from MJD to Julian centuries Terrestrial Time since J2000 TT
+                T = (MJD_TT - timescales::MJD_J2000)/timescales::JULIAN_DAYS_CENTURY;
+                
+                ////////////// Mean obliquity of the ecliptic ////////////
+                eps = ( 23.43929111 - ( 46.8150 + (0.00059 - 0.001813*T)*T )*T/3600.0 )*DEG2RAD;
+                
+                ////////////// Nutation in longitude and obliquity ////////////
+                // Get Coefficients
+                get_NutCoeff(NutCoeff);
+                // Compute nutation angles
+                NutationAngles(MJD_TT, NutCoeff, dpsi, deps);
+                
+                //////////// Nutation matrix ////////////                
+                T_epsdeps = Rot_x(-eps -deps);                
+                T_dpsi = Rot_z(-dpsi);                
+                T_eps = Rot_x(+eps);
+                
+                T_nut = T_epsdeps*T_dpsi*T_eps;
+                  
+                return(T_nut);
+                };
+//------------------------------------------------------------------------------
+// void NutationAngles(double MJD, Matrix<long, 106, 9> NutCoeff, double& dpsi, double& deps)
+//------------------------------------------------------------------------------
+/**
+ * Nutation in longitude and obliquity
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param MJD       Modified Julian Date
+ * @param NutCoeff  Matrix of IAU 1980 nutation theory coefficients
+ *
+ * @return dpsi and deps   Nutation in longitude and obliquity [rad]
+ * 
+ */
+//------------------------------------------------------------------------------
+void NutationAngles(double MJD, Matrix<long, 106, 9> NutCoeff, double& dpsi, double& deps)
+                {
+                deps = 0.0;
+                dpsi = 0.0;
+                
+                //Matrix<long, 106, 9> NutCoeff = Matrix<long, 106, 9>::Zero();
+                const int N = 106;
+                const double rev = 360.0*3600.0; // [arcsec/revolution]
+                
+                double T, T2, T3;
+                double  l, lp, F, D, Om;
+                double  arg;
+                
+                // Conversion from MJD to Julian centuries Terrestrial Time since J2000 TT
+                T = (MJD - timescales::MJD_J2000)/timescales::JULIAN_DAYS_CENTURY;
+                T2 = T*T;
+                T3 = T2*T;
+                
+                // Mean anomaly of the Moon
+                l = mod(485866.733 + (1325.0*rev + 715922.633)*T + 31.310*T2 + 0.064*T3, rev);
+                // Mean anomaly of the Sun
+                lp = mod(1287099.804 + ( 99.0*rev + 1292581.224)*T - 0.577*T2 - 0.012*T3, rev);
+                // Mean argument of latitude
+                F = mod(335778.877 + (1342.0*rev +  295263.137)*T - 13.257*T2 + 0.011*T3, rev);
+                // Mean longitude elongation of the Moon from the Sun
+                D = mod(1072261.307 + (1236.0*rev + 1105601.328)*T - 6.891*T2 + 0.019*T3, rev );
+                // Mean longitude of the ascending node
+                Om = mod(450160.280 - ( 5.0*rev +  482890.539)*T + 7.455*T2 + 0.008*T3, rev);
+                
+                //get_NutCoeff(NutCoeff);
+
+                // Nutation in longitude and obliquity [rad]
+                for(int i = 0; i < N; i++)
+                    {
+                    arg = ( NutCoeff(i,0)*l + NutCoeff(i,1)*lp + NutCoeff(i,2)*F + NutCoeff(i,3)*D + NutCoeff(i,4)*Om )*ARCS2RAD;
+                    
+                    dpsi += ( NutCoeff(i,5) + NutCoeff(i,6)*T )*sin(arg);
+                  
+                    deps += ( NutCoeff(i,7) + NutCoeff(i,8)*T )*cos(arg);
+                    };
+                    
+                dpsi = 1.0e-5*dpsi*ARCS2RAD;
+                deps = 1.0e-5*deps*ARCS2RAD;
+                };
+//------------------------------------------------------------------------------
+// Mat3x3d GHAMat(double MJD_UT1)
+//------------------------------------------------------------------------------
+/**
+ * Transformation from true equator and equinox to Earth equator and Greenwich meridian system
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param MJD    Modified Julian Date TT
+ *
+ * @return 3-dimensional Greenwich Hour Angle transformation matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d GHAMat(double MJD_UT1)
+                {
+                Mat3x3d T_GHA;
+                
+                double MJD0, UT1, T0 , T, gmst, GMST_MJD_UT1_, intpart;
+                double GMST_MJD_UT1, MeanObliquity, EqnEquinox, GAST_MJD_UT1;
+                double deps = 0.0, dpsi = 0.0;
+                Matrix<long, 106, 9> NutCoeff = Matrix<long, 106, 9>::Zero();
+
+                // Compute Greenwich Mean Sidereal Time
+                MJD0 = floor(MJD_UT1);
+                UT1 = timescales::JULIAN_DAY*(MJD_UT1 - MJD0); // [s]
+                T0 = (MJD0 - timescales::MJD_J2000)/timescales::JULIAN_DAYS_CENTURY; 
+                T = (MJD_UT1 - timescales::MJD_J2000)/timescales::JULIAN_DAYS_CENTURY; 
+
+                gmst  = 24110.54841 + 8640184.812866*T0 + 1.002737909350795*UT1 + (0.093104 - 6.2e-6*T)*T*T;// [s]
+                
+                GMST_MJD_UT1_ = gmst/timescales::JULIAN_DAY;
+                GMST_MJD_UT1 = PI2*modf(GMST_MJD_UT1_, &intpart);// [rad], [0,2PI]
+                
+                // Computation of the equation of the equinoxes: the equation of the equinoxes dpsi*cos(eps) is the right ascension
+                // of the mean equinox referred to the true equator and equinox and is equal to the difference between apparent and
+                // mean sidereal time.                
+                MeanObliquity = ( 23.43929111 - ( 46.8150 + (0.00059 - 0.001813*T)*T )*T/3600.0 )*DEG2RAD;
+                
+                // Get Coefficients
+                get_NutCoeff(NutCoeff);
+                // Compute nutation angles
+                NutationAngles(MJD_UT1, NutCoeff, dpsi, deps);
+                
+                // Equation of the equinoxes: the equation of the equinoxes dpsi*cos(eps) is the right ascension of the mean equinox
+                // referred to the true equator and equinox and is equal to the difference between apparent and mean sidereal time
+                EqnEquinox = dpsi*cos(MeanObliquity);
+                
+                // Computation of Greenwich Apparent Sidereal Time
+                GAST_MJD_UT1 = mod( GMST_MJD_UT1 + EqnEquinox, PI2 );
+                
+                // Greenwich Hour Angle transformation matrix
+                T_GHA = Rot_z(GAST_MJD_UT1);
+                
+                return(T_GHA);
+                };
+//------------------------------------------------------------------------------
+// Mat3x3d PoleMat(double xp, double yp)
+//------------------------------------------------------------------------------
+/**
+ * Transformation from true equator and equinox to Earth equator and Greenwich meridian system
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param   xp, yp define the position of the Conventional Ephemeris Pole (CEP) with respect to
+ *          the Conventional Terrestrial Pole (CTP)
+ *
+ * @return 3-dimensional polar motion matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d PoleMat(double xp, double yp)
+              {                
+              Mat3x3d T_Pole;
+              Mat3x3d T_xp, T_yp;
+              
+              T_xp = Rot_y(-xp);
+              T_yp = Rot_x(-yp);
+              
+              T_Pole = T_xp*T_yp;
+              
+              return(T_Pole);
+              };
+//------------------------------------------------------------------------------
 // Vec3d ECI2RAD(Vec3d& posECI)
 //------------------------------------------------------------------------------
 /**
@@ -1333,6 +1765,69 @@ double GPS2ET(double GPSsecs)
                   
                   
 //------------------------------------------------------------------------------
+// double GPS2TT(double GPSsecs)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of GPS seconds to terrestrial time (TT) seconds
+ *
+ * @param GPSsecs   GPS seconds
+ *
+ * @return TT [s]
+ */
+//------------------------------------------------------------------------------                
+double GPS2TT(double GPSsecs)
+                  {
+                  double TTsecs;
+                  
+                  TTsecs = GPSsecs + timescales::TT_GPS;
+                  
+                  return(TTsecs);
+                  };
+//------------------------------------------------------------------------------
+// double GPS2UTC(double GPSsecs, double leapsec)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of GPS seconds to UTC seconds
+ *
+ * @param GPSsecs   GPS seconds
+ *
+ * @return UTC [s]
+ */
+//------------------------------------------------------------------------------                
+double GPS2UTC(double GPSsecs, double leapsec)
+                  {
+                  double UTCsecs;
+                  
+                  UTCsecs = GPSsecs + timescales::TAI_GPS - leapsec;
+                  
+                  return(UTCsecs);
+                  };
+//------------------------------------------------------------------------------
+// VectorNd<2> GPS2GPSws(double GPSsecs)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of GPS seconds to GPS week and seconds of week
+ *
+ * @param GPSsecs   GPS seconds
+ *
+ * @return  2-dimensional vector containing GPS week count (week 0 starts at 1980/01/06.0 GPS time)
+ *          and GPS seconds of week ([0s,604800s[)
+ */
+//------------------------------------------------------------------------------                
+VectorNd<2> GPS2GPSws(double GPSsecs)
+                  {
+                  VectorNd<2> GPSws;
+                  double GPSweek, GPSsecs_w;
+                  
+                  GPSweek = floor(GPSsecs/timescales::WEEK2SEC);
+                  GPSsecs_w = GPSsecs - GPSweek*timescales::WEEK2SEC;
+                  
+                  GPSws(0) = GPSweek;
+                  GPSws(1) = GPSsecs_w;
+                  
+                  return(GPSws);
+                  };
+//------------------------------------------------------------------------------
 // Vec3d GPS2LST(double GPSsecs, double lon)
 //------------------------------------------------------------------------------
 /**
@@ -1362,16 +1857,7 @@ Vec3d GPS2LST(double GPSsecs, double lon)
                   LST << (double)hh, (double)mm, (double)ss;
                   
                   return(LST);
-                  };                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
-                  
+                  };
 //------------------------------------------------------------------------------
 // string GPS2UTCstr(double GPSsecs, const string format)
 //------------------------------------------------------------------------------
@@ -1621,7 +2107,27 @@ double GPS2MJD(double GPSsecs)
                   MJD = JD - 2400000.5;
                   
                   return(MJD);
-                  };                  
+                  };   
+//------------------------------------------------------------------------------
+// double GPSws2MJD(double GPSweek, double GPSsecs_w)
+//------------------------------------------------------------------------------
+/**
+ * GPS week and seconds of week to modified Julian date
+ *
+ * @param   GPS week count (week 0 starts at 1980-01-06 GPS time)
+ * @param   GPS seconds of week ([0s,604800s[)
+ *
+ * @return Modified Julian date [d]
+ */
+//------------------------------------------------------------------------------                
+double GPSws2MJD(double GPSweek, double GPSsecs_w)
+                  {
+                  double MJD;
+                  
+                  MJD = timescales::MJD_GPST0 + 7.0*GPSweek + GPSsecs_w/timescales::SEC2DAY;
+                  
+                  return(MJD);
+                  };    
 //------------------------------------------------------------------------------
 // double mod(double x, double y)
 //------------------------------------------------------------------------------

@@ -643,6 +643,7 @@
       <xs:all>
         <xs:element name="Orbit_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
         <xs:element name="Attitude_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
+        <xs:element name="TLE" type="xs:string" minOccurs="1" maxOccurs="1"/>        
         <xs:element name="Data_path" type="xs:string" minOccurs="1" maxOccurs="1"/>
         <xs:element name="Planet_ephemeris" type="xs:string" minOccurs="1" maxOccurs="1"/>        
         <xs:element name="EOP_parameters" type="xs:string" minOccurs="1" maxOccurs="1"/>        
@@ -651,6 +652,7 @@
         <xs:element name="Gravity_model" type="xs:string" minOccurs="1" maxOccurs="1"/>        
         <xs:element name="Atmospheric_model" type="xs:string" minOccurs="1" maxOccurs="1"/>        
         <xs:element name="Magnetic_model" type="xs:string" minOccurs="1" maxOccurs="1"/>
+        <xs:element name="SunMoon_model" type="xs:string" minOccurs="1" maxOccurs="1"/>
       </xs:all>
       <xs:attribute name="name" use="optional" type="xs:string" />
     </xs:complexType>

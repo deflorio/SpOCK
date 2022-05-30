@@ -58,7 +58,7 @@ namespace gravity
         //! Constructor.
         /*!
             Using class SPACEENV constructor
-          */
+        */
         using SPACEENV::SPACEENV;
         //! Destructor.
         ~GRAV();
@@ -69,7 +69,7 @@ namespace gravity
         //------------------------------------------------------------------------------
         // Compute the central body gravitational acceleration vector
         Vec3d field_vec(double time, const Ref<const VectorXd>& orbstate);
-        // Get gravity field model coefficients
+        // Get gravity field model coefficients from file
         void getmodel_coeff();
         
         private:
@@ -121,7 +121,7 @@ namespace gravity
         // Epoch at which the gravity field is evaluated. This variable is used only when gravity field models containing time variable parameters are read (e.g. EIGEN-6S)
         double grav_epoch;
         };
-   }; // End of namespace magnetic
+   }; // End of namespace gravity
    
                               
 

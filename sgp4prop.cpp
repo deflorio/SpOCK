@@ -84,6 +84,8 @@ int main(int argc, char *argv[])
 	
 	SGP4_XML_parser(XML_simparam_file, TLE_file, Data_path, eop, pck_data, leapsecond, ephemname, SIM_STEP, SIM_DURATION);
 	
+	cout << "TLE file: " << TLE_file << endl;
+	
 	size_t charnum_TLEname = TLE_file.size() + 10;
 	
 	char* fgetsout;

@@ -11,11 +11,15 @@ Model of 6 spacecraft faces, 3 solar panels, 1 Sun camera, 1 Earth camera, 3 mag
 
 *Dynamics*
 
-Precise orbit and attitude propagation, mission events computation, atmospheric drag and solar radiation pressure with panels model (dependent on attitude) or reference area model, attitude and orbital maneuvers with different type of actuators. The simplified general perturbations (SGP4) propagator used with two-line mean element (TLE) sets is also implemented.
+Precise orbit and attitude propagation, mission events computation, atmospheric drag and solar radiation pressure with panels model (dependent on attitude) or reference area model, attitude and orbital maneuvers with different type of actuators. The simplified general perturbations (SGP4) propagator used with two-line mean element (TLE) sets is also implemented. The possibility is given to build a light version of the orbit propagator by using hardcoded perturbations models (gravitational field, drag and third body). This can be useful for embedded applications.
 
 *Orbit environment models*
 
-Gravity field (all GGM0\*, EIGEN\* and models with .gfc files format of this type), atmospheric density (JB2008, NRLMSISE-00), Earth's magnetic field (IGRF13, WMM2020), solar radiation pressure, third body (JPL planet ephemerides), gravity gradient.
+Orbit environment models: gravity field (EIGEN-6S, GGM02C, GGM03S, GGM03C), atmospheric density (JB2008, NRLMSISE-00, Harris-Priester), Earth's magnetic field (IGRF13, WMM2020), solar radiation pressure, third body (JPL planet ephemerides, low precision analytical formulas), gravity gradient.
+
+*Time and Reference Systems*
+
+Reach library for time, coordinate and parameterization systems transformations.
 
 *Customizability*
 
@@ -55,7 +59,7 @@ make events
 
 All the executable will be generated in the 'bin' folder. Command 'make clean' will delete all executables in 'bin' folder and folder 'obj'.
 
-Download file de440.bsp from SPICE library kernels ftp (ftp://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de440.bsp is too big for the repository)
+Download most recent de###.bsp file from SPICE library kernels ftp (https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/) and put it into folder data/cspice (file de###.bsp is too big for the repository)
 
 *Remarks:*
 

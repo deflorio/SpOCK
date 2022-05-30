@@ -1459,6 +1459,12 @@ Attitude_ephemeris (const ::std::string& Attitude_ephemeris)
 }
 
 void InputFiles_pimpl::
+TLE (const ::std::string& TLE)
+{
+  TLE_in = TLE;
+}
+
+void InputFiles_pimpl::
 Data_path (const ::std::string& Data_path)
 {
   //std::cout << "Data_path: " << Data_path << std::endl;
@@ -1513,6 +1519,12 @@ Magnetic_model (const ::std::string& Magnetic_model)
   //std::cout << "Magnetic_model: " << Magnetic_model << std::endl;
   magn_model_in = Magnetic_model;
   }
+  
+void InputFiles_pimpl::
+SunMoon_model (const ::std::string& SunMoon_model)
+{
+  sunmoon_in = SunMoon_model;
+}
 
 void InputFiles_pimpl::
 name (const ::std::string& name)

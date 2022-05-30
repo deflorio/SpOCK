@@ -27,6 +27,7 @@
 #include <iomanip>
 
 #include <Atmosphere.h>
+#include <HarrisPriester.h>
 #include <Constants.h>
 #include <IO_utils.h>
 
@@ -76,8 +77,11 @@ namespace atmosphere
     /**
      * Compute atmospheric density with a chosen model
      *
-     * @note The JB2008 model's atmospheric density is computed by means of fortran routines
-     * @see JB2008 model: http://sol.spacenvironment.net/~JB2008/
+     * @see The JB2008 model's atmospheric density is computed by means of fortran routines.
+     *      JB2008 model: http://sol.spacenvironment.net/~JB2008/
+     * @see The implementation of the Harris-Priester model is based on
+     *      Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+     *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X.
      *
      * @param time      GPS epoch (seconds) of the input state
      * @param SC_pos    Spacecraft state vector
@@ -221,8 +225,77 @@ namespace atmosphere
                                         //cout << nrlmsise00_rho_vec[0] << "  " << nrlmsise00_rho_vec[1] << "  " << nrlmsise00_rho_vec[2] << "  " << nrlmsise00_rho_vec[3] << "  " << nrlmsise00_rho_vec[4] << "  " << nrlmsise00_rho_vec[5] << "  " << nrlmsise00_rho_vec[6] << "  " << nrlmsise00_rho_vec[7] << "  " << endl;
                                         //cout << jb2008_temperatures[0] << "  " << jb2008_temperatures[1] << endl;
                                         }
+                                        
+                                    if( modelname.compare("Harris-Priester") == 0 )
+                                        {
+                                        double HP_alt_MIN, HP_alt_MAX, RA_lag, HP_prm;
+                                        const int N_Coeff = 50;
+                                        
+                                        VectorNd<N_Coeff> Altitudes, rho_MIN, rho_MAX;
+                                            
+                                        /////// Get harcoded (HarrisPriester.h) Harris-Priester model ///////    
+                                        get_HP(HP_alt_MIN, HP_alt_MAX, RA_lag, HP_prm, Altitudes, rho_MIN, rho_MAX);
+                                        
+                                        /////// Compute atmospheric density ///////
+                                        
+                                        // Spacecraft altitude
+                                        double alt;
+                                        // Sun declination, right asc.
+                                        double Sun_dec, Sun_RA, c_dec;
+                                        // Harris-Priester modification
+                                        double c_psi2;
+                                        // Altitude and density parameters
+                                        double alt_MIN, alt_MAX, d_MIN, d_MAX;
+                                        // Sun position
+                                        Vec3d  sunpos;
+                                        // Unit vector bulge_u towards the apex of the diurnal bulge ECI
+                                        Vec3d bulge_u;
+                                  
+                                        // Spacecraft altitude
+                                        alt = SCpos_lonlath(2)/1E3; // [km]
+                                  
+                                        if( alt <= HP_alt_MIN || alt >= HP_alt_MAX ) 
+                                            {
+                                            cerr << "Spacecraft altitude is outside Harris-Priester model altitude limits" << endl;
+                                            return;
+                                            }
+                                  
+                                        // Sun right ascension and declination
+                                        sunpos = Solar.sunposRAD(time);
+                                        Sun_RA  = sunpos(0);
+                                        Sun_dec = sunpos(1);
+                                  
+                                        // Unit vector bulge_u towards the apex of the diurnal bulge ECI
+                                        c_dec = cos(Sun_dec);
+                                        bulge_u(0) = c_dec*cos(Sun_RA + RA_lag);
+                                        bulge_u(1) = c_dec*sin(Sun_RA + RA_lag);
+                                        bulge_u(2) = sin(Sun_dec);
+                                  
+                                        // Cosine of half angle between satellite position vector and apex of diurnal bulge                                  
+                                        c_psi2 = 0.5 + 0.5*posECI.dot(bulge_u)/posECI.norm();
+                                  
+                                        // Height index search and exponential density interpolation
+                                        int ih = 0; // Section index reset
+                                        for (int i=0; i < N_Coeff - 1; i++) // Loop over N_Coeff altitude regimes
+                                            {
+                                            if( alt >= Altitudes(i) && alt < Altitudes(i+1) ) 
+                                                {
+                                                ih = i; // ih identifies altitude section
+                                                break;
+                                                }
+                                            }
+                                  
+                                        alt_MIN = ( Altitudes(ih) - Altitudes(ih+1) )/log( rho_MIN(ih+1)/rho_MIN(ih) );
+                                        alt_MAX = ( Altitudes(ih) - Altitudes(ih+1) )/log( rho_MAX(ih+1)/rho_MAX(ih) );
+                                  
+                                        d_MIN = rho_MIN(ih)*exp( (Altitudes(ih) - alt)/alt_MIN );
+                                        d_MAX = rho_MAX(ih)*exp( (Altitudes(ih) - alt)/alt_MAX );
+                                  
+                                        // Density computation
+                                        rho_atm = ( d_MIN + (d_MAX - d_MIN)*pow(c_psi2,HP_prm) )*1.0e-12; // [kg/m3]   
+                                        }
                                     
-                                    //cout << setprecision(20) << rho_atm << endl;
+                                    //cout << scientific <<setprecision(10) << rho_atm << endl;
                                     //cout << nrlmsise00_temperatures[0] << "  " << nrlmsise00_temperatures[1] << endl;
                                     
                                     //return(rho_atm);    

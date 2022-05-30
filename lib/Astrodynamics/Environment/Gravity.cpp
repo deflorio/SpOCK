@@ -27,6 +27,7 @@
 #include <omp.h>
 
 #include <Gravity.h>
+#include <GGM03C.h>
 #include <Constants.h>
 #include <IO_utils.h>
 
@@ -345,38 +346,81 @@ namespace gravity
     // Method getmodel_coeff()
     //------------------------------------------------------------------------------
     /**
-     * Get surface optical coefficients
-     *
-     * @return 3-dimensional vector containing in order the specular reflectivity,
-     * diffuse reflectivity and transmitted portions of incoming photons coefficients
-     * currently in use
+     * Get gravity field model coefficients from file
+     * 
      */
     //------------------------------------------------------------------------------
     void GRAV::getmodel_coeff()
                             {
-                            Matrix3D gravmodel_coeff;
-                            gravmodel_coeff.resize(boost::extents[n_max+1][n_max+1][4]);
-                            string modelfile = modelfilepath + "/gravityfield/" + modelname + ".gfc";
-                            
-                            gravmodel_coeff = read_gfc(modelfile.c_str(), n_max, grav_epoch, mu, R); // Function from IO_utils.h
-                            
-                            int n, m;
-                            Matrix3D_index N = 0, M = 0;
-                            
-                            #pragma omp parallel for collapse(2)
-                            for(n = 0; n <= n_max; n++)
-                                for(m = 0; m <= n_max; m++)
-                                    {
-                                    N = n; M = m;
-                                    C(n,m) = gravmodel_coeff[N][M][0];
-                                    S(n,m) = gravmodel_coeff[N][M][1];
-                                    sigmaC(n,m) = gravmodel_coeff[N][M][2];
-                                    sigmaS(n,m) = gravmodel_coeff[N][M][3];
+                            if( modelname.compare("GGM03C_30x30_Hardcoded") == 0 )
+                                {
+                                // Get hardcoded (GGM03C.h) model
+                                get_GGM03C_30x30(C, S, sigmaC, sigmaS, mu, R);
+                                
+                                if(n_max > 30) n_max = 30;
+                                
+                                int n, m;
+                                
+                                #pragma omp parallel for collapse(2)
+                                for(n = 0; n <= n_max; n++)
+                                    for(m = 0; m <= n_max; m++)
+                                        {
+                                        if( (n - m) > 0 )
+                                            {
+                                            A(n,m) = sqrt( (2.0*n - 1.0)*(2.0*n + 1.0)/( (n - m)*(n + m) ) );
+                                            B(n,m) = sqrt( (2.0*n + 1.0)*(n + m - 1.0)*(n - m - 1.0)/( (n - m)*(n + m)*(2.0*n - 3.0) ) );
+                                            }
+                                            
+                                        if( (n*n - m*m) > 0 ) F(n,m) = sqrt( (n*n - m*m)*(2.0*n + 1.0)/(2.0*n - 1.0) );
+                                        }
+                                }
+                            else
+                                {
+                                Matrix3D gravmodel_coeff;
+                                gravmodel_coeff.resize(boost::extents[n_max+1][n_max+1][4]);
+                                string modelfile = modelfilepath + "/gravityfield/" + modelname + ".gfc";
+                                
+                                gravmodel_coeff = read_gfc(modelfile.c_str(), n_max, grav_epoch, mu, R); // Function from IO_utils.h
+                                
+                                int n, m;
+                                Matrix3D_index N = 0, M = 0;
+                                
+                                #pragma omp parallel for collapse(2)
+                                for(n = 0; n <= n_max; n++)
+                                    for(m = 0; m <= n_max; m++)
+                                        {
+                                        N = n; M = m;
+                                        C(n,m) = gravmodel_coeff[N][M][0];
+                                        S(n,m) = gravmodel_coeff[N][M][1];
+                                        sigmaC(n,m) = gravmodel_coeff[N][M][2];
+                                        sigmaS(n,m) = gravmodel_coeff[N][M][3];
                                     
-                                    A(n,m) = sqrt( (2.0*n - 1.0)*(2.0*n + 1.0)/( (n - m)*(n + m) ) );
-                                    B(n,m) = sqrt( (2.0*n + 1.0)*(n + m - 1.0)*(n - m - 1.0)/( (n - m)*(n + m)*(2.0*n - 3.0) ) );
-                                    F(n,m) = sqrt( (n*n - m*m)*(2.0*n + 1.0)/(2.0*n - 1.0) );
-                                    }
+                                        if( (n - m) > 0 )
+                                            {
+                                            A(n,m) = sqrt( (2.0*n - 1.0)*(2.0*n + 1.0)/( (n - m)*(n + m) ) );
+                                            B(n,m) = sqrt( (2.0*n + 1.0)*(n + m - 1.0)*(n - m - 1.0)/( (n - m)*(n + m)*(2.0*n - 3.0) ) );
+                                            }
+                                            
+                                        if( (n*n - m*m) > 0 ) F(n,m) = sqrt( (n*n - m*m)*(2.0*n + 1.0)/(2.0*n - 1.0) );
+                                        }
+                                }
                             };
+    }; // End of namespace gravity
 
-}; // End of namespace gravity
+
+//int ind = 0;
+
+//if(sigmaS(n,m) != 0.0)
+    //    {
+    //    //cout << scientific << setprecision(15) << "C(" << n << "," << m << ") = " << C(n,m) << ";  ";
+    //    //cout << scientific << setprecision(15) << "S(" << n << "," << m << ") = " << S(n,m) << ";  ";
+    //    //cout << scientific << setprecision(15) << "sigmaC(" << n << "," << m << ") = " << sigmaC(n,m) << ";  ";
+    //    //cout << scientific << setprecision(15) << "sigmaS(" << n << "," << m << ") = " << sigmaS(n,m) << ";  ";
+    //    
+    //    ind++;
+    //    div_t divresult;
+    //    divresult = div(ind,5);
+    //    if(divresult.rem == 0) cout << endl;
+    //    }
+    
+    

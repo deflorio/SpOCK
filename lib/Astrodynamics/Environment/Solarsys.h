@@ -65,10 +65,14 @@ namespace solarsystem
         Vec3d OBJ_pos(const char* OBJtarget_name, const char* OBJobserver_name, const char* refframe, const char* aberration_corr, const double time);
         // Return the state (position and velocity) of a target body relative to an observing body, optionally corrected for light time (planetary aberration) and stellar aberration.*/
         Vector6d OBJ_posvel(const char* OBJtarget_name, const char* OBJobserver_name, const char* refframe, const char* aberration_corr, const double time);
-        // Return the position of the Sun in rectangular coordinates (ECI).*/
+        // Return the position of the Sun in rectangular coordinates (ECI) from JPL ephemerides.*/
         Vec3d sunposREC(double GPStime);
-        // Return the position of the Moon in rectangular coordinates (ECI).*/
+        // Return the position of the Sun in rectangular coordinates (ECI) from low-precision (LP) Solar coordinates.*/
+        Vec3d LP_sunposREC(double GPStime);
+        // Return the position of the Moon in rectangular coordinates (ECI) from JPL ephemerides.*/
         Vec3d moonposREC(double GPStime);
+        // Return the position of the Moon in rectangular coordinates (ECI) from low-precision (LP) Lunar coordinates.*/
+        Vec3d LP_moonposREC(double GPStime);
         // Return right ascension, declination and range of the sun (ECI).*/
         Vec3d sunposRAD(double GPStime);
         // Return the angle between the spacecraft position vector(ECI) and the Sun position vector (ECI).*/

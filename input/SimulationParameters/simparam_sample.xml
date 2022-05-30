@@ -180,16 +180,18 @@
 
     <InputFiles>
       
-        <Orbit_ephemeris>/your_absolute_path/SpOCK/output/OrbitEphemerides/P00_S01_RO_3days_10s_20190409_100115_GGM02C.csv</Orbit_ephemeris> <!--Use this entry also for pathto TLE file for SGP4 propagation-->
-        <Attitude_ephemeris>/your_absolute_path/SpOCK/output/AttitudeEphemerides/Attitude.csv</Attitude_ephemeris>
+        <Orbit_ephemeris>/your_absolute_path/InputOrbitEphemerides.csv</Orbit_ephemeris>
+        <Attitude_ephemeris>/your_absolute_path/InputAttitudeEphemerides.csv</Attitude_ephemeris>
+        <TLE>/your_absolute_path/TLEfile.tle</TLE>
         <Data_path>/your_absolute_path/SpOCK/data</Data_path>
         <Planet_ephemeris>de440.bsp</Planet_ephemeris>
-        <EOP_parameters>earth_000101_220328_220103.bpc</EOP_parameters>
+        <EOP_parameters>earth_000101_220814_220522.bpc</EOP_parameters>
         <PCK_data>pck00010.tpc</PCK_data>
         <Leap_second>naif0012.tls</Leap_second>
-        <Gravity_model>EIGEN-6S</Gravity_model> <!--EIGEN-6S GGM02C GGM03S-->
-        <Atmospheric_model>NRLMSISE-00</Atmospheric_model> <!--JB2008 NRLMSISE-00-->
+        <Gravity_model>EIGEN-6S</Gravity_model> <!--EIGEN-6S GGM02C GGM03S GGM03C GGM03C_30x30_Hardcoded-->
+        <Atmospheric_model>NRLMSISE-00</Atmospheric_model> <!--JB2008 NRLMSISE-00 Harris-Priester-->
         <Magnetic_model>IGRF13</Magnetic_model> <!--IGRF13 WMM2020-->
+        <SunMoon_model>DE</SunMoon_model> <!--DE (Development Ephemeris) LP (Low Precision Ephemeris)-->
         
     </InputFiles>
 
@@ -215,7 +217,7 @@
       
       <durstep> <!-- The time format is that of the XML schema duration type -->
           <simstep>PT10S</simstep> <!--Note: for attitude propagation SIM_STEP must have the same value of the step of the loaded orbit ephemerides. SIM_DURATION must have a value <= of the difference between the last and first time of the loaded ephemerides-->
-          <simduration>P3D</simduration><!--P3D-->
+          <simduration>P3D</simduration><!--Time format here is that of the XML schema duration type (e.g. P5Y2M10DT15H = 5 years + 2 months + 10 days + 15 hours, P60D = 60 days, PT10S = 10 s)-->
       </durstep>
       
       <ORB_initstate> <!-- Initial time and orbit initial state. The initial time is UTC date and time in XML schema format (e.g. 2010-09-21T22:30:00). The orbit state is given in ECI -->

@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <string>
 #include <math.h>
@@ -715,6 +716,7 @@ Eigen::MatrixXf read_SpaceWeather(const char* filename,
 int XML_parser(const string XML_simparam_file,
                string& Orbit_ephemeris,
                string& Attitude_ephemeris,
+               string& TLE_file,
                string& Data_path,
                string& planetephemeris,
                string& eop,
@@ -723,6 +725,7 @@ int XML_parser(const string XML_simparam_file,
                string& magneticfield,
                string& gravityfield,
                string& atmosphere,
+               string& sunmoon,
                string& orbfile_name,
                string& attfile_name,
                string& sensors_filename,
@@ -968,6 +971,8 @@ int XML_parser(const string XML_simparam_file,
                                     string_p,
                                     string_p,
                                     string_p,
+                                    string_p,
+                                    string_p,
                                     string_p);
 
               OutputFiles_p.parsers (string_p,
@@ -1091,6 +1096,7 @@ int XML_parser(const string XML_simparam_file,
               // Input files paths
               Orbit_ephemeris = InputFiles_p.Orbit_ephemeris_in;
               Attitude_ephemeris = InputFiles_p.Attitude_ephemeris_in;
+              TLE_file = InputFiles_p.TLE_in;
               Data_path = InputFiles_p.Data_path_in;
               planetephemeris = InputFiles_p.planetephemeris_in;
               pck_data = InputFiles_p.pck_data_in;
@@ -1099,6 +1105,7 @@ int XML_parser(const string XML_simparam_file,
               magneticfield = InputFiles_p.magn_model_in;
               gravityfield = InputFiles_p.gravityfield_in;
               atmosphere = InputFiles_p.atmosphere_in;
+              sunmoon = InputFiles_p.sunmoon_in;
               // Output files paths
               orbfile_name = OutputFiles_p.orbfile_name_in;
               attfile_name = OutputFiles_p.attfile_name_in;
@@ -1277,18 +1284,7 @@ int XML_parser(const string XML_simparam_file,
               all_maneuvers = Maneuvers_p.all_maneuvers;
               
               return(0);
-              };
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
+              };  
 //-------------------------------------------------------------------------------------
 // int SGP4_XML_parser(...)
 //-------------------------------------------------------------------------------------
@@ -1378,6 +1374,8 @@ int SGP4_XML_parser(const string XML_simparam_file,
                                       string_p,
                                       string_p,
                                       string_p,
+                                      string_p,
+                                      string_p,
                                       string_p);
   
                 OutputFiles_p.parsers (string_p,
@@ -1415,7 +1413,7 @@ int SGP4_XML_parser(const string XML_simparam_file,
                 ///////////////////////// FILES PATHS /////////////////////////
                 ///////////////////////////////////////////////////////////////
                 // Input files paths
-                TLE_file = InputFiles_p.Orbit_ephemeris_in;
+                TLE_file = InputFiles_p.TLE_in;
                 Data_path = InputFiles_p.Data_path_in;
                 pck_data = InputFiles_p.pck_data_in;
                 eop = InputFiles_p.eop_in;
@@ -1431,37 +1429,7 @@ int SGP4_XML_parser(const string XML_simparam_file,
                 SIM_DURATION = durstep_p.sim_duration;
                 
                 return(0);
-              };              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
-              
+              };           
 //-------------------------------------------------------------------------------------
 // void ReadXMLtoTXT(...)
 //-------------------------------------------------------------------------------------
@@ -1476,6 +1444,7 @@ int SGP4_XML_parser(const string XML_simparam_file,
 void ReadXMLtoTXT(const string txt_file,
                   string Orbit_ephemeris,
                   string Attitude_ephemeris,
+                  string TLE_file,
                   string Data_path,
                   string planetephemeris,
                   string eop,
@@ -1484,6 +1453,7 @@ void ReadXMLtoTXT(const string txt_file,
                   string magneticfield,
                   string gravityfield,
                   string atmosphere,
+                  string sunmoon,
                   string orbfile_name,
                   string attfile_name,
                   string sensors_filename,
@@ -1561,6 +1531,7 @@ void ReadXMLtoTXT(const string txt_file,
                   txtfile << "######################\n" << endl;
                   txtfile << "Orbit ephemeris: " << Orbit_ephemeris << endl;
                   txtfile << "Attitude ephemeris: " << Attitude_ephemeris << endl;
+                  txtfile << "TLE file: " << TLE_file << endl;
                   txtfile << "Data path: " << Data_path << endl;
                   txtfile << "Planet ephemeris: " << planetephemeris << endl;
                   txtfile << "EOP: " << eop << endl;
@@ -1569,6 +1540,7 @@ void ReadXMLtoTXT(const string txt_file,
                   txtfile << "Magnetic field: " << magneticfield << endl;
                   txtfile << "Gravity field: " << gravityfield << endl;
                   txtfile << "Atmospheric model: " << atmosphere << endl;
+                  txtfile << "Third body model: " << sunmoon << endl;
                   txtfile << "\n######################" << endl;
                   txtfile << "OUTPUT FILES PATHS" << endl;
                   txtfile << "######################\n" << endl;
@@ -2253,6 +2225,75 @@ void ReadXMLeventstoTXT(const string txt_file,
                   
                         txtfile.close();
                         }
+                        
+
+
+
+//-------------------------------------------------------------------------------------
+// void RunStartMessage(Vector6d init_orbtime, Vector6d init_orbstate, int SIM_DURATION, bool& T_model, string Drag_Model, string SRP_Model, string magneticfield, string gravityfield, string atmosphere, string sunmoon)
+//-------------------------------------------------------------------------------------
+/**
+ * Run-start display message
+ *
+ * @param init_orbtime etc     Simulation parameters to display
+ *
+ */
+//------------------------------------------------------------------------------------- 
+void RunStartMessage(Vector6d init_orbtime,
+                     Vector6d init_orbstate,
+                     int SIM_DURATION,
+                     bool* T_model,
+                     int nMAX,
+                     string Drag_Model,
+                     string SRP_Model,
+                     string magneticfield,
+                     string gravityfield,
+                     string atmosphere,
+                     string sunmoon,
+                     string proptype)
+                    {
+                    bool ggrad_on, mag_on, drag_on, srp_on, sunmoon_on;
+                    
+                    ggrad_on = T_model[0];
+                    mag_on = T_model[1];
+                    drag_on = T_model[2];
+                    srp_on = T_model[3];
+                    sunmoon_on = T_model[4];
+    
+                    cout << "\nOrbit initial epoch: " << init_orbtime(0) << "-" << setfill('0') << setw(2) << init_orbtime(1) << "-" << setfill('0') << setw(2) << init_orbtime(2) << "/" << setfill('0') << setw(2) <<init_orbtime(3) << ":" << setfill('0') << setw(2) << init_orbtime(4) << ":" << setfill('0') << setw(2) << init_orbtime(5) << "\n" << endl;
+                    cout << fixed << "Initial orbit state (ECI): X = " << init_orbstate(0) << " Y = " << init_orbstate(1) << " Z = " << init_orbstate(2) << " m," << " Vx = " << init_orbstate(3) << " Vy = " << init_orbstate(4) << " Vz = " << init_orbstate(5) << " m/s\n" << endl;
+                    
+                    string sim_duration_string = to_string(SIM_DURATION/86400.0) + " days";
+                    if(SIM_DURATION/86400.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/3600.0) + " hours";
+                    if(SIM_DURATION/3600.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/60.0) + " minutes";
+                    
+                    string pert_txt = "Simulation duration: " + sim_duration_string + "\n\nPERTURBATIONS\n\n";
+                    
+                    if( proptype.compare("ORB") == 0 )
+                      {
+                      if (gravityfield.find("Hardcoded") != string::npos) pert_txt = pert_txt + "Gravitational field model: " + gravityfield + "\n";
+                      else pert_txt = pert_txt + "Gravitational field model: " + gravityfield + " " + to_string(nMAX) + "x" + to_string(nMAX) + "\n";
+                      if(sunmoon_on) pert_txt = pert_txt + "Third body perturbation: Sun and Moon " + sunmoon + " planetary ephemerides\n";
+                      }
+                    if( proptype.compare("ORB") == 0 || proptype.compare("ATT") == 0 )
+                      {
+                      if(drag_on) pert_txt = pert_txt + Drag_Model + " atmospheric drag model, Atmosphere: " + atmosphere + " model\n";
+                      if(srp_on) pert_txt = pert_txt + SRP_Model + " solar radiation pressure model\n";
+                      }
+                    if( proptype.compare("ATT") == 0 )
+                      {
+                      if(ggrad_on) pert_txt = pert_txt + "Gravity gradient\n";
+                      if(mag_on) pert_txt = pert_txt + "Earth's magnetic field: " + magneticfield + " model\n";
+                      }
+                    
+                    cout << pert_txt << "\n" << endl;
+                    };                        
+                        
+                        
+                        
+                        
+                        
+                        
 //-------------------------------------------------------------------------------------
 // void RunStatusBar(double t, int simduration, int barwidth)
 //-------------------------------------------------------------------------------------
@@ -2289,13 +2330,7 @@ void RunStatusBar(double t,
                     
                     part_dur = part_dur + simduration/10.0;
                     sim_done = sim_done + 10.0;
-                    }  
-                    
-                    
-                    
-                    
-                    
-                    
+                    }
                   };
                   
 

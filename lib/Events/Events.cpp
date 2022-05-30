@@ -317,7 +317,7 @@ void TGsContacts( int SC_num,
                               SC_TG_passes.push_back(TG_pass);
                               TG_passes.push_back(TG_pass);
                               
-                              Contacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
+                              Contacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration/60.0 << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
                               
                               //AllContacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << PL_num << "," << SC_num << endl;
                               
@@ -465,7 +465,7 @@ void TGsContacts( int SC_num,
                               SC_TG_passes.push_back(TG_pass);
                               TG_passes.push_back(TG_pass);
                               
-                              Contacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
+                              Contacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration/60.0 << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << endl;
                               
                               //AllContacts_file << TGname << "," << string(time_in_string) << "," << string(time_out_string) << "," << time_in << "," << duration << "," << El_in << "," << El_out << "," << string(time_maxel_string) << "," << max_elevation << "," << Az_in << "," << Az_out << "," << Az_maxel << "," << TGlon << "," << TGlat << "," << PL_num << "," << SC_num << endl;
                               

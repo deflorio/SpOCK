@@ -32,6 +32,7 @@
 using namespace std;
 using namespace math;
 using namespace constants;
+using namespace mathconst;
 
 namespace solarsystem
     {
@@ -132,9 +133,10 @@ namespace solarsystem
     // Method Vec3d sunposREC(double GPStime)
     //------------------------------------------------------------------------------
     /**
-     * Return the position of the sun in rectangular coordinates (ECI)
+     * Return the position of the sun in rectangular coordinates (ECI) from JPL ephemerides
      *
      * @note This function is based on the NASA SPICE library's function spkpos_c
+     *       and uses the JPL ephemerides
      *
      * @param GPStime     GPS epoch (seconds) of the spacecraft position vector
      *
@@ -164,12 +166,59 @@ namespace solarsystem
                             return(sunpos);
                             };
     //------------------------------------------------------------------------------
+    // Method Vec3d LP_sunposREC(double GPStime)
+    //------------------------------------------------------------------------------
+    /**
+     * Return the position of the Sun in rectangular coordinates (ECI) from low-precision (LP) Solar coordinates
+     *
+     * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+     *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X.
+     *
+     * @param GPStime     GPS epoch (seconds) of the spacecraft position vector
+     *
+     * @return Position vector of the Sun in ECI Cartesian coordinates [m]
+     */
+    //------------------------------------------------------------------------------ 
+    Vec3d SOLSYS::LP_sunposREC(double GPStime)
+                            {
+                            Vec3d sunpos = Vec3d::Zero();
+                            Mat3x3d Tx_eps = Mat3x3d::Zero();
+                            Vec3d Vec_rL = Vec3d::Zero();
+                            
+                            double eps, JD, T, L_, L, intpart, M_, M, r;
+                            // Obliquity of J2000 ecliptic
+                            eps = astro::EPS_J2000*DEG2RAD;
+                            // Modified Julian date
+                            JD = GPS2JD(GPStime);
+                            // Julian centuries since J2000
+                            T = (JD - timescales::JD_J2000)/36525.0;
+                            
+                            // Mean anomaly, ecliptic longitude and radius
+                            M_ = 0.9931267 + 99.9973583*T;
+                            M = PI2*modf(M_, &intpart); // [rad]
+                            
+                            L_ = 0.7859444 + M/PI2 + ( 6892.0*sin(M) + 72.0*sin(2.0*M) )/1296.0e3;
+                            L = PI2*modf(L_, &intpart); // [rad]
+                            
+                            L = L + 1.3972*DEG2RAD*T;
+                            r = 149.619e9 - 2.499e9*cos(M) - 0.021e9*cos(2*M); // [m]
+                            
+                            Tx_eps = Rot_x(-eps);
+                            Vec_rL << r*cos(L), r*sin(L), 0.0;
+                        
+                            // Equatorial position vector
+                            sunpos = Tx_eps*Vec_rL;
+                            
+                            return(sunpos);
+                            };
+    //------------------------------------------------------------------------------
     // Method Vec3d moonposREC(double GPStime)
     //------------------------------------------------------------------------------
     /**
-     * Return the position of the Moon in rectangular coordinates (ECI)
+     * Return the position of the Moon in rectangular coordinates (ECI) from JPL ephemerides
      *
      * @note This function is based on the NASA SPICE library's function spkpos_c
+     *       and uses the JPL ephemerides
      *
      * @param GPStime     GPS epoch (seconds) of the spacecraft position vector
      *
@@ -197,6 +246,88 @@ namespace solarsystem
                             
                             return(moopos);
                             };
+    //------------------------------------------------------------------------------
+    // Method Vec3d LP_moonposREC(double GPStime)
+    //------------------------------------------------------------------------------
+    /**
+     * Return the position of the Moon in rectangular coordinates (ECI) from low-precision (LP) Lunar coordinates
+     *
+     * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+     *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X.
+     *
+     * @param GPStime     GPS epoch (seconds) of the spacecraft position vector
+     *
+     * @return Position vector of the Moon in ECI Cartesian coordinates [m]
+     */
+    //------------------------------------------------------------------------------ 
+    Vec3d SOLSYS::LP_moonposREC(double GPStime)
+                            {
+                            Vec3d moopos = Vec3d::Zero();
+                            Mat3x3d Tx_eps = Mat3x3d::Zero();
+                            Vec3d Vec_rL = Vec3d::Zero();
+                            
+                            double eps, JD, T;
+                            double L_0_, L_0, l_, l, lp_, lp, D_, D, F_, F, dL, S, h, N, intpart;
+                            double L_, L, B, R, cosB;
+    
+                            // Obliquity of J2000 ecliptic
+                            eps = astro::EPS_J2000*DEG2RAD;
+                            // Modified Julian date
+                            JD = GPS2JD(GPStime);
+                            // Julian centuries since J2000
+                            T = (JD - timescales::JD_J2000)/36525.0;
+
+                            // Mean elements of lunar orbit
+                            L_0_ = 0.606433 + 1336.851344*T;
+                            L_0 = modf(L_0_, &intpart); // Mean longitude [rev] w.r.t. J2000 equinox
+                            
+                            l_ = 0.374897 + 1325.552410*T;
+                            l = PI2*modf(l_, &intpart); // Moon's mean anomaly [rad]
+                            
+                            lp_ = 0.993133 +   99.997361*T;
+                            lp  = PI2*modf(lp_, &intpart); // Sun's mean anomaly [rad]
+                            
+                            D_ = 0.827361 + 1236.853086*T;
+                            D   = PI2*modf(D_, &intpart); // Diff. long. Moon-Sun [rad]
+                            
+                            F_ = 0.259086 + 1342.227825*T;
+                            F   = PI2*modf(F_, &intpart); // Argument of latitude
+
+                            // Ecliptic longitude
+                            dL = +22640*sin(l) - 4586*sin(l-2*D) + 2370*sin(2*D) +  769*sin(2*l) 
+                                 -668*sin(lp) - 412*sin(2*F) - 212*sin(2*l-2*D) - 206*sin(l+lp-2*D)
+                                 +192*sin(l+2*D) - 165*sin(lp-2*D) - 125*sin(D) - 110*sin(l+lp)
+                                 +148*sin(l-lp) - 55*sin(2*F-2*D);
+                                 
+                            L_ = L_0 + dL/1296.0e3;
+
+                            L = PI2*modf(L_, &intpart); // [rad] w.r.t. equinox of J2000
+                            L = L + 1.3972*DEG2RAD*T; // w.r.t. equinox of Mjd_TT
+
+                            // Ecliptic latitude
+                            S  = F + (dL + 412*sin(2*F) + 541*sin(lp))/RAD2ARCS;
+                            
+                            h  = F - 2*D;
+                            N  = -526*sin(h) + 44*sin(l + h) - 31*sin(-l + h) - 23*sin(lp + h) 
+                                 +11*sin(-lp + h) - 25*sin(-2*l + F) + 21*sin(-l + F);
+                        
+                            B = ( 18520.0*sin(S) + N )/RAD2ARCS; // [rad]
+                        
+                            cosB = cos(B);
+
+                            // Distance [m]
+                            R = 385000e3 - 20905e3*cos(l) - 3699e3*cos(2*D - l) - 2956e3*cos(2*D)
+                                -570e3*cos(2*l) + 246e3*cos(2*l - 2*D) - 205e3*cos(lp - 2*D) 
+                                -171e3*cos(l + 2*D) - 152e3*cos(l + lp - 2*D);   
+
+                            // Equatorial coordinates
+                            Tx_eps = Rot_x(-eps);
+                            Vec_rL << R*cos(L)*cosB, R*sin(L)*cosB, R*sin(B);
+                        
+                            moopos = Tx_eps*Vec_rL;
+                            
+                            return(moopos);
+                            };   
     //------------------------------------------------------------------------------
     // Method Vec3d sunposRAD(double GPStime)
     //------------------------------------------------------------------------------

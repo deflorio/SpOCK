@@ -2367,6 +2367,9 @@ class InputFiles_pskel: public ::xml_schema::complex_content
   Attitude_ephemeris (const ::std::string&);
 
   virtual void
+  TLE (const ::std::string&);
+
+  virtual void
   Data_path (const ::std::string&);
 
   virtual void
@@ -2391,6 +2394,9 @@ class InputFiles_pskel: public ::xml_schema::complex_content
   Magnetic_model (const ::std::string&);
 
   virtual void
+  SunMoon_model (const ::std::string&);
+
+  virtual void
   name (const ::std::string&);
 
   virtual void
@@ -2403,6 +2409,9 @@ class InputFiles_pskel: public ::xml_schema::complex_content
 
   void
   Attitude_ephemeris_parser (::xml_schema::string_pskel&);
+
+  void
+  TLE_parser (::xml_schema::string_pskel&);
 
   void
   Data_path_parser (::xml_schema::string_pskel&);
@@ -2429,11 +2438,15 @@ class InputFiles_pskel: public ::xml_schema::complex_content
   Magnetic_model_parser (::xml_schema::string_pskel&);
 
   void
+  SunMoon_model_parser (::xml_schema::string_pskel&);
+
+  void
   name_parser (::xml_schema::string_pskel&);
 
   void
   parsers (::xml_schema::string_pskel& /* Orbit_ephemeris */,
            ::xml_schema::string_pskel& /* Attitude_ephemeris */,
+           ::xml_schema::string_pskel& /* TLE */,
            ::xml_schema::string_pskel& /* Data_path */,
            ::xml_schema::string_pskel& /* Planet_ephemeris */,
            ::xml_schema::string_pskel& /* EOP_parameters */,
@@ -2442,6 +2455,7 @@ class InputFiles_pskel: public ::xml_schema::complex_content
            ::xml_schema::string_pskel& /* Gravity_model */,
            ::xml_schema::string_pskel& /* Atmospheric_model */,
            ::xml_schema::string_pskel& /* Magnetic_model */,
+           ::xml_schema::string_pskel& /* SunMoon_model */,
            ::xml_schema::string_pskel& /* name */);
 
   // Constructor.
@@ -2468,6 +2482,7 @@ class InputFiles_pskel: public ::xml_schema::complex_content
   protected:
   ::xml_schema::string_pskel* Orbit_ephemeris_parser_;
   ::xml_schema::string_pskel* Attitude_ephemeris_parser_;
+  ::xml_schema::string_pskel* TLE_parser_;
   ::xml_schema::string_pskel* Data_path_parser_;
   ::xml_schema::string_pskel* Planet_ephemeris_parser_;
   ::xml_schema::string_pskel* EOP_parameters_parser_;
@@ -2476,6 +2491,7 @@ class InputFiles_pskel: public ::xml_schema::complex_content
   ::xml_schema::string_pskel* Gravity_model_parser_;
   ::xml_schema::string_pskel* Atmospheric_model_parser_;
   ::xml_schema::string_pskel* Magnetic_model_parser_;
+  ::xml_schema::string_pskel* SunMoon_model_parser_;
   ::xml_schema::string_pskel* name_parser_;
 };
 

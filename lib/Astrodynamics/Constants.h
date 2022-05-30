@@ -29,7 +29,6 @@
 
 #include <VarTypes.h>
 
-
 namespace constants
            {
             namespace astro
@@ -72,45 +71,55 @@ namespace constants
                     const static double R_MOON = 1738.0E3;          
                     // Radius of Sun [m]; Seidelmann 1992
                     const static double R_SUN = 696000.0E3;
-                    }
+                    // Obliquity of the J2000 ecpliptic [deg]
+                    const static double EPS_J2000 = 23.43929111;
+                    };
             
             namespace timescales
                     {
-                    // Julian year in Julian days (NASA, 2012)
-                    const static double JULIAN_YEAR_DAYS = 365.25;
+                    // GPS seconds at 1 Jan 2000 11:58:55.816 UTC
+                    const static double J2000_GPSSECS = 630763148.816; //630763213 + 19.0 + 32.184;
+                    // Julian day number of GPS time zero (midnight of 5-6 January 1980)
+                    const static double JD_GPS = 2444244.5;
+                    // Julian Date of J2000.0 [d]
+                    const static double JD_J2000 = 2451545.0;
                     // Julian day [s] (NASA, 2012)
                     const static double JULIAN_DAY = 86400.0;
+                    // Julian days in 1 Julian century
+                    const static double JULIAN_DAYS_CENTURY = 36525.0;
                     // Julian year [s]. Result of JULIAN_YEAR_IN_DAYS*JULIAN_DAY
                     const static double JULIAN_YEAR = 3.15576E7;
-                    // J2000 epoch in GPS time (1 Jan 2000 11:59:08.816)
-                    //const static double J2000_GPSSECS = 630763161.816;
-                    // GPS seconds at 1 Jan 2000 11:58:55.816 UTC
-                    const static double J2000_GPSSECS = 630763148.816;//630763213 + 19.0 + 32.184;
-                    
-                    // GPS seconds at 1 Jan 2000 12:00:00 UTC
-                    //const static double J2000_UTC_GPSSECS = 630763213;
-                    // GPS seconds at 1 Jan 2000 12:00:00 UTC - (19.0 + 32.184)
-                    //const static double J2000_GPSSECS = 630763161.816;
-                    
+                    // Julian year in Julian days (NASA, 2012)
+                    const static double JULIAN_YEAR_DAYS = 365.25;
                     // Relative time rate difference between TCB and TDB time scales
                     const static double LB_TIME_RATE_TERM = 1.550519768E-8;
                     // Relative time rate difference between TCG and TT time scales
                     const static double LG_TIME_RATE_TERM = 6.969290134E-10;
-                    // Modified Julian Date of J2000.0
+                    // Modified Julian Date of GPS time zero 1980-01-06 [d]
+                    const static double MJD_GPST0 = 44244.0;
+                    // Modified Julian Date of J2000.0 [d]
                     const static double MJD_J2000 = 51544.5;
+                    // Conversion factor from seconds to day
+                    const static double SEC2DAY = 86400.0;
+                    // Conversion factor from seconds to hours
+                    const static double SEC2H = 3600.0;
+                    // Conversion factor from seconds to minutes
+                    const static double SEC2MIN = 60.0;
                     // Sidereal day [s] (NASA, 2012)
                     const static double SIDEREAL_DAY = 86164.09054;
                     // Sidereal year in quasar reference frame. Result of SIDEREAL_YEAR_IN_DAYS*JULIAN_DAY
                     const static double SIDEREAL_YEAR = 3.1558149504E7;
                     // Sidereal year in Julian days in quasar reference frame (NASA, 2012)
                     const static double SIDEREAL_YEAR_IN_DAYS = 365.25636;
-                    // Conversion factor from seconds to minutes
-                    const static double SEC2MIN = 60.0;
-                    // Conversion factor from seconds to hours
-                    const static double SEC2H = 3600.0;
-                    // Conversion factor from seconds to day
-                    const static double SEC2DAY = 86400.0;
-                    }
+                    // TAI - GPS time difference [s]
+                    const static double TAI_GPS = 19.0;
+                    // TT - GPS time difference [s]
+                    const static double TT_GPS = 51.184;
+                    // TT - TAI time difference [s]
+                    const static double TT_TAI = 32.184;
+                    // Number of seconds in 1 week
+                    const static double WEEK2SEC = 604800.0;
+                    };
                     
             namespace physics
                     {
@@ -122,7 +131,7 @@ namespace constants
                     const static double PLANCK_CONST = 6.62606957E-34;
                     // The specific gas constant of air [J/(kg*K)] (Anderson, 2006)
                     const static double SPEC_GAS_CONST_AIR = 2.87E2;
-                    }
+                    };
                     
             namespace mathconst
                     {
@@ -132,7 +141,8 @@ namespace constants
                     const static double DEG2RAD = PI/180.0;
                     const static double RAD2DEG = 180.0/PI;
                     const static double RAD2ARCS = 3600.0*180.0/PI;
-                    }
+                    const static double ARCS2RAD = PI/(3600.0*180.0);
+                    };
                     
             namespace materials
                       {
@@ -151,7 +161,7 @@ namespace constants
                           };
                         
                       const Vec3d SC_aerodynamics(0.8, 0.8, 0.05); 
-                      }
+                      };
                     
             namespace spacecraft
                     {
@@ -173,8 +183,8 @@ namespace constants
                                 {"-Z", n_Zminus}
                                 
                                 };
-                    }
+                    };
                     
-            } // namespace constants
+           }; // namespace constants
 
 #endif

@@ -197,7 +197,7 @@ namespace propagator
          /** Path of data folder.*/
          string datapath;
          /** Path of planet ephemeris file.*/
-         string planetephem;
+         string sunmoon;
          /** Path of magnetic field model file.*/
          string magneticfield;
          /** Path of atmospheric model file.*/

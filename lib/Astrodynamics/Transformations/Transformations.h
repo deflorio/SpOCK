@@ -35,11 +35,20 @@ extern "C"
       
 using namespace std;
 using namespace math;
+using namespace Eigen;
 
 //------------------------------------------------------------------------------
 // Group of functions for coordinate systems transformations
 //------------------------------------------------------------------------------
 
+///////////////////////// Rotations /////////////////////////
+
+// Compute elementary x-rotation matrix
+Mat3x3d Rot_x(double alpha);
+// Compute elementary y-rotation matrix
+Mat3x3d Rot_y(double alpha);
+// Compute elementary z-rotation matrix
+Mat3x3d Rot_z(double alpha);
 // Compute rotation matrix from Euler angles (rotation a-b-c)
 Mat3x3d RotationMatrix(double alpha, double beta, double gamma, int a, int b, int c);
 // Compute rotation matrix from Euler angles (rotation 3-2-1)
@@ -56,6 +65,9 @@ Mat3x3d Quaternion2RotationMatrix(Vec4d& q);
 Vec3d TransbyQ(Vec3d& v3D, Vec4d& q);
 // Inversion of quaternion
 Vec4d q_inv(Vec4d& q);
+
+///////////////////////// Coordinate Systems and Parameterizations /////////////////////////
+
 // Convert from rectangular coordinates to geodetic coordinates
 Vec3d ECEF2lonlath(Vec3d& posECEF);
 // Convert from rectangular coordinates to geodetic coordinates
@@ -78,6 +90,20 @@ Vec3d RTN2ECI(Vec3d& RTNvec, Vector6d& ECIstate);
 Vector6d ECEF2ECI(double GPStime, Vector6d& ECEFstate);
 // State transformation from ECI (J2000) to ECEF (ITRF93) frame
 Vector6d ECI2ECEF(double GPStime, Vector6d& ECIstate);
+// State transformation from ICRF to ITRF
+Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstate, int SIM_STEP);
+// State transformation from ICRF to ITRF
+Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec);
+// Precession matrix for equatorial coordinates
+Mat3x3d PrecMat(double MJD1_TT, double MJD2_TT);
+// Nutation matrix (transformation from mean-of-date to true-of-date coordinates)
+Mat3x3d NutMat(double MJD_TT);
+// Nutation in longitude and obliquity
+void NutationAngles(double MJD, Matrix<long, 106, 9> NutCoeff, double& dpsi, double& deps);
+// Transformation from true equator and equinox to Earth equator and Greenwich meridian system
+Mat3x3d GHAMat(double MJD_UT1);
+// Transformation from pseudo Earth-fixed to Earth-fixed coordinates
+Mat3x3d PoleMat(double xp, double yp);
 // Convert position vector from rectangular coordinates ECI to right ascension, declination and range ECI
 Vec3d ECI2RAD(Vec3d& posECI);
 // Transformation of a generic 3-dimensional vector between two frames
@@ -94,6 +120,9 @@ Vector6d osc2mean(Vector6d& osc_elem, bool& valid);
 double EccAnomaly(double M, double e, const int maxit, const double eps);
 // Compute coordinates of a point on Earth in spacecraft's ground-track coordinates given longitude and latitudes of the spacecraft and the point
 VectorNd<2> lonlat2satcart(double lonS, double latS, double lonT, double latT, double inc, double ki);
+
+///////////////////////// Time /////////////////////////
+
 // Conversion of GPS seconds to ephemeris time (TDT)
 double GPS2ET(double GPSsecs);
 // Conversion of GPS seconds to local solar time given the geodetic longitude
@@ -114,6 +143,16 @@ double GPS2Unix(double GPSsecs);
 double GPS2JD(double GPSsecs);
 // Conversion of GPS seconds to modified Julian date
 double GPS2MJD(double GPSsecs);
+// GPS week and seconds of week to modified Julian date
+double GPSws2MJD(double GPSweek, double GPSsecs_w);
+// Conversion of GPS seconds to terrestrial time (TT) seconds
+double GPS2TT(double GPSsecs);
+// Conversion of GPS seconds to UTC seconds
+double GPS2UTC(double GPSsecs, double leapsec);
+// Conversion of GPS seconds to GPS week and seconds of week
+VectorNd<2> GPS2GPSws(double GPSsecs);
+///////////////////////// Mathematics and Geometry /////////////////////////
+
 // Modulo function
 double mod(double x, double y);
 // Correct a vector into another vector which is on the surface of a cone whose axis is the initial vector and with aperture alpha 

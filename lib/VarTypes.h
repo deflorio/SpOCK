@@ -30,6 +30,7 @@
 #include "boost/multi_array.hpp"
 
 #define GRAV_MAX_SIZE 121
+#define FSW_GRAV_MAX_SIZE 31
 
 //------------------------------------------------------------------------------
 /**
@@ -55,6 +56,8 @@ namespace math
         typedef Eigen::Matrix< double, GRAV_MAX_SIZE, GRAV_MAX_SIZE > MatnMAXxnMAXd;
         // Typedef for 121x121 matrix of doubles (gravity field model)
         typedef Eigen::Matrix< double, GRAV_MAX_SIZE, 1 > VectornMAXd;
+        // Typedef for 31x31 matrix of doubles (hardcoded gravity field model)
+        typedef Eigen::Matrix< double, FSW_GRAV_MAX_SIZE, FSW_GRAV_MAX_SIZE > FSW_MatnMAXxnMAXd;
         // Typedef for 3D vector of doubles
         typedef Eigen::Vector3d Vec3d;
         // Typedef for 4D vector of doubles
@@ -75,7 +78,7 @@ namespace math
         typedef boost::multi_array<double, 3> Matrix3D;
         // Typedef for Matrix3D_index
         typedef Matrix3D::index Matrix3D_index;
-        }
+        };
         
 namespace SC
         {
@@ -106,7 +109,7 @@ namespace SC
         struct EnvModels
                         {
                         string datapath;     // Planets ephemerides
-                        string planetephem;     // Planets ephemerides
+                        string sunmoon;     // Planets ephemerides
                         string magneticfield;   // Magnetic field
                         string atmosphere;      // Atmospheric model
                         string gravityfield;         // Gravity field model
@@ -135,7 +138,7 @@ namespace SC
                       double duration;
                       bool maneuver_on;
                       };
-        }
+        };
 
 namespace ground
     {

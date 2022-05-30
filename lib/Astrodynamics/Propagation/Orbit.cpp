@@ -69,6 +69,7 @@ namespace orbit
 			//(&GravityField)->n_max = nMAX;
             //SPACEENV::n_max = nMAX;
             GravityField.getmodel_coeff();
+            //GravityField.HW_getmodel_coeff();
             
             if(drag_on)
                 {
@@ -87,6 +88,8 @@ namespace orbit
                 SolarRadiation.CF = C_SRP;
                 SolarRadiation.Area = Area_R;
                 }
+                
+            if(sunmoon_on) SunMoonPerturbation.setfilespath(sunmoon,datapath);
             };
     //------------------------------------------------------------------------------
     // Method static void DynModel(const state_type &x , state_type &dxdt , const double t)

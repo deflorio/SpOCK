@@ -832,6 +832,9 @@ class InputFiles_pimpl: public virtual InputFiles_pskel
   Attitude_ephemeris (const ::std::string&);
   
   virtual void
+  TLE (const ::std::string&);
+  
+  virtual void
   Data_path (const ::std::string&);
 
   virtual void
@@ -854,6 +857,9 @@ class InputFiles_pimpl: public virtual InputFiles_pskel
 
   virtual void
   Magnetic_model (const ::std::string&);
+  
+  virtual void
+  SunMoon_model (const ::std::string&);
 
   virtual void
   name (const ::std::string&);
@@ -864,7 +870,7 @@ class InputFiles_pimpl: public virtual InputFiles_pskel
   
   public:
   
-  string Orbit_ephemeris_in, Attitude_ephemeris_in, Data_path_in, planetephemeris_in, eop_in, pck_data_in, leapsecond_in, magn_model_in, gravityfield_in, atmosphere_in;
+  string Orbit_ephemeris_in, Attitude_ephemeris_in, TLE_in, Data_path_in, planetephemeris_in, eop_in, pck_data_in, leapsecond_in, gravityfield_in, atmosphere_in, magn_model_in, sunmoon_in;
 };
 
 class OutputFiles_pimpl: public virtual OutputFiles_pskel

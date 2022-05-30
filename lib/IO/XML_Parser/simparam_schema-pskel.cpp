@@ -1499,6 +1499,12 @@ Attitude_ephemeris_parser (::xml_schema::string_pskel& p)
 }
 
 void InputFiles_pskel::
+TLE_parser (::xml_schema::string_pskel& p)
+{
+  this->TLE_parser_ = &p;
+}
+
+void InputFiles_pskel::
 Data_path_parser (::xml_schema::string_pskel& p)
 {
   this->Data_path_parser_ = &p;
@@ -1547,6 +1553,12 @@ Magnetic_model_parser (::xml_schema::string_pskel& p)
 }
 
 void InputFiles_pskel::
+SunMoon_model_parser (::xml_schema::string_pskel& p)
+{
+  this->SunMoon_model_parser_ = &p;
+}
+
+void InputFiles_pskel::
 name_parser (::xml_schema::string_pskel& p)
 {
   this->name_parser_ = &p;
@@ -1555,6 +1567,7 @@ name_parser (::xml_schema::string_pskel& p)
 void InputFiles_pskel::
 parsers (::xml_schema::string_pskel& Orbit_ephemeris,
          ::xml_schema::string_pskel& Attitude_ephemeris,
+         ::xml_schema::string_pskel& TLE,
          ::xml_schema::string_pskel& Data_path,
          ::xml_schema::string_pskel& Planet_ephemeris,
          ::xml_schema::string_pskel& EOP_parameters,
@@ -1563,10 +1576,12 @@ parsers (::xml_schema::string_pskel& Orbit_ephemeris,
          ::xml_schema::string_pskel& Gravity_model,
          ::xml_schema::string_pskel& Atmospheric_model,
          ::xml_schema::string_pskel& Magnetic_model,
+         ::xml_schema::string_pskel& SunMoon_model,
          ::xml_schema::string_pskel& name)
 {
   this->Orbit_ephemeris_parser_ = &Orbit_ephemeris;
   this->Attitude_ephemeris_parser_ = &Attitude_ephemeris;
+  this->TLE_parser_ = &TLE;
   this->Data_path_parser_ = &Data_path;
   this->Planet_ephemeris_parser_ = &Planet_ephemeris;
   this->EOP_parameters_parser_ = &EOP_parameters;
@@ -1575,6 +1590,7 @@ parsers (::xml_schema::string_pskel& Orbit_ephemeris,
   this->Gravity_model_parser_ = &Gravity_model;
   this->Atmospheric_model_parser_ = &Atmospheric_model;
   this->Magnetic_model_parser_ = &Magnetic_model;
+  this->SunMoon_model_parser_ = &SunMoon_model;
   this->name_parser_ = &name;
 }
 
@@ -1582,6 +1598,7 @@ InputFiles_pskel::
 InputFiles_pskel ()
 : Orbit_ephemeris_parser_ (0),
   Attitude_ephemeris_parser_ (0),
+  TLE_parser_ (0),
   Data_path_parser_ (0),
   Planet_ephemeris_parser_ (0),
   EOP_parameters_parser_ (0),
@@ -1590,6 +1607,7 @@ InputFiles_pskel ()
   Gravity_model_parser_ (0),
   Atmospheric_model_parser_ (0),
   Magnetic_model_parser_ (0),
+  SunMoon_model_parser_ (0),
   name_parser_ (0)
 {
 }
@@ -6340,6 +6358,11 @@ Attitude_ephemeris (const ::std::string&)
 }
 
 void InputFiles_pskel::
+TLE (const ::std::string&)
+{
+}
+
+void InputFiles_pskel::
 Data_path (const ::std::string&)
 {
 }
@@ -6380,6 +6403,11 @@ Magnetic_model (const ::std::string&)
 }
 
 void InputFiles_pskel::
+SunMoon_model (const ::std::string&)
+{
+}
+
+void InputFiles_pskel::
 name (const ::std::string&)
 {
 }
@@ -6415,6 +6443,16 @@ _start_element_impl (const ::xml_schema::ro_string& ns,
 
     if (this->Attitude_ephemeris_parser_)
       this->Attitude_ephemeris_parser_->pre ();
+
+    return true;
+  }
+
+  if (n == "TLE" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->TLE_parser_;
+
+    if (this->TLE_parser_)
+      this->TLE_parser_->pre ();
 
     return true;
   }
@@ -6499,6 +6537,16 @@ _start_element_impl (const ::xml_schema::ro_string& ns,
     return true;
   }
 
+  if (n == "SunMoon_model" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->SunMoon_model_parser_;
+
+    if (this->SunMoon_model_parser_)
+      this->SunMoon_model_parser_->pre ();
+
+    return true;
+  }
+
   return false;
 }
 
@@ -6521,6 +6569,14 @@ _end_element_impl (const ::xml_schema::ro_string& ns,
   {
     if (this->Attitude_ephemeris_parser_)
       this->Attitude_ephemeris (this->Attitude_ephemeris_parser_->post_string ());
+
+    return true;
+  }
+
+  if (n == "TLE" && ns.empty ())
+  {
+    if (this->TLE_parser_)
+      this->TLE (this->TLE_parser_->post_string ());
 
     return true;
   }
@@ -6585,6 +6641,14 @@ _end_element_impl (const ::xml_schema::ro_string& ns,
   {
     if (this->Magnetic_model_parser_)
       this->Magnetic_model (this->Magnetic_model_parser_->post_string ());
+
+    return true;
+  }
+
+  if (n == "SunMoon_model" && ns.empty ())
+  {
+    if (this->SunMoon_model_parser_)
+      this->SunMoon_model (this->SunMoon_model_parser_->post_string ());
 
     return true;
   }

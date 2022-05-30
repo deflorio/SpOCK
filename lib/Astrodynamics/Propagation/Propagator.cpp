@@ -66,7 +66,7 @@ namespace propagator
         //Faces = Vec3d::Zero();
         Mdip = Vec3d::Zero();
         datapath = "";
-        planetephem = "";
+        sunmoon = "";
         magneticfield = "";
         atmosphere = "";
         gravityfield =  "";
@@ -183,7 +183,7 @@ namespace propagator
         Models = models;
         
         datapath = Models.datapath;
-        planetephem = Models.planetephem;
+        sunmoon = Models.sunmoon;
         magneticfield = Models.magneticfield;
         atmosphere = Models.atmosphere;
         gravityfield = Models.gravityfield;
@@ -205,6 +205,7 @@ namespace propagator
                   inittime = init_time;
                   initstate = init_state;
                   state = initstate;
+                  orbstate = init_state;
                   
                   integ_first_step = true;
                   

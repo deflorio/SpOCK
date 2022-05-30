@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     ///////////////////////// Files paths /////////////////////////
     
     // Input files path
-    string Orbit_ephemeris, Attitude_ephemeris, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere;
+    string Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon;
     // Output files path
     string orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name;
     
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
     ////////// PARSING OF XML SIMULATION PARAMETERS FILE /////////
     //////////////////////////////////////////////////////////////
     
-    XML_parser(XML_simparam_file, Orbit_ephemeris, Attitude_ephemeris, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
+    XML_parser(XML_simparam_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
     //cout << "Sono qui" << endl;
     size_t lastslash = XML_simparam_file.find_last_of("/");
     string ReadXML_TXT_file_name = XML_simparam_file.substr(lastslash+1);
@@ -204,7 +204,9 @@ int main(int argc, char *argv[])
     const string ReadXML_TXT_file = XML_simparam_file.substr(0,lastslash) + "/Read_" + ReadXML_TXT_file_name + ".txt"; 
     //const string ReadXML_TXT_file = "input/readXML.txt";
     // Put read XML in a text file (for check purposes)
-    ReadXMLtoTXT(ReadXML_TXT_file, Orbit_ephemeris, Attitude_ephemeris, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
+    cout << ReadXML_TXT_file << endl;
+    
+    ReadXMLtoTXT(ReadXML_TXT_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
     
     //////////////////////////////////////////////////////////////
     /////////////// PROCESSING OF PARSED VARIABLES ///////////////
@@ -230,7 +232,7 @@ int main(int argc, char *argv[])
     EnvModels envmodels_paths;
     
     envmodels_paths.datapath = Data_path;
-    envmodels_paths.planetephem = planetephemeris;
+    envmodels_paths.sunmoon = sunmoon;
     envmodels_paths.magneticfield = magneticfield;
     envmodels_paths.gravityfield = gravityfield;
     envmodels_paths.atmosphere = atmosphere;
@@ -295,29 +297,12 @@ int main(int argc, char *argv[])
       }
 		
 	//////////////////// Environment models //////////////////////////
-    
     bool T_model[5] = {ggrad_on, mag_on, drag_on, srp_on, sunmoon_on};
     
     //////////////////// Run-start display message //////////////////////////
-    
-    cout << "\nOrbit initial epoch: " << init_orbtime(0) << "-" << init_orbtime(1) << "-" << init_orbtime(2) << "/" << setfill('0') << setw(2) << init_orbtime(3) << ":" << setfill('0') << setw(2) << init_orbtime(4) << ":" << setfill('0') << setw(2) << init_orbtime(5) << "\n" << endl;
-    cout << fixed << "Initial orbit state (ECI): X = " << init_orbstate(0) << " Y = " << init_orbstate(1) << " Z = " << init_orbstate(2) << " m," << " Vx = " << init_orbstate(3) << " Vy = " << init_orbstate(4) << " Vz = " << init_orbstate(5) << " m/s\n" << endl;
-    
-    string sim_duration_string = to_string(SIM_DURATION/86400.0) + " days";
-    if(SIM_DURATION/86400.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/3600.0) + " hours";
-    if(SIM_DURATION/3600.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/60.0) + " minutes";
-    
-    string pert_txt = "Simulation duration: " + sim_duration_string + "\n\nPERTURBATIONS\n\n";
-    
-    pert_txt = pert_txt + "Gravitational field model: " + gravityfield + " " + to_string(nMAX) + "x" + to_string(nMAX) + "\n";
-    if(sunmoon_on) pert_txt = pert_txt + "Third body perturbation: Sun and Moon\n";
-    if(drag_on) pert_txt = pert_txt + Drag_Model + " atmospheric drag model, Atmosphere: " + atmosphere + " model\n";
-    if(srp_on) pert_txt = pert_txt + SRP_Model + " solar radiation pressure model\n";
-    
-    cout << pert_txt << "\n" << endl;
+    RunStartMessage(init_orbtime, init_orbstate, SIM_DURATION, T_model, nMAX, Drag_Model, SRP_Model, magneticfield, gravityfield, atmosphere, sunmoon, "ORB");
     
     ///////////////// Orbit propulsion systems objects /////////////////
-    
     ORBPROPULSION OrbitPropulsion1(OrbitPropulsion1_prm);
     OrbitPropulsion1.Init();
     OrbitPropulsion1.thrust2dv(SC_prms.SC_mass);
