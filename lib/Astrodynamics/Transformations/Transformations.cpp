@@ -367,19 +367,82 @@ Vec4d q_inv(Vec4d& q)
 //------------------------------------------------------------------------------                      
 Vec4d RotationMatrix2Quaternion(Mat3x3d& Mat)
                     {
-                    double q1, q2, q3, q4;
+                    //double q1 = 0.0, q2 = 0.0, q3 = 0.0, q4 = 0.0, alpha;
+                    //
+                    //double testvec[4] = { Mat(0,0) + Mat(1,1) + Mat(2,2), Mat(0,0), Mat(1,1), Mat(2,2) };
+                    //
+                    //int maxelement = max_element(testvec, testvec + 4) - testvec;
+                    //
+                    //switch(maxelement)
+                    //    {
+                    //    case 0:
+                    //          alpha = sqrt( 1.0 + Mat(0,0) + Mat(1,1) + Mat(2,2) );
+                    //          
+                    //          q4 = 0.5*alpha;
+                    //
+                    //          q1 = 0.5*( Mat(2,1) - Mat(1,2) )/alpha;
+                    //                    
+                    //          q2 = 0.5*( Mat(0,2) - Mat(2,0) )/alpha;
+                    //                    
+                    //          q3 = 0.5*( Mat(1,0) - Mat(0,1) )/alpha;
+                    //          
+                    //          break;
+                    //          
+                    //    case 1:
+                    //          alpha = sqrt( 1.0 + Mat(0,0) - Mat(1,1) - Mat(2,2) );
+                    //          
+                    //          q4 = 0.5*( Mat(2,1) - Mat(1,2) )/alpha;
+                    //
+                    //          q1 = 0.5*alpha;
+                    //                    
+                    //          q2 = 0.5*( Mat(0,1) + Mat(1,0) )/alpha;
+                    //                    
+                    //          q3 = 0.5*( Mat(2,0) + Mat(0,2) )/alpha;
+                    //          
+                    //          break;
+                    //          
+                    //    case 2:
+                    //          alpha = sqrt( 1.0 - Mat(0,0) + Mat(1,1) - Mat(2,2) );
+                    //          
+                    //          q4 = 0.5*( Mat(0,2) - Mat(2,0) )/alpha;
+                    //
+                    //          q1 = 0.5*( Mat(0,1) + Mat(1,0) )/alpha;
+                    //                    
+                    //          q2 = 0.5*alpha;
+                    //                    
+                    //          q3 = 0.5*( Mat(1,2) + Mat(2,1) )/alpha;
+                    //          
+                    //          break;
+                    //          
+                    //    case 3:
+                    //          alpha = sqrt( 1.0 - Mat(0,0) - Mat(1,1) + Mat(2,2) );
+                    //          
+                    //          q4 = 0.5*( Mat(1,0) - Mat(0,1) )/alpha;
+                    //
+                    //          q1 = 0.5*( Mat(2,0) + Mat(0,2) )/alpha;
+                    //                    
+                    //          q2 = 0.5*( Mat(2,1) + Mat(1,2) )/alpha;
+                    //                    
+                    //          q3 = 0.5*alpha;
+                    //          
+                    //          break;     
+                    //    }
+                    //
+                    //Vec4d q(q1, q2, q3, q4);
+                    //
+                    //return(q);
                     
-                    q4 = 0.5*sqrt( 1.0 + Mat(0,0) + Mat(1,1) + Mat(2,2) );
+                    Quaterniond q(Mat);
                     
-                    q1 = 0.25*( Mat(1,2) - Mat(2,1) )/q4;
-                              
-                    q2 = 0.25*( Mat(2,0) - Mat(0,2) )/q4;
-                              
-                    q3 = 0.25*( Mat(0,1) - Mat(1,0) )/q4;
+                    Vec4d q_out;
                     
-                    Vec4d q(q1, q2, q3, q4);
+                    q_out(0) = q.x();
+                    q_out(1) = q.y();
+                    q_out(2) = q.z();
+                    q_out(3) = q.w();
                     
-                    return(q.normalized());
+                    //return(q.normalized());
+                    return(q_out);
                     };
 //------------------------------------------------------------------------------
 // Mat3x3d Quaternion2RotationMatrix(Vec4d& q)
@@ -393,22 +456,37 @@ Vec4d RotationMatrix2Quaternion(Mat3x3d& Mat)
  */
 //------------------------------------------------------------------------------                         
 Mat3x3d Quaternion2RotationMatrix(Vec4d& q)
-                    {
-                    double q1, q2, q3, q4;
-                    Mat3x3d RotMat;
-                    
-                    for(int i = 0; i < 4; i++) if( fabs(q(i)) < 1.0E-6 ) q(i) = 0.0;
-                    
-                    q1 = q(0);  q2 = q(1);  q3 = q(2);  q4 = q(3);
-                    
-                    RotMat(0,0) = q1*q1 - q2*q2 - q3*q3 + q4*q4;   RotMat(0,1) = 2.0*(q1*q2 + q3*q4);              RotMat(0,2) = 2.0*(q1*q3 - q2*q4);
-                    
-                    RotMat(1,0) = 2.0*(q1*q2 - q3*q4);             RotMat(1,1) = -q1*q1 + q2*q2 - q3*q3 + q4*q4;   RotMat(1,2) = 2.0*(q2*q3 + q1*q4);
-                    
-                    RotMat(2,0) = 2.0*(q1*q3 + q2*q4);             RotMat(2,1) = 2.0*(q2*q3 - q1*q4);              RotMat(2,2) = -q1*q1 - q2*q2 + q3*q3 + q4*q4;
-                    
-                    return(RotMat);
-                    };
+                  {
+                  Mat3x3d RotMat = Mat3x3d::Zero();
+                  
+                  double q1, q2, q3, q4;
+                  //Mat3x3d SkewMat = Mat3x3d::Zero();
+                  //Mat3x3d IdMat = Mat3x3d::Identity();
+                  //Vec3d rotvec = Vec3d::Zero();
+                  
+                  q1 = q(0);  q2 = q(1);  q3 = q(2);  q4 = q(3);
+                  
+                  Quaterniond quat(0.0,0.0,0.0,0.0);
+                  
+                  quat.x() = q1;
+                  quat.y() = q2;
+                  quat.z() = q3;
+                  quat.w() = q4;
+                  
+                  RotMat = quat.normalized().toRotationMatrix();
+                  
+                  //// Rotation vector
+                  //rotvec << q1, q2, q3;
+                  //
+                  //// Skew-symmetric cross-product matrix SkewMat(rotvec)
+                  //SkewMat(0,0) = 0.0;           SkewMat(0,1) = -rotvec(2);    SkewMat(0,2) = +rotvec(1);
+                  //SkewMat(1,0) = +rotvec(2);    SkewMat(1,1) = 0.0;           SkewMat(1,2) = -rotvec(0);
+                  //SkewMat(2,0) = -rotvec(1);    SkewMat(2,1) = +rotvec(0);    SkewMat(2,2) =   0.0;
+                  //
+                  //RotMat = IdMat + 2.0*q4*SkewMat + 2.0*SkewMat*SkewMat;
+                  
+                  return(RotMat);
+                  };
 //------------------------------------------------------------------------------
 // Vec3d ECEF2lonlath(Vec3d& posECEF)
 //------------------------------------------------------------------------------
@@ -1750,20 +1828,11 @@ double GPS2ET(double GPSsecs)
                   {
                   double ETsecs;
                   
-                  ETsecs = GPSsecs - timescales::J2000_GPSSECS;
-                  //cout << "ETsecs: " << ETsecs << endl;
-                  
-                  //double TAI = GPSsecs + 19.0;
-                  //ETsecs = unitim_c(TAI, "TAI", "ET");
-                  //cout << "SPICE ET: " << ETsecs << endl;
+                  ETsecs = GPSsecs - floor(timescales::J2000_GPSSECS);
+                  //cout << fixed << "ETsecs: " << ETsecs << endl;
                   
                   return(ETsecs);
-                  };
-                  
-                  
-                  
-                  
-                  
+                  };   
 //------------------------------------------------------------------------------
 // double GPS2TT(double GPSsecs)
 //------------------------------------------------------------------------------

@@ -230,11 +230,14 @@ namespace orbpropulsion
                                         
                                         for( man_ind = 0; man_ind < man_size; man_ind++ )
                                             {
-                                            if( man_size > 1 && (impman[man_ind].init_time <= impman[man_ind - 1].init_time) )
-                                            {
-                                            cerr << "ERROR: initial time of a continuous maneuver < final time of previous continuous maneuver" << endl;
-                                            return;
-                                            }
+                                            if(man_ind >= 1)
+                                                {
+                                                if( man_size > 1 && (impman[man_ind].init_time <= impman[man_ind - 1].init_time) )
+                                                    {
+                                                    cerr << "ERROR: initial time of a continuous maneuver < final time of previous continuous maneuver" << endl;
+                                                    return;
+                                                    }
+                                                }
                                             
                                             m_init_time = impman[man_ind].init_time;
                                             dv = impman[man_ind].ManVec;

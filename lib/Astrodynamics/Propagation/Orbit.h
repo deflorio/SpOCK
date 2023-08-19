@@ -85,7 +85,7 @@ namespace orbit
         // Integrate equations of motion
         void Integrate(double t, double step);
         // Setup numerical integrator parameters
-        void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
+        //void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
         
         public:
     

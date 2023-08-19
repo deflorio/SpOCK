@@ -271,14 +271,14 @@ namespace orbit
      * @param factor_dxdt   Factor for the weight of the state
      */
     //------------------------------------------------------------------------------   
-    void ORB::StepperSetup(double eps_abs,
-                            double eps_rel,
-                            double factor_x,
-                            double factor_dxdt)
-                            {
-                            bulirsch_stoer<state_type> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
-                            bulirsch_stoer_stepper = setup_stepper;
-                            };
+    //void ORB::StepperSetup(double eps_abs,
+    //                        double eps_rel,
+    //                        double factor_x,
+    //                        double factor_dxdt)
+    //                        {
+    //                        bulirsch_stoer<state_type> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
+    //                        bulirsch_stoer_stepper = setup_stepper;
+    //                        };
     //------------------------------------------------------------------------------
     // Method void Integrate(double t, double step)
     //------------------------------------------------------------------------------

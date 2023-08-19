@@ -451,11 +451,14 @@ int main(int argc, char *argv[])
         if( !all_enabled_orbman.empty() )
             {
             // Maneuver execution message    
-            if( t >= all_enabled_orbman[man_ind].init_time )
+            if( man_ind < all_enabled_orbman.size() )
                 {
-                cout << all_enabled_orbman[man_ind].name << ", dv = " << all_enabled_orbman[man_ind].ManVec(0) <<  " , " <<  all_enabled_orbman[man_ind].ManVec(1) <<  " , " << all_enabled_orbman[man_ind].ManVec(2) << " [m/s]\n" << endl;
-                
-                man_ind++;
+                if( t >= all_enabled_orbman[man_ind].init_time )
+                    {
+                    cout << all_enabled_orbman[man_ind].name << ", dv = " << all_enabled_orbman[man_ind].ManVec(0) <<  " , " <<  all_enabled_orbman[man_ind].ManVec(1) <<  " , " << all_enabled_orbman[man_ind].ManVec(2) << " [m/s]\n" << endl;
+                    
+                    man_ind++;
+                    }
                 }
         
             // Impulsive maneuvers of propulsion system 1
