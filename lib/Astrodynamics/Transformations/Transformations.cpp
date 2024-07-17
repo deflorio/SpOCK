@@ -1828,7 +1828,8 @@ double GPS2ET(double GPSsecs)
                   {
                   double ETsecs;
                   
-                  ETsecs = GPSsecs - floor(timescales::J2000_GPSSECS);
+                  ETsecs = GPSsecs - timescales::J2000_GPSSECS;
+                  //ETsecs = GPSsecs - floor(timescales::J2000_GPSSECS);
                   //cout << fixed << "ETsecs: " << ETsecs << endl;
                   
                   return(ETsecs);
