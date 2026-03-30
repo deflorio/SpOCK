@@ -4,6 +4,7 @@ TARGET_ORB = bin/OrbitPropagator
 TARGET_SGP4 = bin/SGP4Propagator
 TARGET_ATT = bin/AttitudePropagator
 TARGET_EVE = bin/EventsComputation
+TARGET_TOOLS = bin/EphEval bin/EphIntpl bin/Eph2sp3
 
 C_SRC   :=  $(wildcard *.c)
 CPP_SRC_ORB :=  orbprop.cpp
@@ -19,10 +20,11 @@ LIBRARY_PATH := -L.
 
 CC = gcc
 CC_FLAGS = -Wall -O3 -pg
-CCXX = g++ -std=c++17 -fopenmp
+CCXX = g++ -std=c++20 -fopenmp
 CCXX_FLAGS = -Wall -O3 -falign-functions=16 -falign-loops=16 -falign-jumps -pg -DUSE_QUATERNION -DUSE_SPICE -DXSD_CXX11 -fno-signaling-nans -fno-trapping-math
 
-LIBRARY := -lboost_system -lpthread ./extlib/cspice/lib/cspice.a -lm -lxerces-c extlib/Atmosphere/JB2008/JB2008.o extlib/Atmosphere/JB2008/Readfiles.o extlib/Atmosphere/NRLMSISE-00/FORTRAN/nrlmsise00_sub.o extlib/MagneticField/IGRF/FORTRAN/igrf13.o extlib/MagneticField/WMM/FORTRAN/geomag.o -lgfortran
+LIBRARY := -lboost_system -lpthread ./extlib/cspice/lib/cspice.a -lm -lxerces-c extlib/Atmosphere/JB2008/JB2008.o extlib/Atmosphere/JB2008/Readfiles.o extlib/Atmosphere/NRLMSIS-2.1/FORTRAN/nrlmsise21_sub.o extlib/MagneticField/IGRF/FORTRAN/igrf13.o extlib/MagneticField/WMM/FORTRAN/geomag.o -lgfortran
+
 LD_FLAGS =
 
 #include makefile fragments in subdirectories if they exist
@@ -131,6 +133,7 @@ clean:
 	@rm -f $(TARGET_SGP4)
 	@rm -f $(TARGET_ATT)
 	@rm -f $(TARGET_EVE)
+	@rm -f $(TARGET_TOOLS)
 
 #http://blog.jgc.org/2015/04/the-one-line-you-should-add-to-every.html
 print-%: ; @echo $*=$($*)
@@ -157,19 +160,25 @@ ramdisk:
 	sudo mount -t tmpfs -o size=512m tmpfs $(RAMDISK_DIR)
 
 install_libs:
-	sudo apt-get install libboost-all-dev libxerces-c-dev xsdcxx gfortran freeglut3 freeglut3-dev libxi-dev libxmu-dev mesa-utils libsdl2* libsoil* doxygen graphviz
+	sudo apt-get install libboost-all-dev libxerces-c-dev xsdcxx gfortran libglut3.12 libglut-dev freeglut3-dev libxi-dev libxmu-dev mesa-utils libsdl2-2.0-0 libsdl2-dev libsoil* doxygen graphviz
 	
 install_atmo:
-	rm -f extlib/Atmosphere/NRLMSISE-00/FORTRAN/*.o
+	rm -f extlib/Atmosphere/NRLMSIS-2.1/FORTRAN/*.o
 	rm -f extlib/Atmosphere/JB2008/*.o
-	gfortran -c -std=legacy extlib/Atmosphere/NRLMSISE-00/FORTRAN/nrlmsise00_sub.for -o extlib/Atmosphere/NRLMSISE-00/FORTRAN/nrlmsise00_sub.o
+	gfortran -c -std=legacy extlib/Atmosphere/NRLMSIS-2.1/FORTRAN/nrlmsise21_sub.F90 -o extlib/Atmosphere/NRLMSIS-2.1/FORTRAN/nrlmsise21_sub.o
 	gfortran -c extlib/Atmosphere/JB2008/JB2008.f -o extlib/Atmosphere/JB2008/JB2008.o
 	gfortran -c extlib/Atmosphere/JB2008/Readfiles.f -o extlib/Atmosphere/JB2008/Readfiles.o
+	
+	rm -f *.mod extlib/Atmosphere/NRLMSIS-2.1/FORTRAN/*.mod
 	
 install_mag:
 	rm -f extlib/MagneticField/IGRF/FORTRAN/*.o
 	rm -f extlib/MagneticField/WMM/FORTRAN/*.o
 	gfortran -c extlib/MagneticField/IGRF/FORTRAN/igrf13.f -o extlib/MagneticField/IGRF/FORTRAN/igrf13.o
 	gfortran -c extlib/MagneticField/WMM/FORTRAN/geomag.for -o extlib/MagneticField/WMM/FORTRAN/geomag.o
+
+.PHONY: tools	
+tools:
+	sh tools/compile.sh
 
 .PHONY: test deploy all ramdisk

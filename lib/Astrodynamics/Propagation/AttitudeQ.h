@@ -94,7 +94,7 @@ namespace attitudeq
     
         private:
         // Implementation od dynamics model with quaternions
-        void DynModel(const state_typeQ &x , state_typeQ &dxdt , const double t); // Definition of dynamic model
+        void DynModel(const state_typeQ &x, state_typeQ &dxdt, const double t); // Definition of dynamic model
     
         private:
             
@@ -105,7 +105,8 @@ namespace attitudeq
         /** boost odeint stepper for integrator. @see Method DynModel.*/
         //runge_kutta4< state_typeQ > stepper;
         //controlled_stepper_typeQ controlled_stepper;
-        bulirsch_stoer<state_typeQ> bulirsch_stoer_stepperQ;
+        //bulirsch_stoer<state_typeQ> bulirsch_stoer_stepperQ;
+        BULSTOER_stepper_typeQ BULSTOER_stepper{1.0E-10, 1.0E-8, 1.0, 1.0};
         
         //double abs_err = 1.0E-10;
         //double rel_err = 1.0E-6;

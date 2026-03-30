@@ -83,6 +83,7 @@ class SimParameters_pskel;
 class durstep_pskel;
 class ORB_initstate_pskel;
 class ATT_initstate_pskel;
+class odeint_pskel;
 class simoptions_pskel;
 class InputFiles_pskel;
 class OutputFiles_pskel;
@@ -1952,6 +1953,9 @@ class SimParameters_pskel: public ::xml_schema::complex_content
   ATT_initstate ();
 
   virtual void
+  odeint ();
+
+  virtual void
   simoptions ();
 
   virtual void
@@ -1969,12 +1973,16 @@ class SimParameters_pskel: public ::xml_schema::complex_content
   ATT_initstate_parser (::ATT_initstate_pskel&);
 
   void
+  odeint_parser (::odeint_pskel&);
+
+  void
   simoptions_parser (::simoptions_pskel&);
 
   void
   parsers (::durstep_pskel& /* durstep */,
            ::ORB_initstate_pskel& /* ORB_initstate */,
            ::ATT_initstate_pskel& /* ATT_initstate */,
+           ::odeint_pskel& /* odeint */,
            ::simoptions_pskel& /* simoptions */);
 
   // Constructor.
@@ -1997,6 +2005,7 @@ class SimParameters_pskel: public ::xml_schema::complex_content
   ::durstep_pskel* durstep_parser_;
   ::ORB_initstate_pskel* ORB_initstate_parser_;
   ::ATT_initstate_pskel* ATT_initstate_parser_;
+  ::odeint_pskel* odeint_parser_;
   ::simoptions_pskel* simoptions_parser_;
 };
 
@@ -2188,6 +2197,80 @@ class ATT_initstate_pskel: public ::xml_schema::complex_content
   ::Angle_pskel* om_x_parser_;
   ::Angle_pskel* om_y_parser_;
   ::Angle_pskel* om_z_parser_;
+};
+
+class odeint_pskel: public ::xml_schema::complex_content
+{
+  public:
+  // Parser callbacks. Override them in your implementation.
+  //
+  // virtual void
+  // pre ();
+
+  virtual void
+  stepper (const ::std::string&);
+
+  virtual void
+  eps_abs (double);
+
+  virtual void
+  eps_rel (double);
+
+  virtual void
+  factor_x (double);
+
+  virtual void
+  factor_dxdt (double);
+
+  virtual void
+  post_odeint ();
+
+  // Parser construction API.
+  //
+  void
+  stepper_parser (::xml_schema::string_pskel&);
+
+  void
+  eps_abs_parser (::xml_schema::double_pskel&);
+
+  void
+  eps_rel_parser (::xml_schema::double_pskel&);
+
+  void
+  factor_x_parser (::xml_schema::double_pskel&);
+
+  void
+  factor_dxdt_parser (::xml_schema::double_pskel&);
+
+  void
+  parsers (::xml_schema::string_pskel& /* stepper */,
+           ::xml_schema::double_pskel& /* eps_abs */,
+           ::xml_schema::double_pskel& /* eps_rel */,
+           ::xml_schema::double_pskel& /* factor_x */,
+           ::xml_schema::double_pskel& /* factor_dxdt */);
+
+  // Constructor.
+  //
+  odeint_pskel ();
+
+  // Implementation.
+  //
+  protected:
+  virtual bool
+  _start_element_impl (const ::xml_schema::ro_string&,
+                       const ::xml_schema::ro_string&,
+                       const ::xml_schema::ro_string*);
+
+  virtual bool
+  _end_element_impl (const ::xml_schema::ro_string&,
+                     const ::xml_schema::ro_string&);
+
+  protected:
+  ::xml_schema::string_pskel* stepper_parser_;
+  ::xml_schema::double_pskel* eps_abs_parser_;
+  ::xml_schema::double_pskel* eps_rel_parser_;
+  ::xml_schema::double_pskel* factor_x_parser_;
+  ::xml_schema::double_pskel* factor_dxdt_parser_;
 };
 
 class simoptions_pskel: public ::xml_schema::complex_content

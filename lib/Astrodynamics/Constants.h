@@ -26,6 +26,7 @@
 #include <cmath>
 #include <map>
 #include <string>
+#include <limits>
 
 #include <VarTypes.h>
 
@@ -39,12 +40,14 @@ namespace constants
                     const static double C_LIGHT = 299792458.0;
                     // Solar flux at a distance of 1 AU from the Sun [W/m^2]
                     const static double C_SUN = 1367.0;
-                    // Solar radiation pressure constant [N/m^2] IERS 1996 (McCarthy 1996)
+                    // Solar radiation pressure constant (~1367 W/m^2) [N/m^2] IERS 1996 (McCarthy 1996)
                     const static double P = 4.560E-6;
                     // Flattening WGS-84
                     const static double F_EARTH = 1.0/298.257223563;
-                    // Gravitational coefficient Earth [m^3/s^2]; JGM3
-                    const static double GM_EARTH = 398600.4415E+9;
+                    // Gravitational coefficient Earth [m^3/s^2] WGS84
+                    const static double GM_EARTH = 398600.5E+9;
+                    // Gravitational coefficient Earth [m^3/s^2] JGM3
+                    const static double GM_EARTH_JGM3 = 398600.4415E+9;
                     // Gravitational coefficient Moon [m^3/s^2]; DE200
                     const static double GM_MOON = GM_EARTH/81.300587;
                     // Gravitational coefficient Sun [m^3/s^2]; IAU 1976
@@ -63,8 +66,10 @@ namespace constants
                     const static double J3 = -2.53615069E-6;
                     // Fourth-order zonal coefficient
                     const static double J4 = -1.61936355E-6;
+                    // WGS84 Earth's rotation rate [rad/s]
+                    const static double OMEGA_EARTH = 7.2921151467E-5;
                     // Earth rotation (derivative of GMST at J2000; differs from inertial period by precession) [rad/s] Aoki 1982, NIMA 1997
-                    const static double OMEGA_EARTH = 7.2921158553E-5;
+                    const static double OMEGA_EARTH_J2000 = 7.2921158553E-5;
                     // Radius of Earth [m] WGS-84
                     const static double R_EARTH = 6378.137E3;
                     // Radius of Moon [m]
@@ -73,12 +78,14 @@ namespace constants
                     const static double R_SUN = 696000.0E3;
                     // Obliquity of the J2000 ecpliptic [deg]
                     const static double EPS_J2000 = 23.43929111;
+                    // Love number k_2,0
+                    const static double Love_k2 = 0.29525;
                     };
             
             namespace timescales
                     {
                     // GPS seconds at 1 Jan 2000 11:58:55.816 UTC
-                    const static double J2000_GPSSECS = 630763148.816; //630763213 + 19.0 + 32.184;
+                    const static double J2000_GPSSECS = 630763148.816;
                     // Julian day number of GPS time zero (midnight of 5-6 January 1980)
                     const static double JD_GPS = 2444244.5;
                     // Julian Date of J2000.0 [d]
@@ -121,6 +128,14 @@ namespace constants
                     const static double WEEK2SEC = 604800.0;
                     };
                     
+            //namespace gnss
+            //        {
+            //        // GPS L1 frequency [Hz] (10.23MHz*154)
+            //        const static double f_L1 = 1575.42e6;
+            //        // GPS L1 wavelength [m] (0.1903m)
+            //        const static double lambda_L1 = astro::C_LIGHT/f_L1;
+            //        };
+                    
             namespace physics
                     {
                     // The Boltzmann constant (gas constant per particle) [m^2*kg/( s^2 * K)] (NIST, 2013)
@@ -135,13 +150,14 @@ namespace constants
                     
             namespace mathconst
                     {
-                    const static double PI = 3.141592653589793238;
+                    const static double PI = 3.1415926535898;
                     const static long double LONG_PI = 3.14159265358979323846264338328L;
                     const static double PI2 = 2.0*PI;
                     const static double DEG2RAD = PI/180.0;
                     const static double RAD2DEG = 180.0/PI;
                     const static double RAD2ARCS = 3600.0*180.0/PI;
                     const static double ARCS2RAD = PI/(3600.0*180.0);
+                    const static double EPS_MACHINE_D = std::numeric_limits<double>::epsilon();
                     };
                     
             namespace materials

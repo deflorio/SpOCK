@@ -298,6 +298,26 @@ namespace attitude
             // Add actuators torque to environmental torque   
             Torque += TorqueACT;    
             };
+            
+    //------------------------------------------------------------------------------
+    // Method void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt)
+    //------------------------------------------------------------------------------
+    /**
+     * Setup numerical integrator parameters
+     *
+     * @param eps_abs       Absolute tolerance level
+     * @param eps_rel       Relative tolerance level
+     * @param factor_x      Factor for the weight of the derivative
+     * @param factor_dxdt   Factor for the weight of the state
+     */
+    //------------------------------------------------------------------------------   
+    void ATT::StepperSetup(double eps_abs,
+                            double eps_rel,
+                            double factor_x,
+                            double factor_dxdt)
+                            {
+                            BULSTOER_stepper = BULSTOER_stepper_type(eps_abs, eps_rel, factor_x, factor_dxdt);
+                            };
     //------------------------------------------------------------------------------
     // Method void Integrate(double t, double step)
     //------------------------------------------------------------------------------
@@ -323,7 +343,7 @@ namespace attitude
             // Execute one integration step
             //stepper.do_step(DynModel, x, t, step);
             //stepper.do_step(std::bind(&ATT::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
-            bulirsch_stoer_stepper.try_step(std::bind(&ATT::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
+            BULSTOER_stepper.try_step(std::bind(&ATT::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
             
             //cout << t << "   " << x[0]*180/3.14 << "   " << x[1]*180/3.14 << "   " << x[2]*180/3.14 << "   " << x[3]*180/3.14 << "   " << x[4]*180/3.14 << "   " << x[5]*180/3.14 << endl;
             //cout << "Torque: " << t << "   " << Torque(0) << "   " << Torque(1) << "   " << Torque(2) << "\n" << endl;

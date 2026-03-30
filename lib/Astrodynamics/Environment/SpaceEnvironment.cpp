@@ -38,13 +38,16 @@ namespace spaceenvironment
     // SPACEENV implementation
     //------------------------------------------------------------------------------
     int SPACEENV::n_max = 0;
+    
+    Vec3d SPACEENV::eop = Vec3d::Zero();
+    double SPACEENV::tai_utc = 0.0;
     // Constructor
     //------------------------------------------------------------------------------
     SPACEENV::SPACEENV()
        {
-        modelname = " ";
-        modelfilepath = " ";
-        refsys = " ";
+        modelname = "";
+        modelfilepath = "";
+        refsys = "";
         Area = 0.0;
         CF = 0.0;
         rho1 = 0.0;

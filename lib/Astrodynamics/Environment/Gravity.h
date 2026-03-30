@@ -53,73 +53,81 @@ namespace gravity
      */
     //------------------------------------------------------------------------------ 
     class GRAV : public SPACEENV
-        {
-        public:
-        //! Constructor.
-        /*!
-            Using class SPACEENV constructor
-        */
-        using SPACEENV::SPACEENV;
-        //! Destructor.
-        ~GRAV();
-        //------------------------------------------------------------------------------
-        //
-        // Class methods specification
-        //
-        //------------------------------------------------------------------------------
-        // Compute the central body gravitational acceleration vector
-        Vec3d field_vec(double time, const Ref<const VectorXd>& orbstate);
-        // Get gravity field model coefficients from file
-        void getmodel_coeff();
-        
-        private:
-		  // Normalized associated Legendre functions (c++17 function)
-        double Legendre_norm(unsigned int n, unsigned int m, double x);
-        // First derivative of normalized associated Legendre functions (c++17 function)
-        double d_Legendre_norm(unsigned int n, unsigned int m, double x);
-        // Normalized associated Legendre functions and first derivatives (forward columns recursive method)
-        static void Legendre_norm_FC(double u, double w);
-        
-        //MatrixXd Legendre_norm_FR(double u, double w);
-        //MatrixXd d_Legendre_norm_FR(const Ref<const MatrixXd>& L_FR, double u, double w);
-        
-        private:
-        // Matrix of normalized C gravity field model coefficients
-        static MatnMAXxnMAXd C;//Eigen::MatrixXd C;
-        // Matrix of normalized S gravity field model coefficients
-        static MatnMAXxnMAXd S;//Eigen::MatrixXd S;
-        // Matrix of normalized sigmaC gravity field model coefficients
-        static MatnMAXxnMAXd sigmaC;//Eigen::MatrixXd sigmaC;
-        // Matrix of normalized sigmaS gravity field model coefficients
-        static MatnMAXxnMAXd sigmaS;//Eigen::MatrixXd sigmaS;
-        // Matrix of normalized associated Legendre functions
-        static MatnMAXxnMAXd P;
-        // Matrix of first derivative of normalized associated Legendre functions
-        static MatnMAXxnMAXd Pd;
-        
-        static MatnMAXxnMAXd A;
-        
-        static MatnMAXxnMAXd B;
-        
-        static MatnMAXxnMAXd F;
-        
-        static MatnMAXxnMAXd CS;
-        
-        static MatnMAXxnMAXd CS1;
-        
-        static VectornMAXd Sigma1;
-        
-        static VectornMAXd sin_mlambda;
-        
-        static VectornMAXd cos_mlambda;
-        // Gravitational coefficient Earth (from gravity model file)
-        static double mu;
-        // Earth's equatorial radius (from gravity model file)
-        static double R;
-        
-        public:
-        // Epoch at which the gravity field is evaluated. This variable is used only when gravity field models containing time variable parameters are read (e.g. EIGEN-6S)
-        double grav_epoch;
+         {
+         public:
+         //! Constructor.
+         /*!
+             Using class SPACEENV constructor
+         */
+         using SPACEENV::SPACEENV;
+         //! Destructor.
+         ~GRAV();
+         //------------------------------------------------------------------------------
+         //
+         // Class methods specification
+         //
+         //------------------------------------------------------------------------------
+         // Compute the central body gravitational acceleration vector
+         Vec3d field_vec(double time, const Ref<const VectorXd>& orbstate);
+         // Get gravity field model coefficients from file
+         void getmodel_coeff();
+         
+         private:
+         // Normalized associated Legendre functions (c++17 function)
+         double Legendre_norm(unsigned int n, unsigned int m, double x);
+         // First derivative of normalized associated Legendre functions (c++17 function)
+         double d_Legendre_norm(unsigned int n, unsigned int m, double x);
+         // Normalized associated Legendre functions and first derivatives (forward columns recursive method)
+         static void Legendre_norm_FC(double u, double w);
+         
+         //MatrixXd Legendre_norm_FR(double u, double w);
+         //MatrixXd d_Legendre_norm_FR(const Ref<const MatrixXd>& L_FR, double u, double w);
+         
+         private:
+         /** Matrix of normalized C gravity field model coefficients. */
+         static MatnMAXxnMAXd C;//Eigen::MatrixXd C;
+         /** Matrix of normalized S gravity field model coefficients. */
+         static MatnMAXxnMAXd S;//Eigen::MatrixXd S;
+         /** Matrix of normalized sigmaC gravity field model coefficients. */
+         static MatnMAXxnMAXd sigmaC;//Eigen::MatrixXd sigmaC;
+         /** Matrix of normalized sigmaS gravity field model coefficients. */
+         static MatnMAXxnMAXd sigmaS;//Eigen::MatrixXd sigmaS;
+         /** Matrix of normalized associated Legendre functions. */
+         static MatnMAXxnMAXd P;
+         /** Matrix of first derivative of normalized associated Legendre functions. */
+         static MatnMAXxnMAXd Pd;
+         
+         static MatnMAXxnMAXd A;
+         
+         static MatnMAXxnMAXd B;
+         
+         static MatnMAXxnMAXd F;
+         
+         static MatnMAXxnMAXd CS;
+         
+         static MatnMAXxnMAXd CS1;
+         
+         static VectornMAXd Sigma1;
+         
+         static VectornMAXd sin_mlambda;
+         
+         static VectornMAXd cos_mlambda;
+         /** Gravitational coefficient Earth (from gravity model file). */
+         static double mu;
+         /** Earth's equatorial radius (from gravity model file). */
+         static double R;
+         
+         public:
+         /** Epoch at which the gravity field is evaluated. This variable is used only when gravity field models containing time variable parameters are read (e.g. EIGEN-6S). */
+         double grav_epoch;
+         
+         Vec3d acc_ECEF;
+         ///** 3-dimensional vector containing Earth orientation parameters. */
+         //Vec3d eop;
+         ///** Current leap second. */
+         //static double leapsec;
+         ///** Transformation matrix ICRF --> ITRF. */
+         //Mat3x3d T_ICRF2ITRF;
         };
    }; // End of namespace gravity
    

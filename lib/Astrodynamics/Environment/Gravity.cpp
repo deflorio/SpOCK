@@ -133,7 +133,7 @@ namespace gravity
      * Normalized associated Legendre functions and first derivatives (forward columns recursive method)
      *
      * @param u		cos(phi) = sin(theta) where theta + phi  = pi/2.0 and phi = geocentric latitude
-     * @param u		sin(phi) = cos(theta)
+     * @param w		sin(phi) = cos(theta)
      *
      * @return		Return the matrices whose elements are the value of the normalized associated Legendre function of degree n and order m and its first derivative 
      * 			corresponding to u = cos(theta). The computation of the Legendre functions is based on a forward columns (FC) recursive method
@@ -177,14 +177,21 @@ namespace gravity
                                 
                                 };
     //------------------------------------------------------------------------------
-    // Method Vec3d field_vec(double time, const Ref<const VectorXd>& orbstate)
+    // Method Vec3d field_vec(double time, const Ref<const VectorXd>& orbstate, const Ref<const VectorXd>& auxparam = MatrixXd::Zero(4,1))
     //------------------------------------------------------------------------------
     /**
      * Implementation of the abstract method of class SPACEENV
      * Compute the acceleration vector due to the Earth's gravity field
      *
-     * @param time        GPS epoch (seconds) of the input state
-     * @param orbstate    Spacecraft position vector (ECEF)
+     * @param time          GPS epoch (seconds) of the input state
+     * @param orbstate      Spacecraft position vector (ECEF)
+     * @param auxparam      Optional input to be use in case the SPICE library is not used,
+     *                      containing Earth orientation parameters and current leap second
+     *                      auxparam(0) = CEP x-coordinate xp [1e-6 arcsec]
+     *                      auxparam(1) = CEP y-coordinate yp [1e-6 arcsec]
+     *                      auxparam(2) = UT1 - UTC [1e-7 sec]
+     *                      The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
+     *                      auxparam(3) = current leap second [s]
      *
      * @return 3-dimensional gravity acceleration vector (ECI)
      *
@@ -193,7 +200,7 @@ namespace gravity
     Vec3d GRAV::field_vec(double time,
                           const Ref<const VectorXd>& orbstate)
                             {
-                            Vec3d acc, acc_ECEF;
+                            Vec3d acc;//, acc_ECEF;
                             
                             Vec3d SC_posECEF = orbstate;
                             
@@ -335,8 +342,13 @@ namespace gravity
                             //cout << "phi_acc: " << acc_ECEF.dot(r_vec)/(acc_ECEF.norm()*r_vec.norm()) << endl;
                             //cout << "acc_ECEF(0): " << acc_ECEF(0) << "  acc_ECEF(1): " << acc_ECEF(1) << "  acc_ECEF(2): " << acc_ECEF(2) << endl;
                             //cout << "acc_ECEF: " << acc_ECEF.norm() << endl;
-            
+                            
+                            #if defined(USE_SPICE) && !defined(POD)
                             acc = v3D_transform(time, acc_ECEF, "ITRF93", "J2000"); // Acceleration vector in ECI frame
+                            #else
+                            T_ICRF2ITRF = ICRF2ITRF_Mat(time, eop, tai_utc);
+                            acc = T_ICRF2ITRF.transpose()*acc_ECEF;
+                            #endif
                             //if(refsys.compare("ECEF") == 0) acc = acc_ECEF;
                             //cout << "acc(0): " << acc(0) << "  acc(1): " << acc(1) << "  acc(2): " << acc(2) << endl;
                             
@@ -352,12 +364,35 @@ namespace gravity
     //------------------------------------------------------------------------------
     void GRAV::getmodel_coeff()
                             {
-                            if( modelname.compare("GGM03C_30x30_Hardcoded") == 0 )
+                            //if( modelname.compare("GGM03C_30x30_Hardcoded") == 0 )
+                            //    {
+                            //    // Get hardcoded (GGM03C.h) model
+                            //    get_GGM03C_30x30(C, S, sigmaC, sigmaS, mu, R);
+                            //    
+                            //    if(n_max > 30) n_max = 30;
+                            //    
+                            //    int n, m;
+                            //    
+                            //    #pragma omp parallel for collapse(2)
+                            //    for(n = 0; n <= n_max; n++)
+                            //        for(m = 0; m <= n_max; m++)
+                            //            {
+                            //            if( (n - m) > 0 )
+                            //                {
+                            //                A(n,m) = sqrt( (2.0*n - 1.0)*(2.0*n + 1.0)/( (n - m)*(n + m) ) );
+                            //                B(n,m) = sqrt( (2.0*n + 1.0)*(n + m - 1.0)*(n - m - 1.0)/( (n - m)*(n + m)*(2.0*n - 3.0) ) );
+                            //                }
+                            //                
+                            //            if( (n*n - m*m) > 0 ) F(n,m) = sqrt( (n*n - m*m)*(2.0*n + 1.0)/(2.0*n - 1.0) );
+                            //            }
+                            //    }
+                            //else if( modelname.compare("GGM03C_70x70_Hardcoded") == 0 )
+                            if( modelname.compare("GGM03C_70x70_Hardcoded") == 0 )
                                 {
                                 // Get hardcoded (GGM03C.h) model
-                                get_GGM03C_30x30(C, S, sigmaC, sigmaS, mu, R);
+                                get_GGM03C_70x70(C, S, sigmaC, sigmaS, mu, R);
                                 
-                                if(n_max > 30) n_max = 30;
+                                if(n_max > 70) n_max = 70;
                                 
                                 int n, m;
                                 

@@ -63,7 +63,7 @@ namespace subsystem
         
         On = true; // This value will be passe to member On by TC in a later version of the software
         subsystem_on = true;
-        mode = " ";
+        mode = "";
         X = Vec3d::Zero();
         Y = Vec3d::Zero();
         Z = Vec3d::Zero();
@@ -80,7 +80,7 @@ namespace subsystem
       Setup(param);
       
       subsystem_on = true;
-      mode = " ";
+      mode = "";
       };
     //------------------------------------------------------------------------------
     /**
@@ -96,7 +96,7 @@ namespace subsystem
                   Setup(param);
                   
                   subsystem_on = true;
-                  mode = " ";
+                  mode = "";
                   
                   TCs = Telecommands;
                   };

@@ -29,6 +29,8 @@
 #include <Constants.h>
 #include <Transformations.h>
 
+#include <boost/numeric/odeint/stepper/generation/make_controlled.hpp>
+
 using namespace std;
 using namespace math;
 using namespace boost::numeric::odeint;
@@ -95,8 +97,7 @@ namespace orbit
     // Method static void DynModel(const state_type &x , state_type &dxdt , const double t)
     //------------------------------------------------------------------------------
     /**
-     * Implementation of dynamics model with Euler angles.
-     * @note The dynamics of reaction/momentum wheels is also included.
+     * Implementation of dynamics model.
      *
      * @param x      State vector
      * @param dxdt   First derivative of state vector
@@ -214,7 +215,7 @@ namespace orbit
                     F_SRP = SolarRadiation.field_vec(epoch, pos_ECI); // Solar radiation pressure force (ECI)
                     }
                 
-                Acceleration_env.segment(6,3) = F_SRP/SC_mass;;
+                Acceleration_env.segment(6,3) = F_SRP/SC_mass;
                    
                 Acceleration += F_SRP/SC_mass;
                 }
@@ -271,14 +272,18 @@ namespace orbit
      * @param factor_dxdt   Factor for the weight of the state
      */
     //------------------------------------------------------------------------------   
-    //void ORB::StepperSetup(double eps_abs,
-    //                        double eps_rel,
-    //                        double factor_x,
-    //                        double factor_dxdt)
-    //                        {
-    //                        bulirsch_stoer<state_type> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
-    //                        bulirsch_stoer_stepper = setup_stepper;
-    //                        };
+    void ORB::StepperSetup(double eps_abs,
+                            double eps_rel,
+                            double factor_x,
+                            double factor_dxdt)
+                            {
+                            if(ODEINT_stepper.compare("BULSTOER") == 0) BULSTOER_stepper = BULSTOER_stepper_type(eps_abs, eps_rel, factor_x, factor_dxdt);
+                            if(ODEINT_stepper.compare("RKDP") == 0)
+                                {
+                                epsabs = eps_abs;
+                                epsrel = eps_rel;
+                                }
+                            };
     //------------------------------------------------------------------------------
     // Method void Integrate(double t, double step)
     //------------------------------------------------------------------------------
@@ -307,8 +312,10 @@ namespace orbit
                     
             x[5] = x[5] + dv_CMD(2);
             
-            stepper.do_step(std::bind(&ORB::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
-            //bulirsch_stoer_stepper.try_step(std::bind(&ORB::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
+            
+            if(ODEINT_stepper.compare("RK4") == 0) stepper.do_step(std::bind(&ORB::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
+            if(ODEINT_stepper.compare("RKDP") == 0) integrate_adaptive( make_controlled( epsabs, epsrel, RKDP_stepper_type() ), std::bind(&ORB::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, t + step, step );
+            if(ODEINT_stepper.compare("BULSTOER") == 0) BULSTOER_stepper.try_step(std::bind(&ORB::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
             
             for(int i = 0; i < 6; i++) orbstate(i) = x[i];
             

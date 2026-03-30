@@ -101,10 +101,12 @@ void TGsContacts( int SC_num,
                   double n, dOMdt, domdt, nd, ki;
                   double i_app, delta_lon, delta_lat;
                   
-                  double max_elevation, time_maxel;
+                  double max_elevation = 0.0;
+                  double time_maxel = 0.0;
+                  double Az_maxel = 0.0;
                   //double SATlon, SATlat, deltaL, lambda;
                   //double sinrho, sin_lambda, cos_lambda, epsilon_first, epsilon_last;
-                  double Az, Az_in, Az_out, Az_maxel, El, El_first, El_last, El_in, El_out;
+                  double Az, Az_in, Az_out, El, El_first, El_last, El_in, El_out;
                   Vec3d AzElAlt;
                   Vector6d stateECEF;
                   VectorNd<7> ephem_row;

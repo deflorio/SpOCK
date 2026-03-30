@@ -668,6 +668,9 @@ class SimParameters_pimpl: public virtual SimParameters_pskel
 
   virtual void
   ATT_initstate ();
+  
+  virtual void
+  odeint ();
 
   virtual void
   simoptions ();
@@ -693,9 +696,8 @@ class durstep_pimpl: public virtual durstep_pskel
   
   public:
     
-  int sim_step;
+  double sim_step;
   int sim_duration;
-    
 };
 
 class ORB_initstate_pimpl: public virtual ORB_initstate_pskel
@@ -752,6 +754,36 @@ class ATT_initstate_pimpl: public virtual ATT_initstate_pskel
   public:
   
   double phi_in, theta_in, psi_in, om_x_in, om_y_in, om_z_in;
+};
+
+class odeint_pimpl: public virtual odeint_pskel
+{
+  public:
+  virtual void
+  pre ();
+
+  virtual void
+  stepper (const ::std::string&);
+
+  virtual void
+  eps_abs (double);
+
+  virtual void
+  eps_rel (double);
+
+  virtual void
+  factor_x (double);
+
+  virtual void
+  factor_dxdt (double);
+
+  virtual void
+  post_odeint ();
+  
+  public:
+    
+  string stepper_in;
+  double eps_abs_in, eps_rel_in, factor_x_in, factor_dxdt_in;
 };
 
 class simoptions_pimpl: public virtual simoptions_pskel

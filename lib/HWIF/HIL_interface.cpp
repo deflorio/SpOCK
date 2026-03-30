@@ -23,7 +23,13 @@
 #include <sstream>
 #include <cassert>
 #include <iostream>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds" // Local suppression of false positive warning for memcpy
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 #include <boost/asio.hpp>
+#pragma GCC diagnostic pop
+
 #include <string>
 //#include <string.h>
 

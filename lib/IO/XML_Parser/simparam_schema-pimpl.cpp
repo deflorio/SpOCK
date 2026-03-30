@@ -57,7 +57,7 @@ Eigen::VectorXd accuracy_in;
 //Eigen::Matrix< double, 10, 1 > opslimits_in;
 //Eigen::Matrix< double, 10, 1 > accuracy_in;
 
-string man_name_in = " ";
+string man_name_in = "";
 bool maneuver_on_in = false;
 double man_init_time_in= 0.0;
 double man_duration_in = 0.0;
@@ -627,7 +627,7 @@ SensorsActuators ()
                 0.0,  0.0,  0.0,
                 0.0,  0.0,  0.0;
                 
-  string name_in = " ";
+  string name_in = "";
 }
 
 void simparam_pimpl::
@@ -1166,6 +1166,11 @@ ATT_initstate ()
 }
 
 void SimParameters_pimpl::
+odeint ()
+{
+}
+
+void SimParameters_pimpl::
 simoptions ()
 {
 }
@@ -1312,6 +1317,57 @@ void ATT_initstate_pimpl::
 post_ATT_initstate ()
 {
 }
+
+
+// odeint_pimpl
+//
+
+void odeint_pimpl::
+pre ()
+{
+}
+
+void odeint_pimpl::
+stepper (const ::std::string& stepper)
+{
+  //std::cout << "stepper: " << stepper << std::endl;
+  stepper_in = stepper;
+}
+
+void odeint_pimpl::
+eps_abs (double eps_abs)
+{
+  //std::cout << "eps_abs: " << eps_abs << std::endl;
+  eps_abs_in = eps_abs;
+}
+
+void odeint_pimpl::
+eps_rel (double eps_rel)
+{
+  //std::cout << "eps_rel: " << eps_rel << std::endl;
+  eps_rel_in = eps_rel;
+}
+
+void odeint_pimpl::
+factor_x (double factor_x)
+{
+  //std::cout << "factor_x: " << factor_x << std::endl;
+  factor_x_in = factor_x;
+}
+
+void odeint_pimpl::
+factor_dxdt (double factor_dxdt)
+{
+  //std::cout << "factor_dxdt: " << factor_dxdt << std::endl;
+  factor_dxdt_in = factor_dxdt;
+}
+
+void odeint_pimpl::
+post_odeint ()
+{
+}
+
+
 
 // simoptions_pimpl
 //
@@ -1809,7 +1865,7 @@ post_accuracy ()
 void Maneuvers_pimpl::
 pre ()
     {
-    man_name_in = " ";;
+    man_name_in = "";
     maneuver_on_in = false;
     man_init_time_in = 0.0;
     man_duration_in = 0.0;
@@ -1829,7 +1885,7 @@ Man ()
     
     //cout << all_maneuvers.size() << endl;
     
-    man_name_in = " ";;
+    man_name_in = "";;
     maneuver_on_in = false;
     man_init_time_in = 0.0;
     man_duration_in = 0.0;

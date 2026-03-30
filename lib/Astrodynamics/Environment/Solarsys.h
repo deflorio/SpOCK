@@ -58,7 +58,8 @@ namespace solarsystem
         //
         // Class methods specification
         //
-        //------------------------------------------------------------------------------  
+        //------------------------------------------------------------------------------
+        #ifdef USE_SPICE
         // Load SPICE planet ephemeris file. This method is to be used in case the ephemeris are not loaded in the main file.*/
         void load_ephemeris_file(const string ephe_filepath);
         // Return the position of a target body relative to an observing body, optionally corrected for light time (planetary aberration) and stellar aberration.*/
@@ -67,14 +68,15 @@ namespace solarsystem
         Vector6d OBJ_posvel(const char* OBJtarget_name, const char* OBJobserver_name, const char* refframe, const char* aberration_corr, const double time);
         // Return the position of the Sun in rectangular coordinates (ECI) from JPL ephemerides.*/
         Vec3d sunposREC(double GPStime);
-        // Return the position of the Sun in rectangular coordinates (ECI) from low-precision (LP) Solar coordinates.*/
-        Vec3d LP_sunposREC(double GPStime);
         // Return the position of the Moon in rectangular coordinates (ECI) from JPL ephemerides.*/
         Vec3d moonposREC(double GPStime);
+        // Return right ascension and declination of the Sun (ECI).*/
+        #endif
+        VectorNd<2> sunposRAD(double GPStime);
+        // Return the position of the Sun in rectangular coordinates (ECI) from low-precision (LP) Solar coordinates.*/
+        Vec3d LP_sunposREC(double GPStime);
         // Return the position of the Moon in rectangular coordinates (ECI) from low-precision (LP) Lunar coordinates.*/
         Vec3d LP_moonposREC(double GPStime);
-        // Return right ascension, declination and range of the sun (ECI).*/
-        Vec3d sunposRAD(double GPStime);
         // Return the angle between the spacecraft position vector(ECI) and the Sun position vector (ECI).*/
         double xi_angle(double GPStime, const Vec3d& SC_pos);
         // Return the eclipse condition of the spacecraft at a certain time.*/

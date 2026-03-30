@@ -37,10 +37,12 @@
 
 //#include <boost/math/quaternion.hpp>
 
+#ifdef USE_SPICE
 extern "C"
       {
-       #include <SpiceUsr.h> //#include "extlib/cspice/include/SpiceUsr.h"
+      #include <SpiceUsr.h> //#include "extlib/cspice/include/SpiceUsr.h"
       }
+#endif
 
 using namespace std;
 using namespace math;
@@ -487,6 +489,7 @@ Mat3x3d Quaternion2RotationMatrix(Vec4d& q)
                   
                   return(RotMat);
                   };
+#ifdef USE_SPICE
 //------------------------------------------------------------------------------
 // Vec3d ECEF2lonlath(Vec3d& posECEF)
 //------------------------------------------------------------------------------
@@ -551,7 +554,8 @@ Vec3d lonlath2ECEF(Vec3d& lonlath)
                     for( int i = 0; i < 3 ; i++ ) posECEF(i) = pos[i];
                     
                     return(posECEF);
-                    };       
+                    };
+#endif
 //------------------------------------------------------------------------------
 // Vec3d lonlath2El(Vec3d& lonlath, double ref_lon, double ref_lat);
 //------------------------------------------------------------------------------
@@ -640,7 +644,7 @@ Vec3d SEZ2ECEF(Vec3d& posSEZ,
  * @param          geodetic latitude [rad]
  *
  * @return         3-dimensional position vector in SEZ frame: S points to South from the site considered, E points East and
- *                 is undefined for the North and South poles, Z is the zenith and points radially outward fro the site along
+ *                 is undefined for the North and South poles, Z is the zenith and points radially outward from the site along
  *                 the local vertical
  */
 //------------------------------------------------------------------------------                   
@@ -665,7 +669,8 @@ Vec3d ECEF2SEZ(Vec3d& posECEF,
               posSEZ = (RotMat.transpose())*posECEF;
               
               return(posSEZ);
-              };   
+              };
+#ifdef USE_SPICE              
 //------------------------------------------------------------------------------
 // Vec3d ECEF2AzElAlt(Vector6d& stateECEF, double ref_lon, double ref_lat)
 //------------------------------------------------------------------------------
@@ -743,7 +748,8 @@ Vec3d ECEF2AzElAlt(Vector6d& stateECEF,
                   Vec3d AzElAlt(Az,El,Alt);
                   
                   return(AzElAlt);
-                  }; 
+                  };
+#endif
 //------------------------------------------------------------------------------
 // Mat3x3d ECI2RTN_Matrix(Vector6d& ECIstate)
 //------------------------------------------------------------------------------
@@ -755,7 +761,7 @@ Vec3d ECEF2AzElAlt(Vector6d& stateECEF,
  * @return 3x3 transformation matrix from ECI to RTN
  */
 //------------------------------------------------------------------------------
-Mat3x3d ECI2RTN_Matrix(Vector6d& ECIstate)
+Mat3x3d ECI2RTN_Matrix(const Vector6d& ECIstate)
                 {
                 Vec3d e1, e2, e3, r_ECI, v_ECI;
                 Mat3x3d T;
@@ -773,7 +779,44 @@ Mat3x3d ECI2RTN_Matrix(Vector6d& ECIstate)
                 T.row(2) = e3;
 
                 return(T);
-                }; 
+                };
+//------------------------------------------------------------------------------
+// Mat3x3d RTN_Matrix(const Vector6d& orbstate)
+//------------------------------------------------------------------------------
+/**
+ * State transformation matrix from RTN frame to given reference frame
+ *
+ * @param ECIstate     6-dimensional state vector in given frame
+ *
+ * @return 3x3 transformation matrix from RTN to given frame
+ */
+//------------------------------------------------------------------------------
+Mat3x3d RTN_Matrix(const Vector6d& orbstate) 
+      {
+      Vec3d e1, e2, e3, r, v;
+      Mat3x3d T;
+    
+      // RTN frame definition
+      r = orbstate.segment(0,3);
+      v = orbstate.segment(3,3);
+      
+      // Radial
+      e1 = r.normalized();
+      
+      // Cross-track
+      e3 = r.cross(v);
+      e3.normalize();
+      
+      // Along-track
+      e2 = e3.cross(e1);
+      
+      // Rotation matrix
+      T.col(0) = e1;
+      T.col(1) = e2;
+      T.col(2) = e3;
+    
+      return(T);
+      }           
 //------------------------------------------------------------------------------
 // Vector6d ECI2RTN(Vector6d& ECIstate)
 //------------------------------------------------------------------------------
@@ -828,6 +871,7 @@ Vec3d RTN2ECI(Vec3d& RTNvec, Vector6d& ECIstate)
                 
                 return(ECI_vec);
                 };
+#ifdef USE_SPICE                
 //------------------------------------------------------------------------------
 // Vector6d ECEF2ECI(double GPStime, Vector6d& ECEFstate)
 //------------------------------------------------------------------------------
@@ -901,30 +945,60 @@ Vector6d ECI2ECEF(double GPStime, Vector6d& ECIstate)
                     return(ECEFstate);
                     };
 //------------------------------------------------------------------------------
-// Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstate)
+// Mat3x3d ECI2ECEF_Mat(double GPStime)
+//------------------------------------------------------------------------------
+/**
+ * Position transformation matrix from ECI (J2000) to ECEF (ITRF93) frame
+ *
+ * @note This function is based on the NASA SPICE library's function sxform_c
+ *
+ * @param GPStime      GPS epoch (seconds) of the input state
+ *
+ * @return 3x3 state transformation matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d ECI2ECEF_Mat(double GPStime)
+                    {
+                    double T[3][3];
+                    Mat3x3d T_ECI2ECEF;
+                    const string frame_from = "J2000";
+                    const string frame_to = "ITRF93";
+                    
+                    double time = GPS2ET(GPStime);
+                    
+                    pxform_c(frame_from.c_str( ),frame_to.c_str( ),time,T);
+                    
+                    for( int i = 0; i < 3 ; i++ )
+                        for( int j = 0; j < 3 ; j++ ) T_ECI2ECEF(i,j) = T[i][j];
+                        
+                    return(T_ECI2ECEF);
+                    };
+#endif
+//------------------------------------------------------------------------------
+// Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double TAI_UTC, Vector6d& ICRFstate, double dt)
 //------------------------------------------------------------------------------
 /**
  * State transformation from ICRF to ITRF
  *
  * @param GPStime       GPS epoch (seconds) of the input state
- * @param ECIstate      3-dimensional vector containing Earth orientation parameters
+ * @param eop           3-dimensional vector containing Earth orientation parameters
  *                      eop(0) = CEP x-coordinate xp [1e-6 arcsec]
  *                      eop(1) = CEP y-coordinate yp [1e-6 arcsec]
  *                      eop(1) = UT1 - UTC [1e-7 sec]
  *                      The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
- * @param leapsec       Current leap second
+ * @param TAI_UTC       Current TAI - UTC [s]
  * @param ICRFstate     6-dimensional ICRF state state vector
- * @param SIM_STEP      Integration step    
+ * @param dt            Integration step for computatation of matrix d(ICRF2ITRF)/dt
  *
  * @return 6-dimensional ITRF state vector
  * 
  */
 //------------------------------------------------------------------------------
-Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstate, int SIM_STEP)
+Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double TAI_UTC, Vector6d& ICRFstate, double dt)
                     {
                     Vector6d ITRFstate;
                     
-                    double dt = SIM_STEP;
                     Vec3d r, v, posITRF, velITRF;
                     
                     r = ICRFstate.segment(0,3); // Position
@@ -932,12 +1006,12 @@ Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstat
                     
                     Mat3x3d T_ICRF2ITRF, dT_ICRF2ITRF, dT_ICRF2ITRF_2, dT_ICRF2ITRF_1;
                     // Compute transformation matrices
-                    T_ICRF2ITRF = ICRF2ITRF_Mat(GPStime, eop, leapsec);
+                    T_ICRF2ITRF = ICRF2ITRF_Mat(GPStime, eop, TAI_UTC);
                     
-                    dT_ICRF2ITRF_2 = ICRF2ITRF_Mat(GPStime + dt, eop, leapsec);
-                    dT_ICRF2ITRF_1 = ICRF2ITRF_Mat(GPStime - dt, eop, leapsec);
+                    dT_ICRF2ITRF_2 = ICRF2ITRF_Mat(GPStime + dt, eop, TAI_UTC);
+                    dT_ICRF2ITRF_1 = ICRF2ITRF_Mat(GPStime - dt, eop, TAI_UTC);
                     
-                    dT_ICRF2ITRF = (dT_ICRF2ITRF_2 - dT_ICRF2ITRF_1)/(2*dt);
+                    dT_ICRF2ITRF = (dT_ICRF2ITRF_2 - dT_ICRF2ITRF_1)/(2.0*dt);
                     
                     // Transform state vector
                     posITRF = T_ICRF2ITRF*r;
@@ -947,9 +1021,56 @@ Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstat
                     ITRFstate.segment(3,3) = velITRF;
                     
                     return(ITRFstate);
-                    };       
+                    };
 //------------------------------------------------------------------------------
-// Mat6x6d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec)
+// Vector6d ITRF2ICRF(double GPStime, Vec3d eop, double TAI_UTC, Vector6d& ITRFstate, double dt)
+//------------------------------------------------------------------------------
+/**
+ * State transformation from ITRF to ICRF
+ *
+ * @param GPStime       GPS epoch (seconds) of the input state
+ * @param eop           3-dimensional vector containing Earth orientation parameters
+ *                      eop(0) = CEP x-coordinate xp [1e-6 arcsec]
+ *                      eop(1) = CEP y-coordinate yp [1e-6 arcsec]
+ *                      eop(1) = UT1 - UTC [1e-7 sec]
+ *                      The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
+ * @param TAI_UTC       Current TAI - UTC [s]
+ * @param ITRFstate     6-dimensional ITRF state state vector
+ * @param dt            Integration step for computatation of matrix d(ICRF2ITRF)/dt
+ *
+ * @return 6-dimensional ICRF state vector
+ * 
+ */
+//------------------------------------------------------------------------------
+Vector6d ITRF2ICRF(double GPStime, Vec3d eop, double TAI_UTC, Vector6d& ITRFstate, double dt)
+                    {
+                    Vector6d ICRFstate;
+                    
+                    Vec3d r, v, posICRF, velICRF;
+                    
+                    r = ITRFstate.segment(0,3); // Position
+                    v = ITRFstate.segment(3,3); // Velocity
+                    
+                    Mat3x3d T_ICRF2ITRF, dT_ICRF2ITRF, dT_ICRF2ITRF_2, dT_ICRF2ITRF_1;
+                    // Compute transformation matrices
+                    T_ICRF2ITRF = ICRF2ITRF_Mat(GPStime, eop, TAI_UTC);
+                    
+                    dT_ICRF2ITRF_2 = ICRF2ITRF_Mat(GPStime + dt, eop, TAI_UTC);
+                    dT_ICRF2ITRF_1 = ICRF2ITRF_Mat(GPStime - dt, eop, TAI_UTC);
+                    
+                    dT_ICRF2ITRF = (dT_ICRF2ITRF_2 - dT_ICRF2ITRF_1)/(2.0*dt);
+                    
+                    // Transform state vector
+                    posICRF = T_ICRF2ITRF.transpose()*r;
+                    velICRF = dT_ICRF2ITRF.transpose()*r + T_ICRF2ITRF.transpose()*v;
+                    
+                    ICRFstate.segment(0,3) = posICRF;
+                    ICRFstate.segment(3,3) = velICRF;
+                    
+                    return(ICRFstate);
+                    };
+//------------------------------------------------------------------------------
+// Mat6x6d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double TAI_UTC)
 //------------------------------------------------------------------------------
 /**
  * State (position) transformation matrix from ICRF to ITRF
@@ -959,18 +1080,18 @@ Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstat
  *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
  *
  * @param GPStime      GPS epoch (seconds) of the input state
- * @param ECIstate     3-dimensional vector containing Earth orientation parameters
- *                     eop(0) = CEP x-coordinate xp [1e-6 arcsec]
- *                     eop(1) = CEP y-coordinate yp [1e-6 arcsec]
- *                     eop(1) = UT1 - UTC [1e-7 sec]
+ * @param eop          3-dimensional vector containing Earth orientation parameters
+ *                     eop(0) = CEP x-coordinate xp [1e6 arcsec]
+ *                     eop(1) = CEP y-coordinate yp [1e6 arcsec]
+ *                     eop(2) = UT1 - UTC [1e7 sec]
  *                     The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
- * @param leapsec      Current leap second
+ * @param TAI_UTC      Current TAI - UTC [s]
  * 
  * @return 3-dimensional ICRF2ITRF transformation matrix
  * 
  */
 //------------------------------------------------------------------------------
-Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec)
+Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double TAI_UTC)
                       {
                       Mat3x3d T_ICRF2ITRF;
                       
@@ -991,7 +1112,7 @@ Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec)
                       
                       // Compute UTC seconds from GPS seconds
                       GPSws = VectorNd<2>::Zero();
-                      UTCsecs = GPS2UTC(GPStime, leapsec);
+                      UTCsecs = GPS2UTC(GPStime, TAI_UTC);
                       GPSws = GPS2GPSws(UTCsecs);
                       // Compute MJD at UTC seconds
                       //MJD_UTC = GPSws2MJD(GPSws(0), GPSws(1));
@@ -1017,6 +1138,55 @@ Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec)
                       
                       return(T_ICRF2ITRF);
                       };
+//------------------------------------------------------------------------------
+// Mat3x3d ICRF2ITRF_Matrix(const double MJD_TT, const Vec3d eop, const double UTC_TAI)
+//------------------------------------------------------------------------------
+/**
+ * State (position) transformation matrix from ICRF to ITRF
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X and
+ *      https://gssc.esa.int/navipedia/index.php/Transformation_between_Celestial_and_Terrestrial_Frames
+ *
+ * @param Mjd_TT        Terrestrial time
+ * @param eop           3-dimensional vector containing Earth orientation parameters
+ *                      eop(0) = CEP x-coordinate xp [1e6 arcsec]
+ *                      eop(1) = CEP y-coordinate yp [1e6 arcsec]
+ *                      eop(2) = UT1 - UTC [1e7 sec]
+ *                      The measurement units are the same of Accumulated Ultra Rapid IGS erp files (IGU)
+ * @param UTC_TAI       Current UTC - TAI [s]
+ * 
+ * @return 3-dimensional ICRF2ITRF transformation matrix
+ * 
+ */
+//------------------------------------------------------------------------------
+Mat3x3d ICRF2ITRF_Matrix(const double MJD_TT, const Vec3d eop, const double UTC_TAI)
+                        {
+                        Mat3x3d T_ICRF2ITRF;
+                        double TT_UTC, MJD_UT1, xp, yp, UT1_UTC;
+                        Mat3x3d T_Prec, T_Nut, T_GHA, T_Pole;
+                        
+                        xp = 1.0e-6*ARCS2RAD*eop(0); // [rad]
+                        yp = 1.0e-6*ARCS2RAD*eop(1); // [rad]
+                        UT1_UTC = 1.0e-7*eop(2); // [s]
+                        
+                        TT_UTC = timescales::TT_TAI - UTC_TAI;
+                        MJD_UT1 = MJD_TT + (UT1_UTC - TT_UTC)/86400.0;
+                        
+                        // Precession transformation of equatorial coordinates
+                        T_Prec = PrecMat(timescales::MJD_J2000, MJD_TT);
+                        // Transformation matrix from mean to true equator and equinox
+                        T_Nut = NutMat(MJD_TT); // dpsi is computed in function NutMat and used as input of function GHAMat
+                        // Transformation matrix from true equator and equinox to Earth equator and Greenwich meridian system
+                        T_GHA = GHAMat(MJD_UT1);
+                        // Transformation matrix from pseudo Earth-fixed to Earth-fixed coordinates for a given date
+                        T_Pole = PoleMat(xp, yp);
+                        
+                        // Transformation matrix ICRF2ITRF
+                        T_ICRF2ITRF = T_Pole*T_GHA*T_Nut*T_Prec;
+                        
+                        return(T_ICRF2ITRF);
+                        };
 //------------------------------------------------------------------------------
 // Mat3x3d PrecMat(double MJD1_TT, double MJD2_TT)
 //------------------------------------------------------------------------------
@@ -1187,7 +1357,7 @@ Mat3x3d GHAMat(double MJD_UT1)
                 {
                 Mat3x3d T_GHA;
                 
-                double MJD0, UT1, T0 , T, gmst, GMST_MJD_UT1_, intpart;
+                double MJD0, UT1, T0 , T, gmst, GMST_MJD_UT1_;//intpart
                 double GMST_MJD_UT1, MeanObliquity, EqnEquinox, GAST_MJD_UT1;
                 double deps = 0.0, dpsi = 0.0;
                 Matrix<long, 106, 9> NutCoeff = Matrix<long, 106, 9>::Zero();
@@ -1201,7 +1371,7 @@ Mat3x3d GHAMat(double MJD_UT1)
                 gmst  = 24110.54841 + 8640184.812866*T0 + 1.002737909350795*UT1 + (0.093104 - 6.2e-6*T)*T*T;// [s]
                 
                 GMST_MJD_UT1_ = gmst/timescales::JULIAN_DAY;
-                GMST_MJD_UT1 = PI2*modf(GMST_MJD_UT1_, &intpart);// [rad], [0,2PI]
+                GMST_MJD_UT1 = PI2*(GMST_MJD_UT1_ - floor(GMST_MJD_UT1_));//PI2*modf(GMST_MJD_UT1_, &intpart);// [rad], [0,2PI]
                 
                 // Computation of the equation of the equinoxes: the equation of the equinoxes dpsi*cos(eps) is the right ascension
                 // of the mean equinox referred to the true equator and equinox and is equal to the difference between apparent and
@@ -1245,15 +1415,18 @@ Mat3x3d GHAMat(double MJD_UT1)
 Mat3x3d PoleMat(double xp, double yp)
               {                
               Mat3x3d T_Pole;
-              Mat3x3d T_xp, T_yp;
+              //Mat3x3d T_xp, T_yp;
+              //
+              //T_xp = Rot_y(-xp);
+              //T_yp = Rot_x(-yp);
+              //
+              //T_Pole = T_xp*T_yp;
               
-              T_xp = Rot_y(-xp);
-              T_yp = Rot_x(-yp);
-              
-              T_Pole = T_xp*T_yp;
+              T_Pole = Rot_y(-xp)*Rot_x(-yp);
               
               return(T_Pole);
               };
+#ifdef USE_SPICE              
 //------------------------------------------------------------------------------
 // Vec3d ECI2RAD(Vec3d& posECI)
 //------------------------------------------------------------------------------
@@ -1316,6 +1489,7 @@ Vec3d v3D_transform(double GPStime, Vec3d& v3D, const string frame_from, const s
                     
                     return(v3D_transformed);
                     };
+#endif
 //------------------------------------------------------------------------------------------------
 // Vec3d u_axis(Mat3x3d& T1toT2, const string axis)
 //------------------------------------------------------------------------------------------------
@@ -1353,6 +1527,7 @@ Vec3d u_axis(Mat3x3d& T1toT2, const string axis_name)
  *
  * @param ECIstate   6-dimensional ECI state vector
  *
+ * @return Validity flag
  * @return 6-dimensional Keplerian elements (a,e,i,Omega,omega,M) with
  *         a      Semimajor axis [m]
  *         e      Eccentricity 
@@ -1360,57 +1535,374 @@ Vec3d u_axis(Mat3x3d& T1toT2, const string axis_name)
  *         Omega  Longitude of the ascending node [rad]
  *         omega  Argument of pericenter  [rad]
  *         M      Mean anomaly  [rad]
+ *         
  */
 //------------------------------------------------------------------------------
 Vector6d rv2Kepler(Vector6d& ECIstate, bool& valid)
+                  {
+                  Vector6d KepElem = Vector6d::Zero();
+                  valid = true;
+                  
+                  Vec3d r, v, h;
+                  double H, u, R;
+                  double eCosE, eSinE, e2, E, nu;
+                  double a, e, i, Omega, omega, M;
+                
+                  // Position
+                  r = ECIstate.segment(0,3);
+                  
+                  // Velocity
+                  v = ECIstate.segment(3,3);
+                  
+                  // Areal velocity
+                  h = r.cross(v);
+                  H = h.norm();
+                  
+                  // Longitude of ascending node
+                  Omega = atan2( h(0), -h(1) );
+                  Omega = mod(Omega,PI2);
+                  
+                  // Inclination
+                  i = atan2( sqrt(h(0)*h(0) + h(1)*h(1)), h(2) );
+                  
+                  // Argument of latitude
+                  u = atan2( r(2)*H, -r(0)*h(1) + r(1)*h(0) );   
+                
+                  // Distance
+                  R = r.norm();
+                  
+                  // Error handling
+                  if( ( 2.0/R - v.dot(v)/GM_EARTH ) <= 0.0 )
                     {
-                    Vector6d KepElem = Vector6d::Zero();
-                    
-                    Vec3d  r,v,h;
-                    double  H, u, R;
-                    double  eCosE, eSinE, e2, E, nu;
-                    double  a,e,i,Omega,omega,M;
+                    valid = false;
+                    return(KepElem); // Null vector
+                    }
+  
+                  // Semi-major axis 
+                  a = 1.0/( 2.0/R - v.dot(v)/GM_EARTH );
+                
+                  // e*cos(E) 
+                  eCosE = 1.0 - R/a;
                   
-                    r = ECIstate.segment(0,3); // Position
-                    v = ECIstate.segment(3,3); // Velocity
-                    
-                    h = r.cross(v); // Areal velocity
-                    H = h.norm();
+                  // e*sin(E)
+                  eSinE = r.dot(v)/sqrt(GM_EARTH*a);
                   
-                    Omega = atan2( h(0), -h(1) ); // Long. ascend. node 
-                    Omega = mod(Omega,PI2);
-                    i     = atan2( sqrt(h(0)*h(0)+h(1)*h(1)), h(2) ); // Inclination        
-                    u     = atan2( r(2)*H, -r(0)*h(1)+r(1)*h(0) ); // Arg. of latitude   
+                  // Eccentricity
+                  e2 = eCosE*eCosE + eSinE*eSinE;
+                  e = sqrt(e2);
                   
-                    R  = r.norm(); // Distance
-                    
-                    // Error handling
-                    if( (2.0/R-v.dot(v)/GM_EARTH)<=0.0 )
-                      {
-                      valid = false;
-                      return(KepElem); // Null vector
-                      }
-    
-                    a = 1.0/(2.0/R-v.dot(v)/GM_EARTH); // Semi-major axis    
+                  // Eccentric anomaly
+                  E = atan2(eSinE, eCosE);
                   
-                    eCosE = 1.0-R/a; // e*cos(E)           
-                    eSinE = r.dot(v)/sqrt(GM_EARTH*a); // e*sin(E)           
+                  // Mean anomaly
+                  M = mod(E - eSinE,PI2);
+                
+                  // True anomaly
+                  nu = atan2( sqrt(1.0 - e2)*eSinE, eCosE - e2 );
                   
-                    e2 = eCosE*eCosE +eSinE*eSinE;
-                    e  = sqrt(e2); // Eccentricity 
-                    E  = atan2(eSinE,eCosE); // Eccentric anomaly  
+                  // Argument of perihelion
+                  omega = mod(u - nu,PI2);
+                 
+                  // Keplerian elements vector
+                  KepElem << a, e, i, Omega, omega, M;
                   
-                    M  = mod(E-eSinE,PI2); // Mean anomaly
-                  
-                    nu = atan2(sqrt(1.0-e2)*eSinE, eCosE-e2); // True anomaly
-                  
-                    omega = mod(u-nu,PI2); // Arg. of perihelion 
-                   
-                    // Keplerian elements vector
-                    KepElem << a,e,i,Omega,omega,M;
-                    
+                  return(KepElem);
+                  };          
+//------------------------------------------------------------------------------
+// Vector6d Kepler2rv(Vector6d& KepElem, bool& valid)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of osculating Keplerian elements for non-circular non-equatorial orbits to Cartesian state vector
+ * @note The function cannot be used with state vectors describing a circular or non-inclined orbit.
+ *
+ * @param  6-dimensional Keplerian elements (a,e,i,Omega,omega,M) with
+ *         a        Semimajor axis [m]
+ *         e        Eccentricity 
+ *         i        Inclination [rad]
+ *         Omega    Longitude of the ascending node [rad]
+ *         omega    Argument of pericenter  [rad]
+ *         M        Mean anomaly  [rad]
+ * @param  dt       Time since epoch [s]
+ *         
+ * @return Validity flag
+ * @return 6-dimensional ECI state vector
+ *         
+ */
+//------------------------------------------------------------------------------
+Vector6d Kepler2rv(Vector6d& KepElem, double dt, bool& valid)
+                    {
+                    Vector6d ECIstate = Vector6d::Zero();
                     valid = true;
-                    return(KepElem);
+                    
+                    double  a, e, i, Omega, omega, M, M0, n;
+                    double  E, cosE, sinE, fac, R, V;
+                    Vec3d r, v;
+                    Mat3x3d PQW;
+  
+                    // Keplerian elements at epoch
+                    a = KepElem(0);
+                    e = KepElem(1);
+                    i = KepElem(2);
+                    Omega = KepElem(3);
+                    omega = KepElem(4);
+                    M0 = KepElem(5);
+  
+                    // Mean anomaly
+                    if(dt == 0.0) M = M0;
+                    else
+                        {
+                        n = sqrt( GM_EARTH/(a*a*a) );
+                        M = M0 + n*dt;
+                        };
+
+                    // Eccentric anomaly
+                    E = EccAnomaly(M, e, 15, 1.0E-14);
+                  
+                    cosE = cos(E); 
+                    sinE = sin(E);
+
+                    // Perifocal coordinates
+                    fac = sqrt( (1.0 - e)*(1.0 + e) );
+                    
+                    // Distance
+                    R = a*(1.0 - e*cosE);
+                    // Velocity
+                    V = sqrt(GM_EARTH*a)/R;
+                  
+                    r << a*(cosE - e), a*fac*sinE , 0.0;
+                    v << -V*sinE, +V*fac*cosE, 0.0;
+
+                    // Transformation to reference system (Gaussian vectors)
+                    PQW = Rot_z(-Omega)*Rot_x(-i)*Rot_z(-omega);
+                  
+                    r = PQW*r;
+                    v = PQW*v;
+                    
+                    ECIstate.segment(0,3) = r;
+                    ECIstate.segment(3,3) = v;
+                  
+                    return(ECIstate);
+                    };          
+//------------------------------------------------------------------------------
+// Vector6d posvecs2Kepler(Vec4d& timepos1, Vec4d& timepos2, bool& valid)
+//------------------------------------------------------------------------------
+/**
+ * Computation of Keplerian orbital elements from two given position vectors and associated times
+ * @note The function cannot be used with state vectors describing a circular or non-inclined orbit.
+ *
+ * @param timepos1   4-dimensional vector: timepos1(0) = epoch of pos1 (Modified Julian Date), timepos1(1) to timepos1(3) = position vector components
+ * @param timepos2   4-dimensional vector: timepos2(0) = epoch of pos2 (Modified Julian Date), timepos2(1) to timepos2(3) = position vector components
+ * 
+ * @return Validity flag
+ * @return 6-dimensional Keplerian elements (a,e,i,Omega,omega,M) at epoch 1 with
+ *         a      Semimajor axis [m]
+ *         e      Eccentricity 
+ *         i      Inclination [rad]
+ *         Omega  Longitude of the ascending node [rad]
+ *         omega  Argument of pericenter  [rad]
+ *         M      Mean anomaly  [rad]
+ *         
+ */
+//------------------------------------------------------------------------------
+Vector6d posvecs2Kepler(Vec4d& timepos1, Vec4d& timepos2, bool& valid)
+                        {
+                        Vector6d KepElem = Vector6d::Zero();
+                        valid = true;
+                        
+                        double t1_MJD, t2_MJD;
+                        Vec3d r_1, r_2;
+                        
+                        t1_MJD = timepos1(0);
+                        r_1 = timepos1.segment(1,3);
+                        
+                        t2_MJD = timepos2(0);
+                        r_2 = timepos2.segment(1,3);
+                        
+                        double tau, eta, p;
+                        double nu, E, u;
+                        double s_1, s_2, s_0, fac, sinhH;
+                        double cos_dnu, sin_dnu, ecos_nu, esin_nu;
+                        double a, e, i, Omega, omega, M;
+                        Vec3d e_1, r_0, e_0, W;
+  
+                        // Compute vector r_0 (fraction of r_2 perpendicular to r_1) the norms of r_1, r_2 and r_0
+                        s_1 = r_1.norm();
+                        e_1 = r_1/s_1;
+                        
+                        s_2 = r_2.norm();
+                        fac = r_2.dot(e_1);
+                        
+                        r_0 = r_2 - fac*e_1;
+                        s_0 = r_0.norm();
+                        e_0 = r_0/s_0;
+  
+                        // Inclination and ascending node
+                        W = e_1.cross(e_0);
+                        
+                        // Longitude of ascending node
+                        Omega = atan2( W(0), -W(1) );
+                        Omega = mod(Omega, PI2);
+                        
+                        // Inclination
+                        i = atan2( sqrt( W(0)*W(0) + W(1)*W(1) ), W(2) );
+                        if (i == 0.0) u = atan2( r_1(1), r_1(0) );
+                        else u = atan2 ( +e_1(2) , -e_1(0)*W(1) + e_1(1)*W(0) );
+  
+                        // Semilatus rectum
+                        tau = sqrt(GM_EARTH)*86400.0*fabs(t2_MJD - t1_MJD);   
+                        eta = posvecs2Eta(r_1, r_2, tau, valid);
+                        p   = (s_1*s_0*eta/tau)*(s_1*s_0*eta/tau);//pow ( s_1*s_0*eta/tau, 2 );   
+
+                        // Eccentricity, true anomaly and argument of perihelion
+                        cos_dnu = fac/s_2;    
+                        sin_dnu = s_0/s_2;
+                      
+                        ecos_nu = p/s_1 - 1.0;  
+                        esin_nu = ( ecos_nu*cos_dnu - (p/s_2 - 1.0) )/sin_dnu;
+                      
+                        e = sqrt( ecos_nu*ecos_nu + esin_nu*esin_nu );
+                        nu = atan2(esin_nu,ecos_nu);
+                      
+                        omega = mod(u - nu,PI2);
+
+                        // Perihelion distance, semimajor axis and mean motion
+                        a = p/(1.0 - e*e);
+                        //n = sqrt( GM_EARTH/fabs(a*a*a) );
+
+                        // Mean anomaly and time of perihelion passage
+                        if(e < 1.0)
+                          {
+                          E = atan2( sqrt( (1.0 - e)*(1.0 + e) )*esin_nu, ecos_nu + e*e );
+                          M = mod( E - e*sin(E), PI2 );
+                          }
+                        else 
+                          {
+                          sinhH = sqrt( (e - 1.0)*(e + 1.0) )*esin_nu/( e + e*ecos_nu );
+                          M = e*sinhH - log( sinhH + sqrt(1.0 + sinhH*sinhH) );
+                          }
+
+                        // Keplerian elements vector
+                        KepElem << a, e, i, Omega, omega, M;
+                        
+                        return(KepElem);
+                        };
+// Local function to be used inside function posvecs2Eta
+double secant_eta(double eta, double m, double l)
+                    {
+                    const double delta = 100.0*EPS_MACHINE_D;
+                    const int maxit = 30;
+                    double F = 0.0;
+                    double w, W, a, n, g;
+                    int i = 0;
+  
+                    w = m/(eta*eta) - l; 
+  
+                    if(fabs(w) < 0.1) // Series expansion
+                      { 
+                      a = 4.0/3.0;
+                      W = a;
+                      n = 0.0;
+                      do
+                        {
+                        n += 1.0;
+                        a *= w*(n + 2.0)/(n + 1.5);
+                        W += a;
+                        
+                        ++i;
+                      
+                        if( i == maxit )
+                              {
+                              //valid = false; // Convergence problems in FindEta
+                              break;
+                              }
+                        }
+                        while(fabs(a) >= delta);
+                      }
+                    else
+                      {
+                      if(w > 0.0)
+                        {
+                        g = 2.0*asin(sqrt(w));  
+                        W = (2.0*g - sin(2.0*g))/( sin(g)*sin(g)*sin(g) );//pow(sin(g), 3);
+                        }
+                      else
+                        {
+                        g = 2.0*log(sqrt(-w) + sqrt(1.0-w));  // =2.0*arsinh(sqrt(-w))
+                        W = (sinh(2.0*g) - 2.0*g)/( sin(g)*sin(g)*sin(g) );//pow(sinh(g), 3);
+                        }
+                      }
+                      
+                    F = 1.0 - eta + (w + l)*W;
+                    
+                    return(F);
+                    };                        
+//------------------------------------------------------------------------------
+// double posvecs2Eta(Vec3d& r_1, Vec3d& r_2, double tau, bool& valid)
+//------------------------------------------------------------------------------
+/**
+ * Computation of the sector-triangle ratio from two position vectors and the intermediate time
+ *
+ * @param r_1     Position vector at epoch t_1
+ * @param r_2     Position vector at epoch t_2
+ * @param tau     Normalized time sqrt(GM_EARTH)*(t_2 - t_1) where t_2 - t_1 is in seconds
+ * 
+ * @return Validity flag
+ * @return Sector-triangle ratio
+ * 
+ */
+//------------------------------------------------------------------------------
+double posvecs2Eta(Vec3d& r_1, Vec3d& r_2, double tau, bool& valid)
+                    {
+                    double eta2 = 0.0;
+                    valid = true;
+                    
+                    const int maxit = 30;
+                    const double delta = 100.0*EPS_MACHINE_D;
+  
+                    int i;
+                    double kappa, m, l, s_1, s_2, eta_min, eta1, F1, F2, d_eta;
+  
+                    // Auxiliary quantities
+                    s_1 = r_1.norm();
+                    s_2 = r_2.norm();
+                  
+                    kappa = sqrt( 2.0*( s_1*s_2 + r_1.dot(r_2) ) );
+                  
+                    m = tau*tau/(kappa*kappa*kappa);  
+                    l = (s_1 + s_2)/(2.0*kappa) - 0.5;
+                  
+                    eta_min = sqrt( m/(l + 1.0) );
+  
+                    // Starting values computed with Hansen's approximation
+                    eta2 = ( 12.0 + 10.0*sqrt( 1.0 + (44.0/9.0)*m/(l + 5.0/6.0) ) )/22.0;
+                    eta1 = eta2 + 0.1;
+                    
+                    // Secant method
+                    F1 = secant_eta(eta1, m, l);   
+                    F2 = secant_eta(eta2, m, l);
+                    
+                    i = 0;
+                  
+                    while( fabs(F2 - F1) > delta )
+                        {
+                        d_eta = -F2*(eta2 - eta1)/(F2 - F1);  
+                        eta1 = eta2;
+                        F1 = F2;
+                        
+                        while( (eta2 + d_eta) <= eta_min ) d_eta *= 0.5;
+                        eta2 += d_eta;  
+                        F2 = secant_eta(eta2,m,l);
+                        
+                        ++i;
+                      
+                        if( i == maxit )
+                          {
+                          valid = false; // Convergence problems in FindEta
+                          break;
+                          }
+                        }
+                    
+                    return(eta2);
                     };
 //------------------------------------------------------------------------------
 // Vector6d rv2oe(Vector6d& ECIstate, bool& valid)
@@ -1677,24 +2169,25 @@ double EccAnomaly(double M,
                   const int maxit,
                   const double eps)
                   {
-                  int    i=0;
+                  int i = 0;
                   double E, f;
             
                   // Starting value
             
-                  M = mod(M, PI2);   
+                  //M = mod(M, PI2);
+                  M = PI2*( M/PI2 - floor(M/PI2) );
                   if(e < 0.8) E = M;
                   else E = PI;
             
                   // Iteration
-            
                   do
                     {
                     f = E - e*sin(E) - M;
                     E = E - f/( 1.0 - e*cos(E) );
-                    ++i;
+                    i++;//++i;
+                    if(i > maxit) break;
                     }
-                  while ( fabs(f) > eps || i <= maxit );
+                  while( fabs(f) > eps );
                   
                   return(E);
                   };
@@ -1833,7 +2326,7 @@ double GPS2ET(double GPSsecs)
                   //cout << fixed << "ETsecs: " << ETsecs << endl;
                   
                   return(ETsecs);
-                  };   
+                  };
 //------------------------------------------------------------------------------
 // double GPS2TT(double GPSsecs)
 //------------------------------------------------------------------------------
@@ -1897,6 +2390,58 @@ VectorNd<2> GPS2GPSws(double GPSsecs)
                   
                   return(GPSws);
                   };
+//------------------------------------------------------------------------------
+// double GPSws2GPSsecs(int week, double secs)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of GPS week and seconds of week to GPSsecs
+ *
+ * @param GPSws   2-dimensional vector containing GPS week count (week 0 starts at 1980/01/06.0 GPS time)
+ *          and GPS seconds of week ([0s,604800s[)
+ *
+ * @return  GPS seconds
+ */
+//------------------------------------------------------------------------------                
+double GPSws2GPSsecs(int week, double secs)
+                  {
+                  double GPSseconds = 0.0;
+                  const double  CUC_TIME_RES  = 1E-6;
+                  
+                  double dw = floor(secs/604800.0);
+                  int GPSweek = week + (int) dw;
+                  double GPSsecs = secs - 604800.0*dw; // [0s,604800s[
+                  
+                  // CUC: Int secs since 6th Jan. 1980
+                  unsigned int sec = (unsigned int)( GPSweek*604800.0 + floor(GPSsecs) );
+                  if ( (unsigned int)(floor( (( GPSsecs - floor(GPSsecs) )/CUC_TIME_RES ) + 0.5 ) ) == 1e6 ) sec++;
+                  
+                  // CUC: Micro seconds.
+                  unsigned int msec = (unsigned int)( floor( ( (GPSsecs - floor(GPSsecs))/CUC_TIME_RES) + 0.5 ) );
+                  if(msec == 1e6) msec = 0;
+                  
+                  GPSseconds = (double)(sec + msec*1e-6);
+                  
+                  //cout << fixed << "GPSseconds = " << GPSseconds << endl;
+                  //
+                  //GPSsecs = 0.0;
+                  //
+                  //// CUC seconds
+                  //int CUCsec = week*timescales::WEEK2SEC + floor(secs);
+                  //if( floor( ( secs - floor(secs) )/1e-6 + 0.5 ) == 1e6) CUCsec++;
+                  //
+                  //// CUC microseconds
+                  //int CUCmusec = floor( ( secs - floor(secs) )/1e-6 + 0.5 );
+                  //if (CUCmusec == 1e6) CUCmusec = 0;
+                  //
+                  //GPSsecs = (double)(CUCsec + CUCmusec*1e-6);
+                  //
+                  //cout << fixed << "diff = " << GPSseconds - GPSsecs << endl;
+                  //cout << "\n" << endl;
+                  
+                  return(GPSseconds);
+                  };
+                  
+#ifdef USE_SPICE
 //------------------------------------------------------------------------------
 // Vec3d GPS2LST(double GPSsecs, double lon)
 //------------------------------------------------------------------------------
@@ -2026,7 +2571,7 @@ Vector6d GPS2UTCdate(double GPSsecs,
 /**
  * Conversion of UTC yyyy mm dd hh mm ss.sss to GPS seconds
  *
- * @param UTCdate       Vector of integers [yyyy mm dd hh mm ss.sss]. The time is given on a 24-hour clock
+ * @param UTCdate   Vector of integers [yyyy mm dd hh mm ss.sss]. The time is given on a 24-hour clock
  *
  * @return GPS seconds 
  */
@@ -2046,10 +2591,10 @@ double UTCdate2GPSsecs(Vector6d& UTCdate)
                       
                       UTCdate_string = year + "/" + month + "/" + day + " " + h + ":" + m + ":" + s;
                       
-                      str2et_c(UTCdate_string.c_str(), &ETsecs); // In SPICE function str2et_c default interpretation of the input string is the time of day to be a time on a 24-hour clock in the UTC time system
+                      str2et_c(UTCdate_string.c_str(), &ETsecs);  // In SPICE function str2et_c default interpretation of the input string is the time of day to be a time on a 24-hour clock in the UTC time system
+                                                                  // An identical result is obtained using utc2et_c(UTCdate_string.c_str(), &ETsecs);
                       
                       GPSsecs = round(ETsecs + timescales::J2000_GPSSECS);
-                      //cout << GPSsecs << endl;
                       
                       return(GPSsecs);
                       };            
@@ -2177,7 +2722,8 @@ double GPS2MJD(double GPSsecs)
                   MJD = JD - 2400000.5;
                   
                   return(MJD);
-                  };   
+                  };
+#endif
 //------------------------------------------------------------------------------
 // double GPSws2MJD(double GPSweek, double GPSsecs_w)
 //------------------------------------------------------------------------------
@@ -2197,7 +2743,136 @@ double GPSws2MJD(double GPSweek, double GPSsecs_w)
                   MJD = timescales::MJD_GPST0 + 7.0*GPSweek + GPSsecs_w/timescales::SEC2DAY;
                   
                   return(MJD);
+                  };
+//------------------------------------------------------------------------------
+// double GPSws2JD(double GPSweek, double GPSsecs_w)
+//------------------------------------------------------------------------------
+/**
+ * GPS week and seconds of week to modified Julian date
+ *
+ * @param   GPS week count (week 0 starts at 1980-01-06 GPS time)
+ * @param   GPS seconds of week ([0s,604800s[)
+ *
+ * @return Julian date [d]
+ */
+//------------------------------------------------------------------------------                
+double GPSws2JD(double GPSweek, double GPSsecs_w)
+                  {
+                  double JD = 0.0;
+                  double MJD;
+                  
+                  MJD = timescales::MJD_GPST0 + 7.0*GPSweek + GPSsecs_w/timescales::SEC2DAY;
+                  
+                  JD = MJD + 2400000.5;
+                  
+                  return(JD);
                   };    
+//------------------------------------------------------------------------------
+// Vector6d MJD2UTCdate(double MJD)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of modified Julian date to UTC yyyy mm dd hh mm ss.sss
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X
+ *
+ * @param MJD       Modified Julian date
+ *
+ * @return Vector [yyyy mm dd hh mm ss.sss] if format is "ISOC" and [yyyy doy hh mm ss.sss 0] if format is "ISOD"
+ */
+//------------------------------------------------------------------------------                
+Vector6d MJD2UTCdate(double MJD)
+                              {     
+                              Vector6d UTCdate = Vector6d::Zero();
+                              
+                              double year = 0.0, month = 0.0, day = 0.0, hour = 0.0, min = 0.0, sec = 0.0;
+                              double hours, h_diff;      
+                              long a, b, c, d, e, f, q;
+              
+                              // Convert Julian days number to calendar date
+                              a = long(MJD) + 2400001.0;
+                              q = MJD - long(MJD);
+                            
+                              if(a < 2299161) // Julian calendar
+                                {  
+                                b = 0;
+                                c = a + 1524;
+                                }
+                              else // Gregorian calendar
+                                {                
+                                b = long( (a - 1867216.25)/36524.25 );
+                                c = a + b - long(b/4) + 1525;
+                                }
+                            
+                              d = long( (c - 121.1)/365.25 );
+                              e = long(365.25*d);//e = 365*d + d/4;
+                              f = long( (c - e)/30.6001 );
+                            
+                              day = c - e - long(30.6001*f) + q;//day = c - e - int(30.6001*f);
+                              
+                              month = f - 1 - 12*long(f/14);
+                              
+                              year = d - 4715 - long( (7 + month)/10 );
+                            
+                              hours = 24.0*( MJD - floor(MJD) );
+                              hour = int(hours);
+                              
+                              h_diff = (hours - hour)*60.0;
+                              
+                              min = int(h_diff);
+                              
+                              sec = (h_diff - min)*60.0;
+                              
+                              UTCdate << year, month, day, hour, min, sec;
+                              
+                              return(UTCdate);
+                              };
+//------------------------------------------------------------------------------
+// double UTCdate2MJD(Vector6d& UTCdate)
+//------------------------------------------------------------------------------
+/**
+ * Conversion of UTC yyyy mm dd hh mm ss.sss to modified Julian date
+ *
+ * @see Montenbruck, O., and Gill, E.,“Satellite Orbits - Model, Methods and Applications”,
+ *      Springer Verlag, Heidelberg, Germany, 2000, ISBN:3-540-67280-X
+ *
+ * @param UTCdate   Vector of integers [yyyy mm dd hh mm ss.sss]. The time is given on a 24-hour clock
+ *
+ * @return Modified Julian date
+ */
+//------------------------------------------------------------------------------                
+double UTCdate2MJD(Vector6d& UTCdate)
+                  {     
+                  double MJD = 0.0;
+                  
+                  int year, month, day, hour, min, B;
+                  double sec;
+                  long MJD_Midnight;
+                  double Fraction_of_day;
+                  
+                  year = (int)UTCdate(0);
+                  month = (int)UTCdate(1);
+                  day = (int)UTCdate(2);
+                  hour = (int)UTCdate(3);
+                  min = (int)UTCdate(4);
+                  sec = UTCdate(5);
+
+                  if(month <= 2)
+                    {
+                    month += 12;
+                    --year;
+                    }
+                  
+                  if( (10000L*year + 100L*month + day) <= 15821004L ) B = -2 + int( (year + 4716)/4 ) - 1179; // Julian calendar 
+                  else B = int(year/400) - int(year/100) + int(year/4); // Gregorian calendar 
+                    
+                  MJD_Midnight = 365L*year - 679004L + B + int( 30.6001*(month + 1) ) + day;
+                  Fraction_of_day = ( hour + min/60.0 + sec/3600.0 )/24.0; 
+                
+                  MJD = MJD_Midnight + Fraction_of_day;
+                              
+                  return(MJD);
+                  };              
 //------------------------------------------------------------------------------
 // double mod(double x, double y)
 //------------------------------------------------------------------------------

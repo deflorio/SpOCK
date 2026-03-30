@@ -115,6 +115,8 @@ namespace atmosphere
       static bool idx_locked;
       /** Line number of space weather indices matrix.*/
       static int swind;
+      /** Earth's angular velocity vector.*/
+      static Vec3d OMEGA_EARTH_vec;
       };
 
    }; // End of namespace magnetic

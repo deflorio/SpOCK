@@ -84,6 +84,8 @@ using namespace atmosphere;
         void ComputeAction(double epoch, const Ref<const VectorXd>& currentstate, const Ref<const VectorXd>& orb_state);
         // Integrate equations of motion
         void Integrate(double t, double step);
+        // Setup numerical integrator parameters
+        void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
         
         public:
     
@@ -110,7 +112,9 @@ using namespace atmosphere;
     
         private:
         // Implementation of dynamics model with Euler angles
-        void DynModel(const state_type &x , state_type &dxdt , const double t);
+        void DynModel(const state_type &x, state_type &dxdt, const double t);
+        /** boost odeint stepper for integrator. @see Method DynModel.*/
+        BULSTOER_stepper_type BULSTOER_stepper{1.0E-10, 1.0E-8, 1.0, 1.0};
     
         //private:
             

@@ -42,7 +42,9 @@ extern "C"
         extern void solfsmy_(double*, double*, double*, double*, double*, double*, double*, double*, double*, char*);
         extern void dtcval_(double*, int*, char*, char*);
         // NRLMSISE-00 Fortran
-        extern void gtd7d_(int*, float*, float*, float*, float*, float*, float*, float*, float*, int*, float*, float*);
+        //extern void gtd7d_(int*, float*, float*, float*, float*, float*, float*, float*, float*, int*, float*, float*);
+        // NRLMSISE-2.1 Fortran 90
+        extern void gtd8d_(int*, float*, float*, float*, float*, float*, float*, float*, float*, int*, float*, float*);
         }
 
 namespace atmosphere
@@ -62,6 +64,7 @@ namespace atmosphere
     char ATMO::c_dtc_file[200] = " ";
     char ATMO::c_dst_file[200] = " ";
     char ATMO::c_solfsmy_file[200] = " ";
+    Vec3d ATMO::OMEGA_EARTH_vec = Vec3d::Zero();
     //SpW_row ATMO::SpaceWeather_idx_row = SpW_row::Zero();
     //------------------------------------------------------------------------------
     // ATMO implementation
@@ -91,13 +94,18 @@ namespace atmosphere
     void ATMO::AtmosphericDensity(double time,
                                   const Ref<const VectorXd>& orbstate)
                                     {
-                                    Vec3d posECI, posECEF, SCpos_RAD, SCpos_lonlath, sunpos;
-                                    static double sat[3];
+                                    Vec3d posECI, posECEF, SCpos_RAD, SCpos_lonlath; //, sunpos;
+                                    VectorNd<2> sunpos;
+                                    //static double sat[3];
                                     posECI = orbstate.segment(0,3);
                                     posECEF = orbstate.segment(6,3);
                                     
+                                    #ifndef FLIGHTSW
+                                    
                                     SCpos_RAD = ECI2RAD(posECI);
                                     SCpos_lonlath = ECEF2lonlath(posECEF);
+                                    
+                                    static double sat[3];
                                         
                                     if( modelname.compare("JB2008") == 0 )
                                         {
@@ -107,8 +115,8 @@ namespace atmosphere
                                         //static double sun[2], sat[3], temperatures[2];
                                         sunpos = Solar.sunposRAD(time);
                                     
-                                        sun[0] = sunpos[0];
-                                        sun[1] = sunpos[1];
+                                        sun[0] = sunpos(0);
+                                        sun[1] = sunpos(1);
                                         
                                         sat[0] = SCpos_RAD(0); // [rad]
                                         sat[1] = SCpos_lonlath(1); // [rad]
@@ -146,7 +154,7 @@ namespace atmosphere
                                         //cout << fixed << "Temp: " << jb2008_temperatures[0] << "," << jb2008_temperatures[1] << endl;
                                         }
                                         
-                                    if( modelname.compare("NRLMSISE-00") == 0 )
+                                    if( modelname.compare("NRLMSIS-2.1") == 0 )
                                         {
                                         Vec3d LST = Vec3d::Zero();
                                         static float ap[7];
@@ -216,7 +224,9 @@ namespace atmosphere
                                         
                                         //gtd7d_(&doy, &UTsecs, &alt, &glat, &glong, &stl, &f107a, &f107, ap, &massnum, nrlmsise00_rho_vec, jb2008_temperatures);
                                         //cout << doy << endl;
-                                        gtd7d_(&doy, &UTsecs, &alt, &glat, &glong, &stl, &f107a, &f107, ap, &massnum, nrlmsise00_rho_vec, nrlmsise00_temperatures);
+                                        
+                                        //gtd7d_(&doy, &UTsecs, &alt, &glat, &glong, &stl, &f107a, &f107, ap, &massnum, nrlmsise00_rho_vec, nrlmsise00_temperatures);
+                                        gtd8d_(&doy, &UTsecs, &alt, &glat, &glong, &stl, &f107a, &f107, ap, &massnum, nrlmsise00_rho_vec, nrlmsise00_temperatures);
                                         
                                         rho_atm = nrlmsise00_rho_vec[5]*1E3; // [kg/m3]
                                         //cout << setprecision(20) << "nrlmsise00_rho_vec[5] = " << nrlmsise00_rho_vec[5] << endl;
@@ -247,7 +257,7 @@ namespace atmosphere
                                         // Altitude and density parameters
                                         double alt_MIN, alt_MAX, d_MIN, d_MAX;
                                         // Sun position
-                                        Vec3d  sunpos;
+                                        //Vec3d  sunpos;
                                         // Unit vector bulge_u towards the apex of the diurnal bulge ECI
                                         Vec3d bulge_u;
                                   
@@ -294,8 +304,81 @@ namespace atmosphere
                                         // Density computation
                                         rho_atm = ( d_MIN + (d_MAX - d_MIN)*pow(c_psi2,HP_prm) )*1.0e-12; // [kg/m3]   
                                         }
+                                        
+                                    #else
                                     
-                                    //cout << scientific <<setprecision(10) << rho_atm << endl;
+                                    if( modelname.compare("Harris-Priester") == 0 )
+                                        {
+                                        double HP_alt_MIN, HP_alt_MAX, RA_lag, HP_prm;
+                                        const int N_Coeff = 50;
+                                        
+                                        VectorNd<N_Coeff> Altitudes, rho_MIN, rho_MAX;
+                                            
+                                        /////// Get harcoded (HarrisPriester.h) Harris-Priester model ///////    
+                                        get_HP(HP_alt_MIN, HP_alt_MAX, RA_lag, HP_prm, Altitudes, rho_MIN, rho_MAX);
+                                        
+                                        /////// Compute atmospheric density ///////
+                                        
+                                        // Spacecraft altitude
+                                        double alt;
+                                        // Sun declination, right asc.
+                                        double Sun_dec, Sun_RA, c_dec;
+                                        // Harris-Priester modification
+                                        double c_psi2;
+                                        // Altitude and density parameters
+                                        double alt_MIN, alt_MAX, d_MIN, d_MAX;
+                                        // Sun position
+                                        //Vec3d  sunpos;
+                                        // Unit vector bulge_u towards the apex of the diurnal bulge ECI
+                                        Vec3d bulge_u;
+                                  
+                                        // Spacecraft altitude
+                                        alt = (posECEF.norm() - astro::R_EARTH)/1E3; //SCpos_lonlath(2)/1E3; // [km]
+                                  
+                                        if( alt <= HP_alt_MIN || alt >= HP_alt_MAX ) 
+                                            {
+                                            //cerr << "Spacecraft altitude is outside Harris-Priester model altitude limits" << endl;
+                                            return;
+                                            }
+                                  
+                                        // Sun right ascension and declination
+                                        sunpos = Solar.sunposRAD(time);
+                                        Sun_RA  = sunpos(0);
+                                        Sun_dec = sunpos(1);
+                                  
+                                        // Unit vector bulge_u towards the apex of the diurnal bulge ECI
+                                        c_dec = cos(Sun_dec);
+                                        bulge_u(0) = c_dec*cos(Sun_RA + RA_lag);
+                                        bulge_u(1) = c_dec*sin(Sun_RA + RA_lag);
+                                        bulge_u(2) = sin(Sun_dec);
+                                  
+                                        // Cosine of half angle between satellite position vector and apex of diurnal bulge                                  
+                                        c_psi2 = 0.5 + 0.5*posECI.dot(bulge_u)/posECI.norm();
+                                  
+                                        // Height index search and exponential density interpolation
+                                        int ih = 0; // Section index reset
+                                        for (int i=0; i < N_Coeff - 1; i++) // Loop over N_Coeff altitude regimes
+                                            {
+                                            if( alt >= Altitudes(i) && alt < Altitudes(i+1) ) 
+                                                {
+                                                ih = i; // ih identifies altitude section
+                                                break;
+                                                }
+                                            }
+                                  
+                                        alt_MIN = ( Altitudes(ih) - Altitudes(ih+1) )/log( rho_MIN(ih+1)/rho_MIN(ih) );
+                                        alt_MAX = ( Altitudes(ih) - Altitudes(ih+1) )/log( rho_MAX(ih+1)/rho_MAX(ih) );
+                                  
+                                        d_MIN = rho_MIN(ih)*exp( (Altitudes(ih) - alt)/alt_MIN );
+                                        d_MAX = rho_MAX(ih)*exp( (Altitudes(ih) - alt)/alt_MAX );
+                                  
+                                        // Density computation
+                                        rho_atm = ( d_MIN + (d_MAX - d_MIN)*pow(c_psi2,HP_prm) )*1.0e-12; // [kg/m3]   
+                                        }
+                                    
+                                    #endif
+                                    
+                                    //cout << scientific << setprecision(10) << rho_atm << endl;
                                     //cout << nrlmsise00_temperatures[0] << "  " << nrlmsise00_temperatures[1] << endl;
                                     
                                     //return(rho_atm);    
@@ -364,8 +447,12 @@ namespace atmosphere
                             posECI = orbstate.segment(0,3);
                             velECI = orbstate.segment(3,3);
                             
-                            v = velECI.normalized();// v is the spacecraft velocity unit vector
-                            v_norm = velECI.norm();
+                            //OMEGA_EARTH_vec << 0.0, 0.0, astro::OMEGA_EARTH;
+                            //v = velECI.normalized();// v is the spacecraft velocity unit vector
+                            //v_norm = velECI.norm();
+                            v = velECI - OMEGA_EARTH_vec.cross(velECI);// v is the spacecraft velocity unit vector
+                            v_norm = v.norm();
+                            v.normalize();
                             // Compute atmospheric density
                             //rho_atm = AtmosphericDensity(time, orbstate);
                             AtmosphericDensity(time, orbstate);
@@ -403,6 +490,10 @@ namespace atmosphere
     //------------------------------------------------------------------------------
     void ATMO::getmodel_coeff()
                             {
+                            OMEGA_EARTH_vec << 0.0, 0.0, astro::OMEGA_EARTH;
+                            
+                            #ifndef FLIGHTSW
+                            
                             if( modelname.compare("JB2008") == 0 )
                                 {    
                                 Vector6d UTCdate = Vector6d::Zero();
@@ -439,11 +530,13 @@ namespace atmosphere
                                 //cout << "dstdtc: " << dstdtc << endl;
                                 }  
                               
-                            if( modelname.compare("NRLMSISE-00") == 0 )
+                            if( modelname.compare("NRLMSIS-2.1") == 0 )
                                 {
                                 string spaceweather_file = modelfilepath + "/spaceweather/CssiSpaceWeather_indices.txt";
-                                SpaceWeather_idx = read_SpaceWeather(spaceweather_file.c_str(),init_epoch, simduration + 86400); // inittime variable of class PROP
+                                SpaceWeather_idx = read_SpaceWeather(spaceweather_file.c_str(), init_epoch, simduration + 86400); // inittime variable of class PROP
                                 }
+                                
+                            #endif
                             
                             };
     

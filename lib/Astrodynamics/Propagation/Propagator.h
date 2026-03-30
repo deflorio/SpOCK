@@ -32,7 +32,12 @@
 
 
 #include <boost/array.hpp>
+
+// Include boost odeint suppressing the false positive warning about initialization in bulirsch_stoer 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #include <boost/numeric/odeint.hpp>
+#pragma GCC diagnostic pop
 
 //#include <boost/numeric/odeint/stepper/XYZ.hpp>   // Include path for all steppers, XYZ is a placeholder for a stepper
 //#include <boost/numeric/odeint/algebra/XYZ.hpp>   // All algebras
@@ -56,6 +61,15 @@ typedef boost::array< double , 7 > state_typeQ;
 //using state_type = boost::array<double, N>;
 //typedef std::vector<double> state_type;
 //runge_kutta4< state_type > stepper;
+
+/** boost odeint Runge-Kutta 4 stepper for integrator.*/
+typedef runge_kutta4<state_type> RK4_stepper_type;
+/** boost odeint Dormand–Prince methodstepper for integrator.*/
+typedef runge_kutta_dopri5< state_type > RKDP_stepper_type;
+//typedef controlled_runge_kutta< runge_kutta_dopri5< state_type > > dopri_stepper_type;
+/** boost odeint Bulirsch-Stoer stepper for integrator.*/
+typedef bulirsch_stoer<state_type> BULSTOER_stepper_type;
+typedef bulirsch_stoer<state_typeQ> BULSTOER_stepper_typeQ;
 
 namespace propagator
    {
@@ -87,7 +101,24 @@ namespace propagator
          // Initialization with propagation start epoch, initial state and initial orbital state
          void Init(double init_time, const Ref<const VectorXd>& init_state, const Ref<const VectorXd>& orb_state);
          // Setup numerical integrator parameters
-         void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
+         //void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
+         // Perform cubic Hermite interpolation of state vector (x, y, z, dx/dt, dy/dt, dz/dt)
+         //void CH_Interpolation(const int InterPoints, const int InterpStep, const Ref<const MatrixXd>& timeposvel, Ref<MatrixXd> orbstate_interpolated);
+         //// Perform cubic Hermite interpolation of state vector (x, y, z, dx/dt, dy/dt, dz/dt) at a specific time
+         //void CH_Interpolation(double t_intpl, const Ref<const MatrixXd>& timeposvel, VectorNd<6>& orbstate_interpolated);
+         //// Perform quintic Hermite interpolation of state vector (x, y, z, dx/dt, dy/dt, dz/dt) over a time interval and with a specific interpolation step
+         //void QH_Interpolation(const int InterpStep, const Ref<const MatrixXd>& timeposvelacc, Ref<MatrixXd> orbstate_interpolated);
+         //// Perform quintic Hermite interpolation of state vector and acceleration (x, y, z, dx/dt, dy/dt, dz/dt, dx2/dt2, dy2/dt2, dz2/dt2) at a specific time
+         //void QH_Interpolation(double t_intpl, const Ref<const MatrixXd>& timeposvelacc, VectorNd<9>& orbstate_interpolated);
+         
+         //------------------------------------------------------------------------------
+         // Abstract method void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt)
+         //------------------------------------------------------------------------------
+         /**
+           * Setup odeint stepper
+           */
+         //------------------------------------------------------------------------------  
+         virtual void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt) = 0;
          //------------------------------------------------------------------------------
          // Abstract method void ForceModelsSetup()
          //------------------------------------------------------------------------------
@@ -168,10 +199,18 @@ namespace propagator
          int nMAX;
          /** Enable or disable third body perturbation.*/
          bool sunmoon_on;
+         /** Odeint stepper type.*/
+         string ODEINT_stepper;
          /** Atmospheric drag model used.*/
          string Drag_Model;
          /** Solar radiation pressure model used.*/
          string SRP_Model;
+         /** 3-dimensional vector containing Earth orientation parameters. */
+         static Vec3d eop;
+         /** Current leap second. */
+         static double tai_utc;
+         /** Transformation matrix from ICRF to ITRF. */
+         Mat3x3d T_ICRF2ITRF;
          
          protected:
          /** Spacecraft mass.*/
@@ -208,8 +247,6 @@ namespace propagator
          double inittime;
          /** Variable to check if the first integration step has been executed.*/
          bool integ_first_step;
-         /** boost odeint stepper for integrator. @see Method DynModel.*/
-         bulirsch_stoer<state_type> bulirsch_stoer_stepper;
          };
 
    }; // End of namespace propagator

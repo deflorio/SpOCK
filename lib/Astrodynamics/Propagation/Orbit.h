@@ -51,8 +51,12 @@ using namespace thirdbody;
 using namespace solradiation;
 using namespace atmosphere;
 
-typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
-typedef controlled_runge_kutta< error_stepper_type > controlled_stepper_type;
+//typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
+//typedef controlled_runge_kutta< error_stepper_type > controlled_stepper_type;
+//typedef controlled_runge_kutta< runge_kutta_fehlberg78<state_type> > controlled_RK78_stepper_type;
+//typedef controlled_runge_kutta< RKDP_stepper_type > > dopri_stepper_type;
+//typedef runge_kutta_dopri5< state_type > dopri_stepper_type;
+//typedef bulirsch_stoer< state_type > bulirsch_stoer_type;
 
 namespace orbit
    {
@@ -78,14 +82,14 @@ namespace orbit
         //------------------------------------------------------------------------------
         // Set up file paths and parameters for environmental forces models
         void ForceModelsSetup();
-        // Insert total actuators' torque
+        // Insert total actuators' dv
         void Maneuver(const Ref<const VectorXd>& maneuver);
         // Compute perturbation torques
         void ComputeAction(double epoch, const Ref<const VectorXd>& currentstate, const Ref<const VectorXd>& orb_state);
         // Integrate equations of motion
         void Integrate(double t, double step);
         // Setup numerical integrator parameters
-        //void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
+        void StepperSetup(double eps_abs, double eps_rel, double factor_x, double factor_dxdt);
         
         public:
     
@@ -93,7 +97,7 @@ namespace orbit
         static VectorNd<15> Acceleration_env;
         /** Vecor containing ECI orbital state and ECEF position.*/
         static VectorNd<9> orb_state_ECI_ECEF;
-        /** Spacecraft orbit state in Euler angles form (phi,theta,psi,om_x,om_y,om_z) [rad,rad,rad,rad/s,rad/s,rad/s].*/
+        /** Spacecraft orbit ECI state x, z, y, vx, vz, vy [m, m, m, m/s, m/s, m/s].*/
         static state_type x;
         
         protected:
@@ -110,7 +114,7 @@ namespace orbit
         
         private:
         // Implementation of dynamics model
-        void DynModel(const state_type &x , state_type &dxdt , const double t);
+        void DynModel(const state_type &x, state_type &dxdt, const double t);
     
         private:
             
@@ -121,12 +125,11 @@ namespace orbit
         static Vec4d q_currentstate;
         static Vec3d pos_ECI;
         static Vec3d pos_ECEF;
+        double epsabs, epsrel;
+        
         /** boost odeint stepper for integrator. @see Method DynModel.*/
-        runge_kutta4< state_type > stepper;
-        //runge_kutta_dopri5< state_type > stepper;
-        //adams_bashforth_moulton< 4 , state_type > stepper;
-        //controlled_stepper_type controlled_stepper;
-        //bulirsch_stoer<state_type> bulirsch_stoer_stepper;
+        RK4_stepper_type stepper;
+        BULSTOER_stepper_type BULSTOER_stepper{1.0E-12, 1.0E-10, 1.0, 0.0};
         };
 
    }; // End of namespace pod_trj

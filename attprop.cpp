@@ -123,9 +123,10 @@ int main(int argc, char *argv[])
     ///////////////////////// Simulation parameters /////////////////////////
     
     // Simulation step
-    int SIM_STEP;
+    double SIM_STEP;
     // Simulation duration
     int SIM_DURATION;
+    int SIM_DURATION_runmessage;
     // Initial orbit UTC date and time
     Vector6d init_orbtime = Vector6d::Zero();
     // Initial orbit state
@@ -138,6 +139,9 @@ int main(int argc, char *argv[])
     bool realtime;
     // Step execution waiting time for hardware-in-the-loop simulations
     double realtime_wait;
+    // Numerical integrator parameters
+    string ODEINT_stepper;
+    double ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt;
     // Gravity gradient torque on/off
     bool ggrad_on;
     // Magnetic torque on/off
@@ -203,8 +207,9 @@ int main(int argc, char *argv[])
     ////////// PARSING OF XML SIMULATION PARAMETERS FILE /////////
     //////////////////////////////////////////////////////////////
     
-    XML_parser(XML_simparam_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
+    XML_parser(XML_simparam_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ODEINT_stepper, ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
     //cout << "Sono qui" << endl;
+    SIM_DURATION_runmessage = SIM_DURATION;
     size_t lastslash = XML_simparam_file.find_last_of("/");
     string ReadXML_TXT_file_name = XML_simparam_file.substr(lastslash+1);
     size_t lastspoint = ReadXML_TXT_file_name.find_last_of(".");
@@ -213,7 +218,7 @@ int main(int argc, char *argv[])
     //const string ReadXML_TXT_file = "input/readXML.txt";
     // Put read XML in a text file (for check purposes)
     
-    ReadXMLtoTXT(ReadXML_TXT_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
+    ReadXMLtoTXT(ReadXML_TXT_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ODEINT_stepper, ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
 
     // Load orbit ephemerides
     Eigen::MatrixXd loaded_ephem;
@@ -224,14 +229,41 @@ int main(int argc, char *argv[])
           exit(EXIT_FAILURE);
           }
     
-    int matrows = loaded_ephem.rows();      
-    
+    int matrows = loaded_ephem.rows();
+    if(matrows == 0)
+      {
+	  cerr << "\nERROR: the input orbit ephemeris file " << Orbit_ephemeris << " is empty. It is not possible to proceed with the attitude propagation.\n" << endl;
+	  return 1;
+	  }
+    if(matrows == 1)
+      {
+	  cerr << "\nERROR: only one state is available in the input orbit ephemeris file" << Orbit_ephemeris << ". It is not possible to proceed with the attitude propagation.\n" << endl;
+	  return 1;
+	  }
+      
     double ephem_duration = loaded_ephem(matrows-1,1) - loaded_ephem(0,1);
+    bool simdur_warning = false;
     if(SIM_DURATION > ephem_duration)
         {
-        cerr << "\nThe duration of the simulation (<simduration>) cannot be longer than the duration of the input orbit ephemeris" << endl;
-        exit(EXIT_FAILURE);
+        SIM_DURATION = ephem_duration;
+        simdur_warning = true;
         }
+    
+    // Check that the step of the loaded ephemeris is equal to SIM_STEP
+    VectorXd timediffs;
+    int loaded_ephem_step = 0;
+    
+    timediffs = VectorXd::Zero(matrows - 1);
+    
+    timediffs = loaded_ephem.col(0).segment(1,matrows-1) - loaded_ephem.col(0).segment(0,matrows-1);
+    
+    loaded_ephem_step = int( round(timediffs.mean()) );
+    
+    if( loaded_ephem_step != SIM_STEP )
+      {
+      cerr << "\nThe step of the input attitude ephemeris " << Orbit_ephemeris << " has to be equal to the attitude propagation step <simstep> that is " << SIM_STEP << " s/n" << endl;
+      return 1;
+      }
     
     //////////////////////////////////////////////////////////////
     /////////////// PROCESSING OF PARSED VARIABLES ///////////////
@@ -492,30 +524,19 @@ int main(int argc, char *argv[])
     //////////////////// Environment models //////////////////////////
     
     //bool T_model[4] = {ggrad_on, mag_on, drag_on, srp_on};
+    //bool T_model[5] = {ggrad_on, mag_on, drag_on, srp_on, sunmoon_on};
+    //
+    //Drag_Model = "Panels";
+    //SRP_Model = "Panels";
+    
+    //////////////////// Numerical integrator parameters and environment models //////////////////////////    
+    double ODEINT_params[4] = {ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt};
     bool T_model[5] = {ggrad_on, mag_on, drag_on, srp_on, sunmoon_on};
     
-    Drag_Model = "Panels";
-    SRP_Model = "Panels";
-    
     //////////////////// Run-start display message //////////////////////////
+    RunStartMessage(init_orbtime, init_orbstate, SIM_STEP, SIM_DURATION_runmessage, T_model, nMAX, ODEINT_stepper, ODEINT_params, Drag_Model, SRP_Model, magneticfield, gravityfield, atmosphere, sunmoon,"ATT");
     
-    //string sim_duration_string = to_string(SIM_DURATION/86400.0) + " days";
-    //if(SIM_DURATION/86400.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/3600.0) + " hours";
-    //if(SIM_DURATION/3600.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/60.0) + " minutes";
-    //
-    //string pert_txt = "Simulation duration: " + sim_duration_string + "\n\nPERTURBATIONS\n\n";
-    ////if(HarrisPriester_on) pert_txt = pert_txt + "Atmospheric drag: " + hr_atm_name + "\n";
-    ////if(Jacchia_on) pert_txt = pert_txt + "Atmospheric drag: " + j_atm_name + "\n";
-    ////if(DTM2000_on) pert_txt = pert_txt + "Atmospheric drag: " + dtm_atm_name + "\n";
-    //if(ggrad_on) pert_txt = pert_txt + "Gravity gradient\n";
-    //if(mag_on) pert_txt = pert_txt + "Earth's magnetic field: " + magneticfield + " model\n";
-    //if(drag_on) pert_txt = pert_txt + "Panels atmospheric drag model, Atmosphere: " + atmosphere + " model\n";
-    //if(srp_on) pert_txt = pert_txt + "Panels solar radiation pressure model\n";
-    //if( !(ggrad_on || mag_on || srp_on || drag_on) ) pert_txt = "NO PERTURBATIONS\n\n";
-    //
-    //cout << pert_txt << "\n" << endl;
-    
-    RunStartMessage(init_orbtime, init_orbstate, SIM_DURATION, T_model, nMAX, Drag_Model, SRP_Model, magneticfield, gravityfield, atmosphere, sunmoon,"ATT");
+    //RunStartMessage(init_orbtime, init_orbstate, SIM_DURATION, T_model, nMAX, Drag_Model, SRP_Model, magneticfield, gravityfield, atmosphere, sunmoon,"ATT");
     
     ///////////////// Commanded attitude maneuvers /////////////////
     
@@ -607,12 +628,12 @@ int main(int argc, char *argv[])
     SC_Attitude.Init(ini_GPStime, init_attstate, orbstateECI_ECEF);
     SC_Attitude.ForceModelsSetup();
       
-    double eps_abs = 1E-8;
-    double eps_rel = 0.0;
-    double factor_x = 0.0;
-    double factor_dxdt = 0.0;
+    //double eps_abs = 1E-12;
+    //double eps_rel = 1E-10;
+    //double factor_x = 1.0;
+    //double factor_dxdt = 0.0;
     
-    SC_Attitude.StepperSetup(eps_abs, eps_rel, factor_x, factor_dxdt);
+    SC_Attitude.StepperSetup(ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt);
     
     ////////////////////////////////////////////////////////////////////
     ///////////////// ADCS SENSORS INTERFACE-VARIABLES /////////////////
@@ -830,6 +851,8 @@ int main(int argc, char *argv[])
     //
     //SC_Attitude.StepperSetup(eps_abs, eps_rel, factor_x, factor_dxdt);
     
+    if(simdur_warning) cerr << "\nWARRNING: since the duration of the simulation <simduration> requested is longer than the duration of the input orbit ephemeris " << Orbit_ephemeris << ", the run will stop with the last available orbit state.\n" << endl;
+    
     cout << "Start\n" << endl;
     //chrono::time_point<chrono::high_resolution_clock> forstart, forend;
     
@@ -854,7 +877,6 @@ int main(int argc, char *argv[])
     state_file << fixed << attitudeRTN_state_vec(0) << "," << attitudeRTN_state_vec(1) << "," << attitudeRTN_state_vec(2) << "," << attitudeRTN_state_vec(3) << "," << attitudeRTN_state_vec(4) << "," << attitudeRTN_state_vec(5) << "," << attitudeRTN_state_vec(6) << endl;
     
     // Attitude state quaternions
-    
     string attfile_name_quat = attfile_name.replace(attfile_name.end() - 4,attfile_name.end(),"_Quaternions.csv");
     ofstream state_file_quat;
     state_file_quat.open(attfile_name_quat);
@@ -923,7 +945,6 @@ int main(int argc, char *argv[])
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////// ATTITUDE PROPAGATION LOOP ///////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
     VectorXd prop_state;
     int barwidth = 100;
             
@@ -1070,7 +1091,7 @@ int main(int argc, char *argv[])
         for(int i = 0 ; i < 3; i++) WheelRaw_d(i) = round(WheelRaw_d(i));
         WheelRaw = WheelRaw_d.cast<int>();
         
-        sensors_output.segment(24,3) = WheelRaw;
+        sensors_output.segment(24,3) = WheelRaw_d.cast<int>();//WheelRaw;
         
         // WheelRaw = ( Wheels.Output(GPStime, stateQ, current_orbstate) ).cast<int>();
         
@@ -1173,19 +1194,19 @@ int main(int argc, char *argv[])
     
         sensors_output.segment(1,6) = CssRaw.cast<int>();
         
-        sensors_output.segment(7,2) = SunRaw;
+        sensors_output.segment(7,2) = SunRaw_d.cast<int>();//SunRaw;
         sensors_output(9) = SunBusy;
         sensors_output(10) = SunResult;
         
-        sensors_output.segment(11,2) = NadirRaw;
+        sensors_output.segment(11,2) = NadirRaw_d.cast<int>();//NadirRaw;
         sensors_output(13) = NadirBusy;
         sensors_output(14) = NadirResult;
         
-        sensors_output.segment(15,3) = MagRaw;
+        sensors_output.segment(15,3) = MagRaw_d.cast<int>();//MagRaw;
         
         //sensors_output.segment(18,3) = VectorNi<3>::Zero()
         
-        sensors_output.segment(21,3) = RateRaw;
+        sensors_output.segment(21,3) = RateRaw_d.cast<int>();//RateRaw;
         
         /////////////////////// Attitude state output ///////////////////////
         
@@ -1286,12 +1307,11 @@ int main(int argc, char *argv[])
         //if(realtime) this_thread::sleep_for( chrono::milliseconds(dur_mill) );
         
         //////////////////////////// Write csv files //////////////////////////////
-        
         Mag_SYS2SC = Mag_SC2SYS.transpose();
         MagRaw_RTN_d = (T_RTN2Body.transpose())*Mag_SYS2SC*MagRaw_d;
-        MagRaw_RTN = MagRaw_RTN_d.cast<int>();
+        //MagRaw_RTN = MagRaw_RTN_d.cast<int>();
         
-        sensors_output.segment(18,3) = MagRaw_RTN;
+        sensors_output.segment(18,3) = MagRaw_RTN_d.cast<int>();//MagRaw_RTN;
         
         if(realtime) // Write output file inside propagation loop
             {
@@ -1391,7 +1411,7 @@ int main(int argc, char *argv[])
         cout << "Elapsed seconds: " << elapsed_millisecs.count()/1000.0 << endl;
         }
     
-  return(0);
+    return(0);
   
   } // End of main()
   

@@ -30,7 +30,7 @@
     <!-- ################################################ -->
     <fileheader>
         <author>Sergio De Florio</author>
-        <email>sergio.deflorio@yahoo.com</email>
+        <email>N/A</email>
         <organization></organization>
         <filecreationdate>2020-04-25</filecreationdate>
         <!--<version> $Revision: 1.0 $ </version>-->
@@ -189,7 +189,7 @@
         <PCK_data>pck00010.tpc</PCK_data>
         <Leap_second>naif0012.tls</Leap_second>
         <Gravity_model>EIGEN-6S</Gravity_model> <!--EIGEN-6S GGM02C GGM03S GGM03C GGM03C_30x30_Hardcoded-->
-        <Atmospheric_model>NRLMSISE-00</Atmospheric_model> <!--JB2008 NRLMSISE-00 Harris-Priester-->
+        <Atmospheric_model>NRLMSISE-2.1</Atmospheric_model> <!--JB2008 NRLMSISE-2.1 Harris-Priester-->
         <Magnetic_model>IGRF13</Magnetic_model> <!--IGRF13 WMM2020-->
         <SunMoon_model>DE</SunMoon_model> <!--DE (Development Ephemeris) LP (Low Precision Ephemeris)-->
         
@@ -246,6 +246,18 @@
           <om_z unit="deg/s">0.0</om_z>    <!-- [deg/s] -->
           
       </ATT_initstate>
+      
+      <odeint> <!--Options for numerical integrator-->
+      
+        <stepper>RKDP</stepper> <!--For orbit propagation: RK4 (Runge-Kutta 4), RKDP (Dormand-Prince) and BULSTOER (Bulirsch-Stoer).
+                                        For attitude propagation the numerical integrator is BULSTOER by default and no other option.
+                                        The following four parameters are for the BULSTOER numerical integrator, whereas only the first two are for the RKDP numerical integrator-->
+        <eps_abs>1E-12</eps_abs> <!--Absolute tolerance level-->
+        <eps_rel>1E-10</eps_rel> <!--Relative tolerance level-->
+        <factor_x>1.0</factor_x> <!--Factor for the weight of the state-->
+        <factor_dxdt>0.0</factor_dxdt> <!--Factor for the weight of the derivative-->
+        
+      </odeint>
       
       <simoptions> <!--Environment and state options for attitude and orbit propagation-->
           <initstate_in_RTN>true</initstate_in_RTN> <!--Attitude initial state given in tag ATT_initstate is in RTN frame. If this flag is false,

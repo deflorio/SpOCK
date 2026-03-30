@@ -29,11 +29,15 @@
 #include <Constants.h>
 #include <Transformations.h>
 
+#include <boost/math/interpolators/cubic_hermite.hpp>
+#include <boost/math/interpolators/quintic_hermite.hpp>
+
 using namespace std;
 using namespace math;
 using namespace boost::numeric::odeint;
 using namespace constants;
 using namespace Eigen;
+using namespace boost::math::interpolators;
 
 namespace propagator
     {
@@ -43,6 +47,9 @@ namespace propagator
     // Initialization of static members
     Mat3x3d PROP::MoI = Mat3x3d::Zero();
     Mat3x3d PROP::invMoI = Mat3x3d::Zero();
+    
+    Vec3d PROP::eop = Vec3d::Zero();
+    double PROP::tai_utc = 0.0;
     //------------------------------------------------------------------------------
     /**
      * Default constructor
@@ -50,14 +57,22 @@ namespace propagator
     //------------------------------------------------------------------------------         
     PROP::PROP()
        {
-        SC_Parameters = {};
+        SC_Parameters.MoI = Mat3x3d::Zero();
+        SC_Parameters.Mdip = Vec3d::Zero();
+        SC_Parameters.SC_mass = 0.0;
+        SC_Parameters.CD = 0.0;
+        SC_Parameters.C_SRP = 0.0;
+        SC_Parameters.Area_D = 0.0;
+        SC_Parameters.Area_R = 0.0;
+        
+        ODEINT_stepper = "RK4";
         Models = {};
         
         ggrad_on = false;
         mag_on  = false;
         drag_on = false;
         srp_on = false;
-		nMAX = 0;
+        nMAX = 0;
         sunmoon_on = false;
         
         MoI = Mat3x3d::Zero();
@@ -109,19 +124,19 @@ namespace propagator
     //------------------------------------------------------------------------------    
     PROP::PROP(SC_params& param,
                EnvModels& models)
-      {
-      Setup(param, models);
-      
-      ggrad_on = false;
-      mag_on  = false;
-      drag_on = false;
-      srp_on = false;
-      nMAX = 0;
-      sunmoon_on = false;
-        
-      inittime = 0.0;
-      integ_first_step = true;
-      };  
+                {
+                Setup(param, models);
+                
+                ggrad_on = false;
+                mag_on  = false;
+                drag_on = false;
+                srp_on = false;
+                nMAX = 0;
+                sunmoon_on = false;
+                  
+                inittime = 0.0;
+                integ_first_step = true;
+                };
     //------------------------------------------------------------------------------
     // Destructor
     //------------------------------------------------------------------------------  
@@ -204,7 +219,7 @@ namespace propagator
                   {
                   inittime = init_time;
                   initstate = init_state;
-                  state = initstate;
+                  state = Vec4d::Zero();
                   orbstate = init_state;
                   
                   integ_first_step = true;
@@ -247,16 +262,421 @@ namespace propagator
      * @param eps_rel       Relative tolerance level
      * @param factor_x      Factor for the weight of the derivative
      * @param factor_dxdt   Factor for the weight of the state
+     * 
      */
     //------------------------------------------------------------------------------   
-    void PROP::StepperSetup(double eps_abs,
-                            double eps_rel,
-                            double factor_x,
-                            double factor_dxdt)
-                            {
-                            bulirsch_stoer<state_type> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
-                            bulirsch_stoer_stepper = setup_stepper;
-                            };
+    //void PROP::StepperSetup(double eps_abs,
+    //                        double eps_rel,
+    //                        double factor_x,
+    //                        double factor_dxdt)
+    //                        {
+    //                        bulirsch_stoer<state_type> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
+    //                        bulirsch_stoer_stepper = setup_stepper;
+    //                        };
+    ////------------------------------------------------------------------------------
+    //// void QH_Interpolation(const int InterpStep, const Ref<const MatrixXd>& timeposvelacc, Ref<MatrixXd> orbstate_interpolated)
+    ////------------------------------------------------------------------------------
+    ///**
+    // * Perform quintic Hermite interpolation of state vector (x, y, z, dx/dt, dy/dt, dz/dt) over a time interval and with a specific interpolation step
+    // *
+    // * @param InterpStep            Step of interpolated points                 
+    // * @param timeposvelacc         Matrix of points used for the computation of the interpolation polynomial
+    // *                              (each row contains time, x, y, z, vx, vy, vz, ax, ay, az)
+    // * 
+    // * @return Matrix of interpolated points (each row contains time, x, y, z, vx, vy, vz)
+    // */
+    ////------------------------------------------------------------------------------   
+    //void PROP::QH_Interpolation(const int InterpStep,
+    //                            const Ref<const MatrixXd>& timeposvelacc,
+    //                            Ref<MatrixXd> orbstate_interpolated)
+    //                            {
+    //                            const int InterPoints = timeposvelacc.rows();
+    //                            double t_intpl;
+    //                            int ind = 1;
+    //                            
+    //                            vector<double> v_null(InterPoints);
+    //                            for(int i = 0; i < InterPoints; i++) v_null[i] = 0.0;
+    //                            
+    //                            vector<double> time_interpol(InterPoints);
+    //                            
+    //                            vector<double> x_interpol(InterPoints);
+    //                            vector<double> dxdt_interpol(InterPoints);
+    //                            vector<double> dx2dt2_interpol(InterPoints);
+    //                            
+    //                            int lastrow = orbstate_interpolated.rows() - 1;
+    //                            
+    //                            orbstate_interpolated.row(0) = timeposvelacc.row(0).segment(0,7);
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvelacc(i,0);
+    //                                x_interpol[i] = timeposvelacc(i,1);
+    //                                dxdt_interpol[i] = timeposvelacc(i,4);
+    //                                dx2dt2_interpol[i] = timeposvelacc(i,7);
+    //                                }
+    //                            
+    //                            auto spline_x = quintic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol), std::move(dx2dt2_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            dx2dt2_interpol.clear(); dx2dt2_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvelacc(i,0);
+    //                                x_interpol[i] = timeposvelacc(i,2);
+    //                                dxdt_interpol[i] = timeposvelacc(i,5);
+    //                                dx2dt2_interpol[i] = timeposvelacc(i,8);
+    //                                }
+    //                            
+    //                            auto spline_y = quintic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol), std::move(dx2dt2_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            dx2dt2_interpol.clear(); dx2dt2_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvelacc(i,0);
+    //                                x_interpol[i] = timeposvelacc(i,3);
+    //                                dxdt_interpol[i] = timeposvelacc(i,6);
+    //                                dx2dt2_interpol[i] = timeposvelacc(i,9);
+    //                                }
+    //                            
+    //                            auto spline_z = quintic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol), std::move(dx2dt2_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            dx2dt2_interpol.clear(); dx2dt2_interpol = v_null;
+    //                            
+    //                            
+    //                            t_intpl = orbstate_interpolated(0,0) + InterpStep;
+    //                            
+    //                            for(int i = 1; i < lastrow; i++)
+    //                                {
+    //                                if( t_intpl == timeposvelacc(ind,0) )
+    //                                    {
+    //                                     orbstate_interpolated.row(i) = timeposvelacc.row(ind).segment(0,7);
+    //                                     
+    //                                     t_intpl += InterpStep;
+    //                                     ind++;
+    //                                     //continue;
+    //                                    }
+    //                                else
+    //                                    {
+    //                                    orbstate_interpolated(i,0) = t_intpl;
+    //                                    orbstate_interpolated(i,1) = spline_x(t_intpl);
+    //                                    orbstate_interpolated(i,2) = spline_y(t_intpl);
+    //                                    orbstate_interpolated(i,3) = spline_z(t_intpl);
+    //                                    orbstate_interpolated(i,4) = spline_x.prime(t_intpl);
+    //                                    orbstate_interpolated(i,5) = spline_y.prime(t_intpl);
+    //                                    orbstate_interpolated(i,6) = spline_z.prime(t_intpl);
+    //                                    
+    //                                    t_intpl += InterpStep;
+    //                                    }
+    //                                }
+    //                                
+    //                            orbstate_interpolated.row(lastrow) = timeposvelacc.row(InterPoints-1).segment(0,7);
+    //                            };
+    ////------------------------------------------------------------------------------
+    //// void QH_Interpolation(double t_intpl, const Ref<const MatrixXd>& timeposvelacc, VectorNd<9>& orbstate_interpolated)
+    ////------------------------------------------------------------------------------
+    ///**
+    // * Perform quintic Hermite interpolation of state vector and acceleration (x, y, z, dx/dt, dy/dt, dz/dt, dx2/dt2, dy2/dt2, dz2/dt2) at a specific time
+    // *
+    // * @param t_intpl               Interpolation time
+    // * @param timeposvelacc         Matrix of points used for the computation of the interpolation polynomial
+    // *                              (each row contains time, x, y, z, vx, vy, vz, ax, ay, az)
+    // * 
+    // * @return Interpolated state vector and acceleration (x, y, z, dx/dt, dy/dt, dz/dt, dx2/dt2, dy2/dt2, dz2/dt2)
+    // */
+    ////------------------------------------------------------------------------------   
+    //void PROP::QH_Interpolation(double t_intpl,
+    //                            const Ref<const MatrixXd>& timeposvelacc,
+    //                            VectorNd<9>& orbstate_interpolated)
+    //                            {
+    //                            const int InterPoints = timeposvelacc.rows();
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                if(t_intpl == timeposvelacc(i,0)) // No need of interpolation
+    //                                    {
+    //                                    orbstate_interpolated = timeposvelacc.row(i).segment(1,9);
+    //                                    return;
+    //                                    }
+    //                                }
+    //                            
+    //                            vector<double> v_null(InterPoints);
+    //                            for(int i = 0; i < InterPoints; i++) v_null[i] = 0.0;
+    //                            
+    //                            vector<double> time_interpol(InterPoints);
+    //                            vector<double> x_interpol(InterPoints);
+    //                            vector<double> dxdt_interpol(InterPoints);
+    //                            vector<double> dx2dt2_interpol(InterPoints);
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvelacc(i,0);
+    //                                x_interpol[i] = timeposvelacc(i,1);
+    //                                dxdt_interpol[i] = timeposvelacc(i,4);
+    //                                dx2dt2_interpol[i] = timeposvelacc(i,7);
+    //                                }
+    //                            
+    //                            auto spline_x = quintic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol), std::move(dx2dt2_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            dx2dt2_interpol.clear(); dx2dt2_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvelacc(i,0);
+    //                                x_interpol[i] = timeposvelacc(i,2);
+    //                                dxdt_interpol[i] = timeposvelacc(i,5);
+    //                                dx2dt2_interpol[i] = timeposvelacc(i,8);
+    //                                }
+    //                            
+    //                            auto spline_y = quintic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol), std::move(dx2dt2_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            dx2dt2_interpol.clear(); dx2dt2_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvelacc(i,0);
+    //                                x_interpol[i] = timeposvelacc(i,3);
+    //                                dxdt_interpol[i] = timeposvelacc(i,6);
+    //                                dx2dt2_interpol[i] = timeposvelacc(i,9);
+    //                                }
+    //                            
+    //                            auto spline_z = quintic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol), std::move(dx2dt2_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            dx2dt2_interpol.clear(); dx2dt2_interpol = v_null;
+    //                            
+    //                            // Interpolation                                
+    //                            orbstate_interpolated(0) = spline_x(t_intpl);
+    //                            orbstate_interpolated(1) = spline_y(t_intpl);
+    //                            orbstate_interpolated(2) = spline_z(t_intpl);
+    //                            orbstate_interpolated(3) = spline_x.prime(t_intpl);
+    //                            orbstate_interpolated(4) = spline_y.prime(t_intpl);
+    //                            orbstate_interpolated(5) = spline_z.prime(t_intpl);
+    //                            orbstate_interpolated(6) = spline_x.double_prime(t_intpl);
+    //                            orbstate_interpolated(7) = spline_y.double_prime(t_intpl);
+    //                            orbstate_interpolated(8) = spline_z.double_prime(t_intpl);
+    //                            };
+    ////------------------------------------------------------------------------------
+    //// void CH_Interpolation(const int InterPoints, const int InterpStep, const Ref<const MatrixXd>& timeposvel, Ref<MatrixXd> orbstate_interpolated)
+    ////------------------------------------------------------------------------------
+    ///**
+    // * Perform quintic Hermite interpolation of state vector (x, y, z, dx/dt, dy/dt, dz/dt)
+    // *
+    // * @param InterPoints           Number of points used for the computation of the interpolation polynomial
+    // * @param InterpStep            Step of interpolated points                 
+    // * @param timeposvel            Matrix of points used for the computation of the interpolation polynomial
+    // *                              (each row contains time, x, y, z, vx, vy, vz)
+    // * 
+    // * @return Matrix of interpolated points (each row contains time, x, y, z, vx, vy, vz)  
+    // */
+    ////------------------------------------------------------------------------------   
+    //void PROP::CH_Interpolation(const int InterPoints,
+    //                            const int InterpStep,
+    //                            const Ref<const MatrixXd>& timeposvel,
+    //                            Ref<MatrixXd> orbstate_interpolated)
+    //                            {
+    //                            double t_intpl;
+    //                            int ind = 1;
+    //                            
+    //                            vector<double> v_null(InterPoints);
+    //                            for(int i = 0; i < InterPoints; i++) v_null[i] = 0.0;
+    //                            
+    //                            vector<double> time_interpol(InterPoints);
+    //                            
+    //                            vector<double> x_interpol(InterPoints);
+    //                            vector<double> dxdt_interpol(InterPoints);
+    //                            
+    //                            int lastrow = orbstate_interpolated.rows() - 1;
+    //                            
+    //                            orbstate_interpolated.row(0) = timeposvel.row(0).segment(0,7);
+    //                            
+    //                            //cout << orbstate_interpolated(0,0) << "   " << orbstate_interpolated(0,1) << "   " << orbstate_interpolated(0,2) << "   " << orbstate_interpolated(0,3) << "   " << orbstate_interpolated(0,4) << "   " << orbstate_interpolated(0,5) << "   " << orbstate_interpolated(0,6) << endl;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvel(i,0);
+    //                                x_interpol[i] = timeposvel(i,1);
+    //                                dxdt_interpol[i] = timeposvel(i,4);
+    //                                }
+    //                            
+    //                            auto spline_x = cubic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvel(i,0);
+    //                                x_interpol[i] = timeposvel(i,2);
+    //                                dxdt_interpol[i] = timeposvel(i,5);
+    //                                }
+    //                            
+    //                            auto spline_y = cubic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvel(i,0);
+    //                                x_interpol[i] = timeposvel(i,3);
+    //                                dxdt_interpol[i] = timeposvel(i,6);
+    //                                }
+    //                            
+    //                            auto spline_z = cubic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            
+    //                            
+    //                            t_intpl = orbstate_interpolated(0,0) + InterpStep;
+    //                            
+    //                            for(int i = 1; i < lastrow; i++)
+    //                                {
+    //                                //cout << "t_intpl = " << t_intpl << endl;
+    //                                //cout << "timeposvel(ind,0) = " << timeposvel(ind,0) << endl;
+    //                                if( t_intpl == timeposvel(ind,0) )
+    //                                    {
+    //                                     orbstate_interpolated.row(i) = timeposvel.row(ind).segment(0,7);
+    //                                     
+    //                                     t_intpl += InterpStep;
+    //                                     ind++;
+    //                                     //continue;
+    //                                    }
+    //                                else
+    //                                    {
+    //                                    orbstate_interpolated(i,0) = t_intpl;
+    //                                    
+    //                                    orbstate_interpolated(i,1) = spline_x(t_intpl);
+    //                                    orbstate_interpolated(i,4) = spline_x.prime(t_intpl);
+    //                                    
+    //                                    orbstate_interpolated(i,2) = spline_y(t_intpl);
+    //                                    orbstate_interpolated(i,5) = spline_y.prime(t_intpl);
+    //                                    
+    //                                    orbstate_interpolated(i,3) = spline_z(t_intpl);
+    //                                    orbstate_interpolated(i,6) = spline_z.prime(t_intpl);
+    //                                    
+    //                                    //t_intpl++;
+    //                                    t_intpl += InterpStep;
+    //                                    }
+    //                                
+    //                                //cout << orbstate_interpolated(i,0) << "   " << orbstate_interpolated(i,1) << "   " << orbstate_interpolated(i,2) << "   " << orbstate_interpolated(i,3) << "   " << orbstate_interpolated(i,4) << "   " << orbstate_interpolated(i,5) << "   " << orbstate_interpolated(i,6) << endl;
+    //                                }
+    //                                
+    //                            orbstate_interpolated.row(lastrow) = timeposvel.row(InterPoints-1).segment(0,7);
+    //                                
+    //                            //cout << orbstate_interpolated(lastrow,0) << "   " << orbstate_interpolated(lastrow,1) << "   " << orbstate_interpolated(lastrow,2) << "   " << orbstate_interpolated(lastrow,3) << "   " << orbstate_interpolated(lastrow,4) << "   " << orbstate_interpolated(lastrow,5) << "   " << orbstate_interpolated(lastrow,6) << endl;   
+    //                            };
+    ////------------------------------------------------------------------------------
+    //// void CH_Interpolation(double t_intpl, const Ref<const MatrixXd>& timeposvel, VectorNd<7>& orbstate_interpolated)
+    ////------------------------------------------------------------------------------
+    ///**
+    // * Perform cubic Hermite interpolation of state vector (x, y, z, dx/dt, dy/dt, dz/dt) at a specific time
+    // *
+    // * @param t_intpl               Interpolation time
+    // * @param timeposvel            Matrix of points used for the computation of the interpolation polynomial
+    // *                              (each row contains time, x, y, z, vx, vy, vz)
+    // * 
+    // * @return Interpolated state vector (x, y, z, vx, vy, vz)
+    // */
+    ////------------------------------------------------------------------------------   
+    //void PROP::CH_Interpolation(double t_intpl,
+    //                            const Ref<const MatrixXd>& timeposvel,
+    //                            VectorNd<6>& orbstate_interpolated)
+    //                            {
+    //                            const int InterPoints = timeposvel.rows();
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                if(t_intpl == timeposvel(i,0)) // No need of interpolation
+    //                                    {
+    //                                    orbstate_interpolated = timeposvel.row(i).segment(1,6);
+    //                                    return;
+    //                                    }
+    //                                }
+    //                            
+    //                            vector<double> v_null(InterPoints);
+    //                            for(int i = 0; i < InterPoints; i++) v_null[i] = 0.0;
+    //                            
+    //                            vector<double> time_interpol(InterPoints);
+    //                            vector<double> x_interpol(InterPoints);
+    //                            vector<double> dxdt_interpol(InterPoints);
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvel(i,0);
+    //                                x_interpol[i] = timeposvel(i,1);
+    //                                dxdt_interpol[i] = timeposvel(i,4);
+    //                                }
+    //                            
+    //                            auto spline_x = cubic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvel(i,0);
+    //                                x_interpol[i] = timeposvel(i,2);
+    //                                dxdt_interpol[i] = timeposvel(i,5);
+    //                                }
+    //                            
+    //                            auto spline_y = cubic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            
+    //                            for(int i = 0; i < InterPoints; i++)
+    //                                {
+    //                                time_interpol[i] = timeposvel(i,0);
+    //                                x_interpol[i] = timeposvel(i,3);
+    //                                dxdt_interpol[i] = timeposvel(i,6);
+    //                                }
+    //                            
+    //                            auto spline_z = cubic_hermite(std::move(time_interpol), std::move(x_interpol), std::move(dxdt_interpol));
+    //                            
+    //                            time_interpol.clear();   time_interpol = v_null;
+    //                            x_interpol.clear();      x_interpol = v_null;
+    //                            dxdt_interpol.clear();   dxdt_interpol = v_null;
+    //                            
+    //                            // Interpolation                                
+    //                            orbstate_interpolated(0) = spline_x(t_intpl);
+    //                            orbstate_interpolated(1) = spline_y(t_intpl);
+    //                            orbstate_interpolated(2) = spline_z(t_intpl);
+    //                            orbstate_interpolated(3) = spline_x.prime(t_intpl);
+    //                            orbstate_interpolated(4) = spline_y.prime(t_intpl);
+    //                            orbstate_interpolated(5) = spline_z.prime(t_intpl);
+    //                            };                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
+                                
     
 }; // End of namespace propagator
 

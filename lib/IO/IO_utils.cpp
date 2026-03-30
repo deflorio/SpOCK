@@ -90,7 +90,8 @@ Eigen::MatrixXd read_csvfile(const char* filename,
                                             isnum = isNumber(line1);
                                             if(!isnum)
                                                 {
-                                                cout << "Not considered line N. " << linenum << ": " << line1 << " of file " << filename << " because containing not number characters" << endl;
+                                                //cout << "\nNot considered line N. " << linenum << ": " << line1 << " of file " << filename << " because containing not number characters\n" << endl;
+                                                cout << "\nNot considered header line of file " << filename << endl;
                                                 rows--;
                                                 loaded_file.resize(rows,cols);
                                                 linenum++;
@@ -731,7 +732,7 @@ int XML_parser(const string XML_simparam_file,
                string& sensors_filename,
                string& csv_torques_name,
                string& csv_accelerations_name,
-               int& SIM_STEP,
+               double& SIM_STEP,
                int& SIM_DURATION,
                Vector6d& init_orbtime,
                Vector6d& init_orbstate,
@@ -744,6 +745,11 @@ int XML_parser(const string XML_simparam_file,
                bool& initstate_in_RTN,
                bool& realtime,
                double& realtime_wait,
+               string& ODEINT_stepper,
+               double& ODEINT_eps_abs,
+               double& ODEINT_eps_rel,
+               double& ODEINT_factor_x,
+               double& ODEINT_factor_dxdt,
                bool& ggrad_on,
                bool& mag_on,
                bool& drag_on,
@@ -865,6 +871,7 @@ int XML_parser(const string XML_simparam_file,
               ::ATT_initstate_pimpl ATT_initstate_p;
               ::Angle_pimpl Angle_p;
               ::AngleType_pimpl AngleType_p;
+              ::odeint_pimpl odeint_p;
               ::simoptions_pimpl simoptions_p;
               ::xml_schema::boolean_pimpl boolean_p;
               ::Dimensioned_pimpl Dimensioned_p;
@@ -985,6 +992,7 @@ int XML_parser(const string XML_simparam_file,
               SimParameters_p.parsers (durstep_p,
                                        ORB_initstate_p,
                                        ATT_initstate_p,
+                                       odeint_p,
                                        simoptions_p);
           
               durstep_p.parsers (duration_p,
@@ -1008,6 +1016,12 @@ int XML_parser(const string XML_simparam_file,
                                        Angle_p);
           
               Angle_p.parsers (AngleType_p);
+              
+              odeint_p.parsers (string_p,
+                                double_p,
+                                double_p,
+                                double_p,
+                                double_p);
           
               simoptions_p.parsers (boolean_p,
                                     boolean_p,
@@ -1140,6 +1154,16 @@ int XML_parser(const string XML_simparam_file,
               realtime = simoptions_p.realtime_in;
               // Real time simulation on/off
               realtime_wait = simoptions_p.realtime_wait_in;
+              // Numerical integrator type
+              ODEINT_stepper = odeint_p.stepper_in;
+              // Absolute tolerance level
+              ODEINT_eps_abs = odeint_p.eps_abs_in;
+              // Relative tolerance level
+              ODEINT_eps_rel = odeint_p.eps_rel_in;
+              // Factor for the weight of the state
+              ODEINT_factor_x = odeint_p.factor_x_in;
+              // Factor for the weight of the derivative
+              ODEINT_factor_dxdt = odeint_p.factor_dxdt_in;
               // Gravity gradient torque on/off
               ggrad_on = simoptions_p.ggrad_on_in;
               // Magnetic torque on/off
@@ -1312,6 +1336,7 @@ int SGP4_XML_parser(const string XML_simparam_file,
                 int& SIM_STEP,
                 int& SIM_DURATION)
                 {
+                ::xml_schema::double_pimpl double_p;
                 ::simparam_pimpl simparam_p;
                 ::fileheader_pimpl fileheader_p;
                 ::xml_schema::string_pimpl string_p;
@@ -1328,6 +1353,7 @@ int SGP4_XML_parser(const string XML_simparam_file,
                 ::xml_schema::duration_pimpl duration_p;
                 ::ORB_initstate_pimpl ORB_initstate_p;
                 ::ATT_initstate_pimpl ATT_initstate_p;
+                ::odeint_pimpl odeint_p;
                 ::simoptions_pimpl simoptions_p;
                 ::SensorsActuators_pimpl SensorsActuators_p;
                 ::Maneuvers_pimpl Maneuvers_p;
@@ -1384,10 +1410,17 @@ int SGP4_XML_parser(const string XML_simparam_file,
                                        string_p,
                                        string_p,
                                        string_p);
+                
+                odeint_p.parsers (string_p,
+                                  double_p,
+                                  double_p,
+                                  double_p,
+                                  double_p);
             
                 SimParameters_p.parsers (durstep_p,
                                          ORB_initstate_p,
                                          ATT_initstate_p,
+                                         odeint_p,
                                          simoptions_p);
             
                 durstep_p.parsers (duration_p,
@@ -1459,7 +1492,7 @@ void ReadXMLtoTXT(const string txt_file,
                   string sensors_filename,
                   string csv_torques_name,
                   string csv_accelerations_name,
-                  int SIM_STEP,
+                  double SIM_STEP,
                   int SIM_DURATION,
                   Vector6d init_orbtime,
                   Vector6d init_orbstate,
@@ -1472,6 +1505,11 @@ void ReadXMLtoTXT(const string txt_file,
                   bool initstate_in_RTN,
                   bool realtime,
                   double realtime_wait,
+                  string ODEINT_stepper,
+                  double ODEINT_eps_abs,
+                  double ODEINT_eps_rel,
+                  double ODEINT_factor_x,
+                  double ODEINT_factor_dxdt,
                   bool ggrad_on,
                   bool mag_on,
                   bool drag_on,
@@ -1565,6 +1603,11 @@ void ReadXMLtoTXT(const string txt_file,
                   txtfile << "initstate_in_RTN: " << initstate_in_RTN << endl;
                   txtfile << "realtime: " << realtime << endl;
                   txtfile << "realtime_wait: " << realtime_wait << endl;
+                  txtfile << "ODEINT_stepper: " << ODEINT_stepper << endl;
+                  txtfile << "ODEINT_eps_abs: " << ODEINT_eps_abs << endl;
+                  txtfile << "ODEINT_eps_rel: " << ODEINT_eps_rel << endl;
+                  txtfile << "ODEINT_factor_x: " << ODEINT_factor_x << endl;
+                  txtfile << "ODEINT_factor_dxdt: " << ODEINT_factor_dxdt << endl;
                   txtfile << "ggrad_on: " << ggrad_on << endl;
                   txtfile << "mag_on: " << mag_on << endl;
                   txtfile << "drag_on: " << drag_on << endl;
@@ -2241,9 +2284,12 @@ void ReadXMLeventstoTXT(const string txt_file,
 //------------------------------------------------------------------------------------- 
 void RunStartMessage(Vector6d init_orbtime,
                      Vector6d init_orbstate,
+                     double SIM_STEP,
                      int SIM_DURATION,
                      bool* T_model,
                      int nMAX,
+                     string ODEINT_stepper,
+                     double* ODEINT_params,
                      string Drag_Model,
                      string SRP_Model,
                      string magneticfield,
@@ -2253,21 +2299,70 @@ void RunStartMessage(Vector6d init_orbtime,
                      string proptype)
                     {
                     bool ggrad_on, mag_on, drag_on, srp_on, sunmoon_on;
+                    string simstep_str, simdur_str, pert_txt, eps_abs_str, eps_rel_str, factor_x_str, factor_dxdt_str;
+                    ostringstream ss1, ss2, ss3, ss4, ss5, ss6;
                     
                     ggrad_on = T_model[0];
                     mag_on = T_model[1];
                     drag_on = T_model[2];
                     srp_on = T_model[3];
                     sunmoon_on = T_model[4];
+                    
+                    ss3.precision(2);
+                    ss4.precision(2);    
+                    
+                    ss1 << ODEINT_params[0];
+                    eps_abs_str = ss1.str();
+                    
+                    ss2 << ODEINT_params[1];
+                    eps_rel_str = ss2.str();
+                    
+                    ss3 << fixed << ODEINT_params[2];
+                    factor_x_str = ss3.str();
+                    
+                    ss4 << fixed << ODEINT_params[3];
+                    factor_dxdt_str = ss4.str();
     
-                    cout << "\nOrbit initial epoch: " << init_orbtime(0) << "-" << setfill('0') << setw(2) << init_orbtime(1) << "-" << setfill('0') << setw(2) << init_orbtime(2) << "/" << setfill('0') << setw(2) <<init_orbtime(3) << ":" << setfill('0') << setw(2) << init_orbtime(4) << ":" << setfill('0') << setw(2) << init_orbtime(5) << "\n" << endl;
-                    cout << fixed << "Initial orbit state (ECI): X = " << init_orbstate(0) << " Y = " << init_orbstate(1) << " Z = " << init_orbstate(2) << " m," << " Vx = " << init_orbstate(3) << " Vy = " << init_orbstate(4) << " Vz = " << init_orbstate(5) << " m/s\n" << endl;
+    
+                    cout << "\n\nSIMULATION PARAMETERS" << endl;
+    
+                    cout << "\nOrbit initial UTC epoch: " << init_orbtime(0) << "-" << setfill('0') << setw(2) << init_orbtime(1) << "-" << setfill('0') << setw(2) << init_orbtime(2) << "/" << setfill('0') << setw(2) <<init_orbtime(3) << ":" << setfill('0') << setw(2) << init_orbtime(4) << ":" << setfill('0') << setw(2) << init_orbtime(5) << "\n" << endl;
+                    cout << fixed << "Initial orbit ECI state: X = " << init_orbstate(0) << " Y = " << init_orbstate(1) << " Z = " << init_orbstate(2) << " m," << " Vx = " << init_orbstate(3) << " Vy = " << init_orbstate(4) << " Vz = " << init_orbstate(5) << " m/s\n" << endl;
                     
-                    string sim_duration_string = to_string(SIM_DURATION/86400.0) + " days";
-                    if(SIM_DURATION/86400.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/3600.0) + " hours";
-                    if(SIM_DURATION/3600.0 < 1.0) sim_duration_string = to_string(SIM_DURATION/60.0) + " minutes";
+                    ss5.precision(2);
+                    ss6.precision(2);
                     
-                    string pert_txt = "Simulation duration: " + sim_duration_string + "\n\nPERTURBATIONS\n\n";
+                    ss5 << fixed << SIM_STEP;
+                    simstep_str = ss5.str();
+                    
+                    ss6 << fixed << SIM_DURATION/86400.0;
+                    simdur_str = ss6.str();
+                    
+                    
+                    
+                    //simdur_str = to_string(SIM_DURATION/86400.0) + " days";
+                    //if(SIM_DURATION/86400.0 < 1.0) simdur_str = to_string(SIM_DURATION/3600.0) + " hours";
+                    //if(SIM_DURATION/3600.0 < 1.0) simdur_str = to_string(SIM_DURATION/60.0) + " minutes";
+                    
+                    if(SIM_DURATION/86400.0 >= 1.0) simdur_str = simdur_str + " days";
+                    if(SIM_DURATION/86400.0 < 1.0) simdur_str = simdur_str + " hours";
+                    if(SIM_DURATION/3600.0 < 1.0) simdur_str = simdur_str + " minutes";
+                    
+                    
+                    
+                    //pert_txt = "Simulation duration: " + simdur_str + "\n\nPERTURBATIONS\n\n";
+                    pert_txt = "Simulation step: " + simstep_str + " s" + "        Simulation duration: " + simdur_str + "\n";
+                    
+                    if( proptype.compare("ORB") == 0 )
+                      {
+                      if (ODEINT_stepper.compare("BULSTOER") == 0) pert_txt = pert_txt + "\nNumerical integrator: " + ODEINT_stepper + "(eps_abs = " + eps_abs_str + ", eps_rel = " + eps_rel_str + ", factor_x = " + factor_x_str + ", factor_dxdt = " + factor_dxdt_str + ")\n";
+                      else if (ODEINT_stepper.compare("RKDP") == 0) pert_txt = pert_txt + "\nNumerical integrator: " + ODEINT_stepper + "(eps_abs = " + eps_abs_str + ", eps_rel = " + eps_rel_str + ")\n";
+                      else if (ODEINT_stepper.compare("RK4") == 0) pert_txt = pert_txt + "\nNumerical integrator: RK4\n";
+                      else pert_txt = pert_txt + "\nWARNING: the numerical integrator selected " + ODEINT_stepper + " is not available. The default numerical integrator RK4 will be used.\n";
+                      }
+                    else pert_txt = pert_txt + "\nNumerical integrator: BULSTOER" + "(eps_abs = " + eps_abs_str + ", eps_rel = " + eps_rel_str + ", factor_x = " + factor_x_str + ", factor_dxdt = " + factor_dxdt_str + ")\n";
+                    
+                    pert_txt = pert_txt + "\n\nPERTURBATION MODELS\n\n";
                     
                     if( proptype.compare("ORB") == 0 )
                       {

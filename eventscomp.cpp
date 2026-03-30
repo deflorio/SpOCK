@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     string ReadXML_TXT_file_name = XML_events_file.substr(last_slash+1);
     size_t lastspoint = ReadXML_TXT_file_name.find_last_of(".");
     ReadXML_TXT_file_name = ReadXML_TXT_file_name.substr(0,lastspoint);
-    const string ReadXML_TXT_file = XML_events_file.substr(0,last_slash) + "/Read_" + ReadXML_TXT_file_name + ".txt"; 
+    const string ReadXML_TXT_file = XML_events_file.substr(0,last_slash) + "/Read_" + ReadXML_TXT_file_name + ".txt";
     // Put read XML in a text file (for check purposes)
     ReadXMLeventstoTXT(ReadXML_TXT_file, simstep, duration, FOV_cross, FOV_along, SC_start, SC_end, PL_start, PL_end, TGs_on, GSs_on, TGs_grid_on, Eclipse_on, TG_grid_limits, gridstep, TGs_list, GSs_list, Orbit_ephemeris_path, Orbit_ephemeris_rootname, Data_path, planetephemeris, eop, pck_data, leapsecond, TG_filename, GS_filename, Eclipse_filename);
 	
@@ -317,8 +317,9 @@ int main(int argc, char *argv[])
                 ephem_duration = loaded_ephem(matrows-1,1) - loaded_ephem(0,1);
                 if(duration > ephem_duration)
                     {
-                    cerr << "\nThe duration of the computation (<simduration>) cannot be longer than the duration of the input orbit ephemeris" << endl;
-                    exit(EXIT_FAILURE);
+                    duration = ephem_duration;
+                    cerr << "\nWARNING: the requested duration of the computation (<simduration>) is longer than the duration of the input orbit ephemeris. The events will be computed only for the duration of the available orbit ephemeris.\n" << endl;
+                    //exit(EXIT_FAILURE);
                     }
                 
                 for(int i = 0 ; i < matrows; i++)

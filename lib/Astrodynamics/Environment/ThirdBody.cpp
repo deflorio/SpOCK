@@ -81,11 +81,13 @@ namespace thirdbody
                                 sunpos = Solar.LP_sunposREC(time);
                                 moonpos = Solar.LP_moonposREC(time);    
                                 }
-                            else if( modelname.compare("DE") == 0 )
+                            #ifdef USE_SPICE
+                            if( modelname.compare("DE") == 0 )
                                 {
                                 sunpos = Solar.sunposREC(time);
                                 moonpos = Solar.moonposREC(time);
                                 }
+                            #endif
                             
                             // Position of Sun and Moon relative to the spacecraft
                             SCtoSunpos = sunpos - SC_posECI;

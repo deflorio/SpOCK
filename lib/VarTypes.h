@@ -30,7 +30,7 @@
 #include "boost/multi_array.hpp"
 
 #define GRAV_MAX_SIZE 121
-#define FSW_GRAV_MAX_SIZE 31
+//#define FSW_GRAV_MAX_SIZE 31
 
 //------------------------------------------------------------------------------
 /**
@@ -57,7 +57,7 @@ namespace math
         // Typedef for 121x121 matrix of doubles (gravity field model)
         typedef Eigen::Matrix< double, GRAV_MAX_SIZE, 1 > VectornMAXd;
         // Typedef for 31x31 matrix of doubles (hardcoded gravity field model)
-        typedef Eigen::Matrix< double, FSW_GRAV_MAX_SIZE, FSW_GRAV_MAX_SIZE > FSW_MatnMAXxnMAXd;
+        //typedef Eigen::Matrix< double, FSW_GRAV_MAX_SIZE, FSW_GRAV_MAX_SIZE > FSW_MatnMAXxnMAXd;
         // Typedef for 3D vector of doubles
         typedef Eigen::Vector3d Vec3d;
         // Typedef for 4D vector of doubles
@@ -113,6 +113,7 @@ namespace SC
                         string magneticfield;   // Magnetic field
                         string atmosphere;      // Atmospheric model
                         string gravityfield;         // Gravity field model
+                        double eps_abs; double eps_rel; double factor_x; double factor_dxdt;
                         };             
         // Struct containing subsystem physical parameters
         struct SYS_params

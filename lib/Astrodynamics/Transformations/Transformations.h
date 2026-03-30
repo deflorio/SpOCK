@@ -28,10 +28,13 @@
 #include <Eigen/Geometry> 
 #include <VarTypes.h>
 
+#ifdef USE_SPICE
 extern "C"
       {
       #include <SpiceUsr.h>
       }
+      
+#endif      
       
 using namespace std;
 using namespace math;
@@ -67,33 +70,51 @@ Vec3d TransbyQ(Vec3d& v3D, Vec4d& q);
 Vec4d q_inv(Vec4d& q);
 
 ///////////////////////// Coordinate Systems and Parameterizations /////////////////////////
-
+#ifdef USE_SPICE
 // Convert from rectangular coordinates to geodetic coordinates
 Vec3d ECEF2lonlath(Vec3d& posECEF);
 // Convert from rectangular coordinates to geodetic coordinates
 Vec3d lonlath2ECEF(Vec3d& lonlath);
+#endif
+
 // Compute the elevation with respect to a reference point on Earth of a point given its geodetic coordinates
 double lonlath2El(Vec3d& lonlath, double ref_lon, double ref_lat);
 // Convert from topocentric horizon coordinates (SEZ) to ECEF coordinates
 Vec3d SEZ2ECEF(Vec3d& posSEZ, double lon, double lat);
 // Convert from ECEF coordinates to topocentric horizon coordinates (SEZ)
 Vec3d ECEF2SEZ(Vec3d& posECEF, double lon, double lat);
+
+#ifdef USE_SPICE
 // Compute the azimuth, elevation and altitude with respect to a reference point on Earth of a point vector in ECEF coordinates
 Vec3d ECEF2AzElAlt(Vector6d& stateECEF, double ref_lon, double ref_lat);
+#endif
+
+// State transformation matrix from RTN frame to given reference frame
+Mat3x3d RTN_Matrix(const Vector6d& orbstate);
 // State transformation matrix from ECI to RTN frame
-Mat3x3d ECI2RTN_Matrix(Vector6d& ECIstate);
+Mat3x3d ECI2RTN_Matrix(const Vector6d& ECIstate);
 // State transformation from ECI to RTN frame
 Vector6d ECI2RTN(Vector6d& ECIstate);
 // Vector transformation from RTN to ECI frame
 Vec3d RTN2ECI(Vec3d& RTNvec, Vector6d& ECIstate);
+
+#ifdef USE_SPICE
 // State transformation from ECEF (ITRF93) to ECI (J2000) frame
 Vector6d ECEF2ECI(double GPStime, Vector6d& ECEFstate);
 // State transformation from ECI (J2000) to ECEF (ITRF93) frame
 Vector6d ECI2ECEF(double GPStime, Vector6d& ECIstate);
+// Position transformation matrix from ECI (J2000) to ECEF (ITRF93) frame
+Mat3x3d ECI2ECEF_Mat(double GPStime);
+#endif
+
 // State transformation from ICRF to ITRF
-Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double leapsec, Vector6d& ICRFstate, int SIM_STEP);
-// State transformation from ICRF to ITRF
-Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double leapsec);
+Vector6d ICRF2ITRF(double GPStime, Vec3d eop, double TAI_UTC, Vector6d& ICRFstate, double dt);
+// State transformation from ITRF to ICRF
+Vector6d ITRF2ICRF(double GPStime, Vec3d eop, double TAI_UTC, Vector6d& ITRFstate, double dt);
+// State (position) transformation matrix from ICRF to ITRF
+Mat3x3d ICRF2ITRF_Mat(double GPStime, Vec3d eop, double TAI_UTC);
+// State (position) transformation matrix from ICRF to ITRF
+Mat3x3d ICRF2ITRF_Matrix(const double MJD_TT, const Vec3d eop, const double UTC_TAI);
 // Precession matrix for equatorial coordinates
 Mat3x3d PrecMat(double MJD1_TT, double MJD2_TT);
 // Nutation matrix (transformation from mean-of-date to true-of-date coordinates)
@@ -104,14 +125,24 @@ void NutationAngles(double MJD, Matrix<long, 106, 9> NutCoeff, double& dpsi, dou
 Mat3x3d GHAMat(double MJD_UT1);
 // Transformation from pseudo Earth-fixed to Earth-fixed coordinates
 Mat3x3d PoleMat(double xp, double yp);
+
+#ifdef USE_SPICE
 // Convert position vector from rectangular coordinates ECI to right ascension, declination and range ECI
 Vec3d ECI2RAD(Vec3d& posECI);
 // Transformation of a generic 3-dimensional vector between two frames
 Vec3d v3D_transform(double GPStime, Vec3d& v3D, const string frame_from, const string frame_to);
+#endif
+
 // Gives unit vector of axis x1, y1 or z1-direction, expressed in x2, y2 and z2 coordinates given transformation matrix T1toT2 and the desired axis name x, y or z
 Vec3d u_axis(Mat3x3d& T1toT2, const string axis_name);
 // Conversion of Cartesian state vector to osculating Keplerian elements for non-circular non-equatorial orbits
 Vector6d rv2Kepler(Vector6d& ECIstate, bool& valid);
+// Conversion of osculating Keplerian elements for non-circular non-equatorial orbits to Cartesian state vector
+Vector6d Kepler2rv(Vector6d& KepElem, double dt, bool& valid);
+// Computation of Keplerian orbital elements from two given position vectors and associated times
+Vector6d posvecs2Kepler(Vec4d& timepos1, Vec4d& timepos2, bool& valid);
+// Computation of the sector-triangle ratio from two position vectors and the intermediate time
+double posvecs2Eta(Vec3d& r_1, Vec3d& r_2, double tau, bool& valid);
 // Conversion of Cartesian state vector to osculating orbital elements for non-circular non-equatorial orbits
 Vector6d rv2oe(Vector6d& ECIstate, bool& valid);
 // Conversion of osculating orbital elements to mean orbital elements
@@ -125,6 +156,8 @@ VectorNd<2> lonlat2satcart(double lonS, double latS, double lonT, double latT, d
 
 // Conversion of GPS seconds to ephemeris time (TDT)
 double GPS2ET(double GPSsecs);
+
+#ifdef USE_SPICE
 // Conversion of GPS seconds to local solar time given the geodetic longitude
 Vec3d GPS2LST(double GPSsecs, double lon);
 // Conversion of GPS seconds to UTC string yyyy-mm-ddThh:mm:ss.sss
@@ -143,14 +176,25 @@ double GPS2Unix(double GPSsecs);
 double GPS2JD(double GPSsecs);
 // Conversion of GPS seconds to modified Julian date
 double GPS2MJD(double GPSsecs);
+#endif
+
 // GPS week and seconds of week to modified Julian date
 double GPSws2MJD(double GPSweek, double GPSsecs_w);
+// GPS week and seconds of week to Julian date
+double GPSws2JD(double GPSweek, double GPSsecs_w);
 // Conversion of GPS seconds to terrestrial time (TT) seconds
 double GPS2TT(double GPSsecs);
 // Conversion of GPS seconds to UTC seconds
 double GPS2UTC(double GPSsecs, double leapsec);
 // Conversion of GPS seconds to GPS week and seconds of week
 VectorNd<2> GPS2GPSws(double GPSsecs);
+// Conversion of GPS week and seconds of week to GPSsecs
+double GPSws2GPSsecs(int week, double secs);
+// Conversion of modified Julian date to UTC yyyy mm dd hh mm ss.sss
+Vector6d MJD2UTCdate(double MJD);
+// Conversion of UTC yyyy mm dd hh mm ss.sss to modified Julian date
+double UTCdate2MJD(Vector6d& UTCdate);
+
 ///////////////////////// Mathematics and Geometry /////////////////////////
 
 // Modulo function

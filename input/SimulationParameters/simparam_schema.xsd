@@ -577,6 +577,7 @@
         <xs:element ref="durstep" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="ORB_initstate" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="ATT_initstate" minOccurs="1" maxOccurs="1"/>
+        <xs:element ref="odeint" minOccurs="1" maxOccurs="1"/>
         <xs:element ref="simoptions" minOccurs="1" maxOccurs="1"/>
       </xs:sequence>
     </xs:complexType>
@@ -610,6 +611,18 @@
           <xs:element name="om_x" type="Angle" minOccurs="1" maxOccurs="1"/>
           <xs:element name="om_y" type="Angle" minOccurs="1" maxOccurs="1"/>
           <xs:element name="om_z" type="Angle" minOccurs="1" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="odeint">
+    <xs:complexType>
+      <xs:sequence>
+          <xs:element name="stepper" type="xs:string" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="eps_abs" type="xs:double" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="eps_rel" type="xs:double" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="factor_x" type="xs:double" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="factor_dxdt" type="xs:double" minOccurs="1" maxOccurs="1"/>
         </xs:sequence>
       </xs:complexType>
     </xs:element>

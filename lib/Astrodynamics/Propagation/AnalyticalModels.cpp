@@ -26,6 +26,7 @@
 #include <string>
 #include <math.h>
 
+#include <AnalyticalModels.h>
 #include <Transformations.h>
 #include <Constants.h>
 #include <Eigen/Core>

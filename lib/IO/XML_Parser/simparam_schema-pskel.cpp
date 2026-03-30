@@ -1166,6 +1166,12 @@ ATT_initstate_parser (::ATT_initstate_pskel& p)
 }
 
 void SimParameters_pskel::
+odeint_parser (::odeint_pskel& p)
+{
+  this->odeint_parser_ = &p;
+}
+
+void SimParameters_pskel::
 simoptions_parser (::simoptions_pskel& p)
 {
   this->simoptions_parser_ = &p;
@@ -1175,11 +1181,13 @@ void SimParameters_pskel::
 parsers (::durstep_pskel& durstep,
          ::ORB_initstate_pskel& ORB_initstate,
          ::ATT_initstate_pskel& ATT_initstate,
+         ::odeint_pskel& odeint,
          ::simoptions_pskel& simoptions)
 {
   this->durstep_parser_ = &durstep;
   this->ORB_initstate_parser_ = &ORB_initstate;
   this->ATT_initstate_parser_ = &ATT_initstate;
+  this->odeint_parser_ = &odeint;
   this->simoptions_parser_ = &simoptions;
 }
 
@@ -1188,6 +1196,7 @@ SimParameters_pskel ()
 : durstep_parser_ (0),
   ORB_initstate_parser_ (0),
   ATT_initstate_parser_ (0),
+  odeint_parser_ (0),
   simoptions_parser_ (0)
 {
 }
@@ -1324,6 +1333,63 @@ ATT_initstate_pskel ()
   om_x_parser_ (0),
   om_y_parser_ (0),
   om_z_parser_ (0)
+{
+}
+
+// odeint_pskel
+//
+
+void odeint_pskel::
+stepper_parser (::xml_schema::string_pskel& p)
+{
+  this->stepper_parser_ = &p;
+}
+
+void odeint_pskel::
+eps_abs_parser (::xml_schema::double_pskel& p)
+{
+  this->eps_abs_parser_ = &p;
+}
+
+void odeint_pskel::
+eps_rel_parser (::xml_schema::double_pskel& p)
+{
+  this->eps_rel_parser_ = &p;
+}
+
+void odeint_pskel::
+factor_x_parser (::xml_schema::double_pskel& p)
+{
+  this->factor_x_parser_ = &p;
+}
+
+void odeint_pskel::
+factor_dxdt_parser (::xml_schema::double_pskel& p)
+{
+  this->factor_dxdt_parser_ = &p;
+}
+
+void odeint_pskel::
+parsers (::xml_schema::string_pskel& stepper,
+         ::xml_schema::double_pskel& eps_abs,
+         ::xml_schema::double_pskel& eps_rel,
+         ::xml_schema::double_pskel& factor_x,
+         ::xml_schema::double_pskel& factor_dxdt)
+{
+  this->stepper_parser_ = &stepper;
+  this->eps_abs_parser_ = &eps_abs;
+  this->eps_rel_parser_ = &eps_rel;
+  this->factor_x_parser_ = &factor_x;
+  this->factor_dxdt_parser_ = &factor_dxdt;
+}
+
+odeint_pskel::
+odeint_pskel ()
+: stepper_parser_ (0),
+  eps_abs_parser_ (0),
+  eps_rel_parser_ (0),
+  factor_x_parser_ (0),
+  factor_dxdt_parser_ (0)
 {
 }
 
@@ -5453,6 +5519,11 @@ ATT_initstate ()
 }
 
 void SimParameters_pskel::
+odeint ()
+{
+}
+
+void SimParameters_pskel::
 simoptions ()
 {
 }
@@ -5498,6 +5569,16 @@ _start_element_impl (const ::xml_schema::ro_string& ns,
 
     if (this->ATT_initstate_parser_)
       this->ATT_initstate_parser_->pre ();
+
+    return true;
+  }
+
+  if (n == "odeint" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->odeint_parser_;
+
+    if (this->odeint_parser_)
+      this->odeint_parser_->pre ();
 
     return true;
   }
@@ -5550,6 +5631,17 @@ _end_element_impl (const ::xml_schema::ro_string& ns,
     {
       this->ATT_initstate_parser_->post_ATT_initstate ();
       this->ATT_initstate ();
+    }
+
+    return true;
+  }
+
+  if (n == "odeint" && ns.empty ())
+  {
+    if (this->odeint_parser_)
+    {
+      this->odeint_parser_->post_odeint ();
+      this->odeint ();
     }
 
     return true;
@@ -5932,6 +6024,152 @@ _end_element_impl (const ::xml_schema::ro_string& ns,
       this->om_z_parser_->post_Angle ();
       this->om_z ();
     }
+
+    return true;
+  }
+
+  return false;
+}
+
+// odeint_pskel
+//
+
+void odeint_pskel::
+stepper (const ::std::string&)
+{
+}
+
+void odeint_pskel::
+eps_abs (double)
+{
+}
+
+void odeint_pskel::
+eps_rel (double)
+{
+}
+
+void odeint_pskel::
+factor_x (double)
+{
+}
+
+void odeint_pskel::
+factor_dxdt (double)
+{
+}
+
+void odeint_pskel::
+post_odeint ()
+{
+}
+
+bool odeint_pskel::
+_start_element_impl (const ::xml_schema::ro_string& ns,
+                     const ::xml_schema::ro_string& n,
+                     const ::xml_schema::ro_string* t)
+{
+  XSD_UNUSED (t);
+
+  if (this->::xml_schema::complex_content::_start_element_impl (ns, n, t))
+    return true;
+
+  if (n == "stepper" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->stepper_parser_;
+
+    if (this->stepper_parser_)
+      this->stepper_parser_->pre ();
+
+    return true;
+  }
+
+  if (n == "eps_abs" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->eps_abs_parser_;
+
+    if (this->eps_abs_parser_)
+      this->eps_abs_parser_->pre ();
+
+    return true;
+  }
+
+  if (n == "eps_rel" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->eps_rel_parser_;
+
+    if (this->eps_rel_parser_)
+      this->eps_rel_parser_->pre ();
+
+    return true;
+  }
+
+  if (n == "factor_x" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->factor_x_parser_;
+
+    if (this->factor_x_parser_)
+      this->factor_x_parser_->pre ();
+
+    return true;
+  }
+
+  if (n == "factor_dxdt" && ns.empty ())
+  {
+    this->::xml_schema::complex_content::context_.top ().parser_ = this->factor_dxdt_parser_;
+
+    if (this->factor_dxdt_parser_)
+      this->factor_dxdt_parser_->pre ();
+
+    return true;
+  }
+
+  return false;
+}
+
+bool odeint_pskel::
+_end_element_impl (const ::xml_schema::ro_string& ns,
+                   const ::xml_schema::ro_string& n)
+{
+  if (this->::xml_schema::complex_content::_end_element_impl (ns, n))
+    return true;
+
+  if (n == "stepper" && ns.empty ())
+  {
+    if (this->stepper_parser_)
+      this->stepper (this->stepper_parser_->post_string ());
+
+    return true;
+  }
+
+  if (n == "eps_abs" && ns.empty ())
+  {
+    if (this->eps_abs_parser_)
+      this->eps_abs (this->eps_abs_parser_->post_double ());
+
+    return true;
+  }
+
+  if (n == "eps_rel" && ns.empty ())
+  {
+    if (this->eps_rel_parser_)
+      this->eps_rel (this->eps_rel_parser_->post_double ());
+
+    return true;
+  }
+
+  if (n == "factor_x" && ns.empty ())
+  {
+    if (this->factor_x_parser_)
+      this->factor_x (this->factor_x_parser_->post_double ());
+
+    return true;
+  }
+
+  if (n == "factor_dxdt" && ns.empty ())
+  {
+    if (this->factor_dxdt_parser_)
+      this->factor_dxdt (this->factor_dxdt_parser_->post_double ());
 
     return true;
   }

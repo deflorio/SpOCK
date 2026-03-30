@@ -115,9 +115,10 @@ int main(int argc, char *argv[])
     ///////////////////////// Simulation parameters /////////////////////////
     
     // Simulation step
-    int SIM_STEP;
+    double SIM_STEP;
     // Simulation duration
     int SIM_DURATION;
+    int SIM_DURATION_runmessage;
     // Initial orbit UTC date and time
     Vector6d init_orbtime = Vector6d::Zero();
     // Initial orbit state
@@ -130,6 +131,9 @@ int main(int argc, char *argv[])
     bool realtime;
     // Step execution waiting time for hardware-in-the-loop simulations
     double realtime_wait;
+    // Numerical integrator parameters
+    string ODEINT_stepper;
+    double ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt;
     // Gravity gradient torque on/off
     bool ggrad_on;
     // Magnetic torque on/off
@@ -195,8 +199,9 @@ int main(int argc, char *argv[])
     ////////// PARSING OF XML SIMULATION PARAMETERS FILE /////////
     //////////////////////////////////////////////////////////////
     
-    XML_parser(XML_simparam_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
+    XML_parser(XML_simparam_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ODEINT_stepper, ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
     //cout << "Sono qui" << endl;
+    SIM_DURATION_runmessage = SIM_DURATION;
     size_t lastslash = XML_simparam_file.find_last_of("/");
     string ReadXML_TXT_file_name = XML_simparam_file.substr(lastslash+1);
     size_t lastspoint = ReadXML_TXT_file_name.find_last_of(".");
@@ -204,9 +209,9 @@ int main(int argc, char *argv[])
     const string ReadXML_TXT_file = XML_simparam_file.substr(0,lastslash) + "/Read_" + ReadXML_TXT_file_name + ".txt"; 
     //const string ReadXML_TXT_file = "input/readXML.txt";
     // Put read XML in a text file (for check purposes)
-    cout << ReadXML_TXT_file << endl;
+    //cout << ReadXML_TXT_file << endl;
     
-    ReadXMLtoTXT(ReadXML_TXT_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
+    ReadXMLtoTXT(ReadXML_TXT_file, Orbit_ephemeris, Attitude_ephemeris, TLE_file, Data_path, planetephemeris, eop, pck_data, leapsecond, magneticfield, gravityfield, atmosphere, sunmoon, orbfile_name, attfile_name, sensors_filename, csv_torques_name, csv_accelerations_name, SIM_STEP, SIM_DURATION, init_orbtime, init_orbstate, phi, theta, psi, om_x, om_y, om_z, initstate_in_RTN, realtime, realtime_wait, ODEINT_stepper, ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt, ggrad_on, mag_on, drag_on, srp_on, nMAX, sunmoon_on, Drag_Model, SRP_Model, AttitudeType, attctrl_on, AttCtrlType, orbctrl_on, OrbCtrlType, SC_mass, MoI, CoG, SC_Cd, SC_Cr, SC_Area_D, SC_Area_R, Mdip, F_Xplus, F_Xminus, F_Yplus, F_Yminus, F_Zplus, F_Zminus, Sensor_prm_SUN, Sensor_prm_EARTH, Sensor_prm_CSS1, Sensor_prm_CSS2, Sensor_prm_CSS3, Sensor_prm_CSS4, Sensor_prm_CSS5, Sensor_prm_CSS6, Sensor_prm_MAG, Sensor_prm_MAGstowed, Sensor_prm_RS, Sensor_prm_MAGTRQ, Sensor_prm_WHEEL1, Sensor_prm_WHEEL2, Sensor_prm_WHEEL3, Solarpan1_prm, Solarpan2_prm, Solarpan3_prm, OrbitPropulsion1_prm, OrbitPropulsion2_prm, all_maneuvers);
     
     //////////////////////////////////////////////////////////////
     /////////////// PROCESSING OF PARSED VARIABLES ///////////////
@@ -238,7 +243,6 @@ int main(int argc, char *argv[])
     envmodels_paths.atmosphere = atmosphere;
     
     ///////////////// Spacecraft parameters /////////////////
-    
     SC_params SC_prms;
     
     SC_prms.SC_mass = SC_mass;
@@ -255,8 +259,7 @@ int main(int argc, char *argv[])
     SC_prms.Area_D = SC_Area_D;
     SC_prms.Area_R = SC_Area_R;
     
-    ///////////////////////// Attitude management //////////////////////
-	
+    ///////////////////////// Attitude management //////////////////////	
 	Vec4d attstate = Vec4d::Zero();
     Mat3x3d ECItoBody, T_ECI2RTN, T_RTN2ECI, T_RTN2Body;
     
@@ -264,6 +267,7 @@ int main(int argc, char *argv[])
     Eigen::MatrixXd loaded_ephem;
     VectorNd<8> ephem_row = VectorNd<8>::Zero();
     int ind = 0;
+    bool simdur_warning = false;
     
     // Conversion to radians and normalization to 2*pi
     phi = mod(phi*DEG2RAD,PI2);
@@ -289,6 +293,44 @@ int main(int argc, char *argv[])
             cerr << "Attitude ephemerides: " + errmsg << endl;
             exit(EXIT_FAILURE);
             }
+            
+        VectorXd timediffs;
+        int ephemrows = 0;
+        int loaded_ephem_step = 0;
+        
+        ephemrows = loaded_ephem.rows();
+        if(ephemrows == 0)
+          {
+          cerr << "\nERROR: in file " << XML_simparam_file << " <AttitudeType>Ephemeris</AttitudeType> has been selected, but the input attitude ephemeris file " << Attitude_ephemeris << " is empty. It is not possible to proceed with the orbit propagation with the requested setup.\n" << endl;
+          return 1;
+          }
+        if(ephemrows == 1)
+          {
+          cerr << "\nERROR: In file " << XML_simparam_file << " <AttitudeType>Ephemeris</AttitudeType> has been selected, but only one state is available in the input attitude ephemeris file " << Attitude_ephemeris << ". It is not possible to proceed with the orbit propagation with the requested setup.\n" << endl;
+          return 1;
+          }
+        timediffs = VectorXd::Zero(ephemrows - 1);
+        
+        timediffs = loaded_ephem.col(0).segment(1,ephemrows-1) - loaded_ephem.col(0).segment(0,ephemrows-1);
+        
+        loaded_ephem_step = int( round(timediffs.mean()) );
+        
+        if( loaded_ephem_step != SIM_STEP )
+          {
+          cerr << "\nERROR: in file " << XML_simparam_file << " <AttitudeType>Ephemeris</AttitudeType> has been selected. The step of the input attitude ephemeris " << Attitude_ephemeris << " has to be equal to the orbit propagation step <simstep> that is " << SIM_STEP << " s\n" << endl;
+          return 1;
+          }
+          
+        double ephem_duration = loaded_ephem(ephemrows-1,0) - loaded_ephem(0,0);
+        
+        if(SIM_DURATION > ephem_duration)
+            {
+            SIM_DURATION = ephem_duration;
+            simdur_warning = true;
+            }
+            
+        ephem_row = loaded_ephem.row(ind);
+        attstate = ephem_row.segment(1,4);
       }
 	else
       {
@@ -296,11 +338,12 @@ int main(int argc, char *argv[])
       attstate = RotationMatrix2Quaternion(ECItoBody);
       }
 		
-	//////////////////// Environment models //////////////////////////
+    //////////////////// Numerical integrator parameters and environment models //////////////////////////    
+    double ODEINT_params[4] = {ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt};
     bool T_model[5] = {ggrad_on, mag_on, drag_on, srp_on, sunmoon_on};
     
     //////////////////// Run-start display message //////////////////////////
-    RunStartMessage(init_orbtime, init_orbstate, SIM_DURATION, T_model, nMAX, Drag_Model, SRP_Model, magneticfield, gravityfield, atmosphere, sunmoon, "ORB");
+    RunStartMessage(init_orbtime, init_orbstate, SIM_STEP, SIM_DURATION_runmessage, T_model, nMAX, ODEINT_stepper, ODEINT_params, Drag_Model, SRP_Model, magneticfield, gravityfield, atmosphere, sunmoon,"ORB");
     
     ///////////////// Orbit propulsion systems objects /////////////////
     ORBPROPULSION OrbitPropulsion1(OrbitPropulsion1_prm);
@@ -365,7 +408,38 @@ int main(int argc, char *argv[])
     
     Vector6d orbit_state_vec_ECEF = Vector6d::Zero();
     orbit_state_vec_ECEF = ECI2ECEF(ini_GPSorbtime, init_orbstate);
-	
+    
+    ///////////////// Solar panels objects and output /////////////////
+    SOLARPAN SolarPanel1(Solarpan1_prm);
+    SolarPanel1.Init();
+    
+    SOLARPAN SolarPanel2(Solarpan2_prm);
+    SolarPanel2.Init();
+    
+    SOLARPAN SolarPanel3(Solarpan3_prm);
+    SolarPanel3.Init();
+    
+    bool Solarpan_on = false;
+    Solarpan_on = (Solarpan1_prm.on_off == true) || (Solarpan2_prm.on_off == true) || (Solarpan3_prm.on_off == true);
+    
+    Vec3d panel1_out, panel2_out, panel3_out;
+    
+    Vec3d posECI = Vec3d::Zero();
+    posECI = init_orbstate.segment(0,3);
+    
+    panel1_out = SolarPanel1.Output(ini_GPSorbtime, attstate, posECI);
+    panel2_out = SolarPanel2.Output(ini_GPSorbtime, attstate, posECI);
+    panel3_out = SolarPanel3.Output(ini_GPSorbtime, attstate, posECI);
+    
+    VectorNd<8> panels_output;
+    
+    panels_output(0) = ini_GPSorbtime;
+    
+    panels_output.segment(1,2) = panel1_out.segment(0,2);
+    panels_output.segment(3,2) = panel2_out.segment(0,2);
+    panels_output.segment(5,2) = panel3_out.segment(0,2);
+    panels_output(7) = panel1_out(2);
+    
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////// ORBIT INITIALIZATION /////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -374,6 +448,8 @@ int main(int argc, char *argv[])
     
     SC_Orbit.Setup(SC_prms,envmodels_paths);
     SC_Orbit.Init(ini_GPSorbtime, attstate, init_orbstate);
+    SC_Orbit.ODEINT_stepper = ODEINT_stepper;
+    SC_Orbit.StepperSetup(ODEINT_eps_abs, ODEINT_eps_rel, ODEINT_factor_x, ODEINT_factor_dxdt);
     SC_Orbit.drag_on = T_model[2];
     SC_Orbit.srp_on = T_model[3];
     SC_Orbit.sunmoon_on = T_model[4];
@@ -381,6 +457,8 @@ int main(int argc, char *argv[])
     SC_Orbit.SRP_Model = SRP_Model;
     SC_Orbit.simdur = SIM_DURATION;
     SC_Orbit.ForceModelsSetup();
+    
+    if(simdur_warning) cerr << "\nWARRNING: in file " << XML_simparam_file << " <AttitudeType>Ephemeris</AttitudeType> has been selected. Since the duration of the simulation <simduration> requested is longer than the duration of the input attitude ephemeris " << Attitude_ephemeris << ", the run will stop with the last available attitude state.\n" << endl;
     
     cout << "Start\n" << endl;
 			
@@ -412,7 +490,11 @@ int main(int argc, char *argv[])
     // Attitude state
     ofstream attstate_file;
     attstate_file.open(attfile_name);
-	
+    
+    string attfile_name_quat = attfile_name.replace(attfile_name.end() - 4,attfile_name.end(),"_Quaternions.csv");
+    ofstream state_file_quat;
+    state_file_quat.open(attfile_name_quat);
+    
     Vector6d orbprop_state = Vector6d::Zero();
     
     const int output_rows = SIM_DURATION/SIM_STEP;
@@ -420,8 +502,21 @@ int main(int argc, char *argv[])
     
     MatrixXd orbstate_to_file = MatrixXd::Zero(output_rows+1,14);
     orbstate_to_file.row(step) = orbit_state_vec;
-    step++;
+    //step++;
     MatrixXd accelerations_to_file = MatrixXd::Zero(output_rows+1,19);
+    
+    // Solar panels
+    MatrixXd sensors_to_file = MatrixXd::Zero(output_rows+1,8);
+    sensors_to_file.row(step) = panels_output;
+    
+    ofstream sensors_file;
+    sensors_file.open(sensors_filename);
+    
+	sensors_file << "GPS Time [s],SolarPanels1 Pow,SolarPanels1 Curr,SolarPanels2 Pow,SolarPanels2 Curr,SolarPanels3 Pow,SolarPanels3 Curr,Eclipse" << endl;
+    
+    sensors_file << fixed << sensors_to_file(step,0) << "," << sensors_to_file(step,1) << "," << sensors_to_file(step,2) << "," << sensors_to_file(step,3) << "," << sensors_to_file(step,4) << "," << sensors_to_file(step,5) << "," << sensors_to_file(step,6) << "," << sensors_to_file(step,7) << endl;
+    
+    step++;
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////// ORBIT PROPAGATION LOOP ////////////////////////////////////////////////////////////////////////
@@ -627,7 +722,6 @@ int main(int argc, char *argv[])
         dv_CMD = dv1_imp_CMD + dv1_cont_CMD + dv2_imp_CMD + dv2_cont_CMD + dv_CTRL;
     
 		//////////////// Do propagation step /////////////////
-		
         SC_Orbit.state = attstate;
         SC_Orbit.Maneuver(dv_CMD);
     
@@ -644,8 +738,7 @@ int main(int argc, char *argv[])
               
         #endif
         
-        ///////////////////////////////////////////////////////
-        
+        //////////////////////////// Get quaternions from attitude ephemeris if this option is selected /////////////////////////
         if( AttitudeType.compare("Ephemeris") == 0 )
           {    
           ephem_row = loaded_ephem.row(ind);
@@ -653,8 +746,25 @@ int main(int argc, char *argv[])
           
           ind++;
           }
+          
+        //////////////////////////// Solar panels output /////////////////////////
+        posECI = orbprop_state.segment(0,3);
         
-        T_ECI2RTN = ECI2RTN_Matrix(orbprop_state);
+        if(Solarpan1_prm.on_off == true) panel1_out = SolarPanel1.Output(GPStime, attstate, posECI);
+        if(Solarpan2_prm.on_off == true) panel2_out = SolarPanel2.Output(GPStime, attstate, posECI);
+        if(Solarpan3_prm.on_off == true) panel3_out = SolarPanel3.Output(GPStime, attstate, posECI);
+        
+        if(Solarpan_on) // Solarpan_on == true if at least one solar panel is on
+            {
+            panels_output(0) = GPStime;
+            
+            panels_output.segment(1,2) = panel1_out.segment(0,2);
+            panels_output.segment(3,2) = panel2_out.segment(0,2);
+            panels_output.segment(5,2) = panel3_out.segment(0,2);
+            panels_output(7) = panel1_out(2);  
+              
+            sensors_to_file.row(step) = panels_output;
+            }
         
         //////////////// Display propagation progress /////////////////
         RunStatusBar(t, SIM_DURATION, barwidth);
@@ -666,6 +776,7 @@ int main(int argc, char *argv[])
         orbit_state_vec.segment(2,6) = orbprop_state;
         
         //////////////////////////// Accelerations /////////////////////////
+        T_ECI2RTN = ECI2RTN_Matrix(orbprop_state);
         
         AccenvRTN.segment(0,3) = T_ECI2RTN*Accenv.segment(0,3);
         AccenvRTN.segment(3,3) = T_ECI2RTN*Accenv.segment(3,3);
@@ -694,7 +805,6 @@ int main(int argc, char *argv[])
             }
         
         /////////////////////// Attitude state output ///////////////////////
-        
         if( AttitudeType.compare("RTN_fixed") == 0 ) T_RTN2Body = RotationMatrix321(phi, theta, psi);
         if( AttitudeType.compare("Fixed") == 0 )
           {
@@ -704,7 +814,7 @@ int main(int argc, char *argv[])
           }
         
         // Write attitude to attitude output file in case option "Ephemeris" is not selected
-        if( AttitudeType.compare("Ephemeris") == 1 )
+        if( AttitudeType.compare("Ephemeris") != 1 )
           {
           Vec3d euler_ang = EulerAngles321(T_RTN2Body);
           
@@ -714,13 +824,11 @@ int main(int argc, char *argv[])
           attitudeRTN_state_vec(0) = GPStime;
           attitudeRTN_state_vec.segment(1,6) = attstateRTN;
           
-          if(realtime)
+          if(realtime || Solarpan_on)
             {
             attstate_file << fixed << attitudeRTN_state_vec(0) << "," << attitudeRTN_state_vec(1) << "," << attitudeRTN_state_vec(2) << "," << attitudeRTN_state_vec(3) << "," << attitudeRTN_state_vec(4) << "," << attitudeRTN_state_vec(5) << "," << attitudeRTN_state_vec(6) << endl;
-            }
-          else
-            {
-            // TO BE IMPLEMENTED
+            
+            state_file_quat << fixed << GPStime << "," << attstate(0) << "," << attstate(1) << "," << attstate(2) << "," << attstate(3) << endl;
             }
           }
 		//////////////// Get new attitude in case it is RTN-fixed /////////////////
@@ -762,6 +870,19 @@ int main(int argc, char *argv[])
                     accelerations_file << accelerations_to_file(i,0) << "," << accelerations_to_file(i,1) << "," << accelerations_to_file(i,2) << "," << accelerations_to_file(i,3) << "," << accelerations_to_file(i,4) << "," << accelerations_to_file(i,5) << "," << accelerations_to_file(i,6) << "," << accelerations_to_file(i,7) << "," << accelerations_to_file(i,8) << "," << accelerations_to_file(i,9) << "," << accelerations_to_file(i,10) << "," << accelerations_to_file(i,11) << "," << accelerations_to_file(i,12) << "," << accelerations_to_file(i,13) << "," << accelerations_to_file(i,14) << "," << accelerations_to_file(i,15) << "," << accelerations_to_file(i,16) << "," << accelerations_to_file(i,17) << "," << accelerations_to_file(i,18) << endl;
                     }
                 }
+        
+            #pragma omp section
+                {
+                if( Solarpan1_prm.on_off == true || Solarpan2_prm.on_off == true || Solarpan3_prm.on_off == true )
+                    {
+                    for(int i = 1 ; i < step; i++)
+                        {
+                        sensors_file << fixed << sensors_to_file(i,0) << "," << sensors_to_file(i,1) << "," << sensors_to_file(i,2) << "," << sensors_to_file(i,3) << "," << sensors_to_file(i,4) << "," << sensors_to_file(i,5) << "," << sensors_to_file(i,6) << "," << sensors_to_file(i,7) << endl;
+                        }
+                    }
+                }
+            
+                
             }
         }
     
@@ -770,6 +891,9 @@ int main(int argc, char *argv[])
     accelerations_file.close();
 	
 	attstate_file.close();
+    state_file_quat.close();
+    
+    sensors_file.close();
     
     clockend = chrono::high_resolution_clock::now();
         

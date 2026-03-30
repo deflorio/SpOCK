@@ -74,6 +74,6 @@ namespace thirdbody
         SOLSYS Solar;
         };
 
-   }; // End of namespace magnetic
+   }; // End of namespace thirdbody
 
 #endif

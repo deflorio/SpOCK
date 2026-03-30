@@ -142,8 +142,9 @@ namespace attitudeq
                             double factor_x,
                             double factor_dxdt)
                             {
-                            bulirsch_stoer<state_typeQ> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
-                            bulirsch_stoer_stepperQ = setup_stepper;
+                            //bulirsch_stoer<state_typeQ> setup_stepper(eps_abs, eps_rel, factor_x, factor_dxdt);
+                            //bulirsch_stoer_stepperQ = setup_stepper;
+                            BULSTOER_stepper = BULSTOER_stepper_typeQ(eps_abs, eps_rel, factor_x, factor_dxdt);
                             };
     //------------------------------------------------------------------------------
     // Method void Integrate(double t, double step)
@@ -173,7 +174,7 @@ namespace attitudeq
             //stepper.do_step(DynModel, x, t, step);
             //stepper.do_step(std::bind(&ATTQ::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
             
-            bulirsch_stoer_stepperQ.try_step(std::bind(&ATTQ::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
+            BULSTOER_stepper.try_step(std::bind(&ATTQ::DynModel, *this , pl::_1 , pl::_2 , pl::_3), x, t, step);
             //controlled_stepper.do_step(DynModel, x, t, step);
             //integrate_adaptive( make_controlled< error_stepper_typeQ >( 1.0e-10 , 1.0e-6 ) , DynModel, x, t, 2.0*86400 , 0.01 );
             
